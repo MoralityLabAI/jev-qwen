@@ -34,6 +34,8 @@ first load into the default HF cache.
 ```powershell
 $py = "$env:USERPROFILE\.venvs\jev-qwen\Scripts\python.exe"
 & $py -m pytest tests -q                       # no downloads, no GPU
+& $py scripts\download_model.py                # fetch the checkpoint (9.3 GB), no GPU
+& $py scripts\wait_for_gpu.py --min-free-mib 11000   # block until the shared GPU is free
 & $py scripts\check_model_load.py              # load weights, verify the driver on them
 & $py scripts\run_eval.py --variant configs\variants\v0_baseline.yaml --suite evals\suites\smoke.yaml
 & $py scripts\run_eval.py --variant configs\variants\v2_loop_mid_r2.yaml --set variant.loop.n_iters=3

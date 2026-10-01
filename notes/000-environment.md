@@ -26,9 +26,10 @@
 - No Qwen3.5 weights anywhere on disk. Local HF caches hold only `Qwen/Qwen3-0.6B` and
   `prism-ml/Bonsai-8B-unpacked` (under the BitAgent-gym runs directory).
 
-`requirements.txt` pins the versions verified in the bluebeam venv. This project has no venv of
-its own yet (`scripts/setup_env.ps1` creates one; it has not been run because it downloads
-several GB).
+`requirements.txt` pins the versions verified in the bluebeam venv. This project's own venv was
+created later the same day at `C:\Users\patri\.venvs\jev-qwen` (same versions; all tests pass
+in it). The checkpoint is in the default HF cache, `C:\Users\patri\.cache\huggingface\hub`,
+commit `1001bb4d826a52d1f399e183466143f4da7b741b`, 9.33 GB.
 
 ## Contention at inspection time
 
@@ -53,6 +54,14 @@ Consequence: the 4B model was not loaded in this session. Nothing of ours has to
 3. The repo lives under OneDrive. `checkpoints/` and `results/` are synced unless excluded;
    keep only adapters there, and keep the venv and the HF cache outside OneDrive (defaults:
    `%USERPROFILE%\.venvs\jev-qwen`, `%USERPROFILE%\.cache\huggingface`).
-4. The reference PyTorch fallbacks for the DeltaNet kernels are used because
+4. **Norton Antivirus re-signs HTTPS traffic** ("Norton Web/Mail Shield Root"). That root is in
+   the Windows trust store but not in certifi, so `huggingface_hub` fails with
+   `CERTIFICATE_VERIFY_FAILED` while pip works. `scripts/_bootstrap.py` injects `truststore` so
+   requests verify against the Windows store. Certificate verification is never disabled.
+5. **System commit is often nearly exhausted** (3-5 GB free of 67 GB even with free RAM),
+   because of the other jobs. `load_model` therefore streams weights straight to the device with
+   a single-device map instead of building a CPU copy first.
+6. The HF cache cannot use symlinks here (no Developer Mode), so files are stored as copies.
+7. The reference PyTorch fallbacks for the DeltaNet kernels are used because
    `flash-linear-attention` and `causal_conv1d` are not installed. Transformers says they are
    correct but slower. Latency numbers are therefore for the fallback path; say so when quoting them.
