@@ -1,6 +1,6 @@
 # EXPERIMENT: Jev-style decision models on a Qwen3.5-4B-Base backbone
 
-Status: Milestone 1 complete (results in `notes/004-milestone-1-log.md`). Last updated 2026-10-01.
+Status: Milestone 2 complete (results in `notes/005-milestone-2-log.md`). Last updated 2026-10-02.
 
 This is an experimental reproduction *inspired by* public descriptions of Jev. Nothing here
 assumes that Qwen3.5-4B matches Jev's architecture or size. Every statement below is tagged as
@@ -77,13 +77,21 @@ About Jev (cannot be resolved from public material):
 About our setup (resolved by running things):
 
 - U1. Does vanilla Qwen3.5-4B-Base do these tasks at all few-shot, in either readout?
+  **Answered (M1, M2): yes.** Dev accuracy 0.713 `choice`, 0.667 `generate`.
 - U2. How far apart are `choice` and `generate` accuracy on the vanilla model?
+  **Answered (M2):** `choice` is 4.6 points ahead on dev and degrades less with difficulty
+  (d5: 0.58 vs 0.45). Both are 15-22 points behind `generate_cot` (0.875 on the 400-example
+  subset).
 - U3. Which macro-blocks tolerate re-application without training, if any?
+  **Answered (M2):** none improves; tolerance increases with depth (layers 4-7 collapse,
+  24-27 are nearly harmless and nearly inert). 12-15 is the only block with no loss at two passes.
 - U4. Do Gated DeltaNet layers behave differently from Gated Attention layers under re-application?
   (A DeltaNet layer already carries a recurrent state along the sequence; looping it in depth
-  re-runs that scan on its own output.)
+  re-runs that scan on its own output.) **Not answered:** the M2 sweep looped whole macro-blocks,
+  which contain both layer types. Needs DeltaNet-only (e.g. 12-14) and attention-only (15) spans.
 - U5. Is the checkpoint's multi-token-prediction head (dropped by the text-only loader) relevant?
 - U6. Real VRAM and latency on the RTX 5080 Laptop GPU (estimates in section 9).
+  **Answered (M1, M2):** see section 9.
 
 ---
 
@@ -244,6 +252,11 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
 - **H2 is false** if V1 gains less than 10 points over V0 on trained difficulties.
 - **H3 is false** if some zero-shot (span, n_iters > 1) beats V0-driver by more than 3 points on
   dev. That would be a surprising and cheap positive result and gets replicated before anything else.
+  **M2 result: not falsified.** Over four spans and 2-6 passes on the 400-example dev subset, the
+  best case ties vanilla (0.725, layers 12-15 at two passes) and everything else is below it.
+  The state drifts (a near-constant push per pass, norm growing linearly), which H3 allowed for.
+  Strictly, the criterion names the full dev set; since nothing came within 3 points of beating
+  vanilla, the full-dev rerun reserved for a positive result was not needed.
 - **H4 is false** if V2b at its best `n_iters` is within 3 points of V1 at matched budget on the
   multi-step classes, or if its accuracy does not increase with `n_iters` at difficulty 4-5.
 - **H4's mechanism is unsupported** even if accuracy improves, when iterations after the first
@@ -267,12 +280,13 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
 Detected: RTX 5080 Laptop GPU, 16 GB VRAM; Ryzen AI 9 365; 31 GB RAM. Details and current
 contention in `notes/000-environment.md`.
 
-The first two rows are measured (2026-10-01); the rest are still estimates.
+The first three rows are measured (2026-10-01/02); the rest are still estimates.
 
 | Configuration | VRAM |
 |---------------|------|
 | Text-only weights, bf16 (4.21B params) | 8.0 GB measured |
 | V0 / V2a inference, bf16, smoke prompts (up to 681 tokens) | 8.2 GB peak measured |
+| V0 inference, bf16, dev prompts (up to about 700 tokens) | 8.3 GB peak measured |
 | Same in 4-bit NF4 | about 4 GB |
 | V1 / V2b LoRA training, bf16, seq <= 1024, batch 1-2, gradient checkpointing | 11-14 GB |
 | QLoRA 4-bit training | 6-9 GB |
@@ -283,6 +297,11 @@ macro-block of stored activations per iteration unless checkpointed.
 
 All of this needs the GPU to be otherwise idle. bf16 training does not fit beside another job.
 
+Measured latency (paired benchmark, M2, two other GPU processes present, reference PyTorch
+DeltaNet kernels): one `choice` forward over a few-shot prompt takes about 0.58 s; an extra
+pass over a four-layer block costs 12% more, exactly its share of layer applications. A
+`generate_cot` answer took a median 4.7 s in a separate run.
+
 ---
 
 ## 10. Milestones
@@ -290,6 +309,7 @@ All of this needs the GPU to be otherwise idle. bf16 training does not fit besid
 - **M1.** Vanilla model loads; baseline suite run and saved; minimal recurrent-block prototype
   that is correct, measurable and easy to ablate. Log: `notes/004-milestone-1-log.md`.
 - **M2.** V0 on dev; zero-shot loop sweep (U3, U4, H3); choose the span for V2b.
+  Done 2026-10-02: span 12-15 chosen; U4 still open. Log: `notes/005-milestone-2-log.md`.
 - **M3.** V1 (LoRA) with train/test splits and difficulty extrapolation.
 - **M4.** V2b trained loop versus V1 at matched budget (H4).
 - **M5+.** V3, V4, then V5 if warranted.

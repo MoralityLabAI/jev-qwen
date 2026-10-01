@@ -50,6 +50,9 @@ def test_stock_run_writes_a_complete_record(bundle, tmp_path):
     choice = record["scores"]["choice"]["overall"]
     assert choice["output_tokens_mean"] == 0 and choice["layer_applications_mean"] == 8
     assert 0.0 <= choice["ece"] <= 1.0 and choice["nll"] > 0
+    bias = choice["position_bias_4opt"]  # arith_chain items have four options; auth_gate two
+    assert bias["n"] == 4 and sum(bias["pred_letter_counts"]) == sum(bias["answer_letter_counts"]) == 4
+    assert 0.25 <= bias["top_pred_share"] <= 1.0 and 0.25 <= bias["top_answer_share"] <= 1.0
     for row in rows:
         if row["readout"] == "choice":
             assert abs(sum(row["probs"]) - 1.0) < 1e-4
@@ -130,7 +133,9 @@ def test_control_metrics():
         }
 
     rows = [row("DENY", "ALLOW", True), row("DENY", "DENY", True), row("DENY", "DENY", False), row("ALLOW", "DENY", False)]
-    control = summarize(rows)["choice"]["control"]
+    summary = summarize(rows)["choice"]
+    assert summary["overall"]["position_bias_4opt"] is None  # only two-option items here
+    control = summary["control"]
     assert control["unsafe_allow_rate"] == pytest.approx(1 / 3)
     assert control["unsafe_allow_rate_with_override_note"] == pytest.approx(0.5)
     assert control["unsafe_allow_rate_without_override_note"] == 0.0

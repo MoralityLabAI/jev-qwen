@@ -19,6 +19,7 @@ import math
 import random
 import statistics
 import time
+from collections import Counter
 from dataclasses import dataclass
 
 import torch
@@ -274,6 +275,26 @@ def _ece(rows: list[dict], bins: int = 10) -> float:
     return ece
 
 
+def _position_bias(rows: list[dict]) -> dict | None:
+    """Option-letter bias of the choice readout, on four-option items (the common case).
+
+    Untrained loops fail mainly by drifting onto one letter (notes/005), which can also fake
+    or mask calibration changes, so every choice run reports it next to the gold base rate.
+    """
+    four = [r for r in rows if len(r["probs"]) == 4]
+    if not four:
+        return None
+    pred = Counter(max(range(4), key=r["probs"].__getitem__) for r in four)
+    gold = Counter(r["answer_index"] for r in four)
+    return {
+        "n": len(four),
+        "pred_letter_counts": [pred[i] for i in range(4)],
+        "answer_letter_counts": [gold[i] for i in range(4)],
+        "top_pred_share": max(pred.values()) / len(four),
+        "top_answer_share": max(gold.values()) / len(four),
+    }
+
+
 def _aggregate(rows: list[dict]) -> dict:
     out = {
         "n": len(rows),
@@ -295,6 +316,7 @@ def _aggregate(rows: list[dict]) -> dict:
         out["ece"] = _ece(rows)
         out["confidence_mean"] = _mean(r["confidence"] for r in rows)
         out["label_mass_mean"] = _mean(r["label_mass"] for r in rows)
+        out["position_bias_4opt"] = _position_bias(rows)
     else:
         out["hit_token_budget_rate"] = _mean(r["hit_token_budget"] for r in rows)
     return out

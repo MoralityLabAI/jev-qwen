@@ -6,6 +6,11 @@ Before every step it waits (nvidia-smi only) for free VRAM, then runs the step a
 process so a crash costs one step, not the queue. Steps already marked done in the status
 file are skipped, so the same command resumes an interrupted queue. Output of every step
 goes to results/queue/<queue name>/<step>.log; progress is in status.json next to it.
+
+`keep_awake: true` in the queue file asks Windows not to idle-sleep while the queue runs, and
+only while the machine is on mains power. It is off by default: a laptop that sleeps
+mid-step stalls the queue (the 2026-10-01 dev run lost 6.6 h that way) but keeps its battery.
+It does not override closing the lid or choosing Sleep, and lapses when the queue exits.
 """
 
 import argparse
@@ -19,6 +24,38 @@ from jevq.config import ROOT, load_yaml, resolve_path
 from jevq.records import write_json
 from wait_for_gpu import wait_until_free
 
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+
+
+def on_mains_power() -> bool:
+    import ctypes
+
+    class PowerStatus(ctypes.Structure):
+        _fields_ = [
+            ("ACLineStatus", ctypes.c_ubyte),
+            ("BatteryFlag", ctypes.c_ubyte),
+            ("BatteryLifePercent", ctypes.c_ubyte),
+            ("SystemStatusFlag", ctypes.c_ubyte),
+            ("BatteryLifeTime", ctypes.c_ulong),
+            ("BatteryFullLifeTime", ctypes.c_ulong),
+        ]
+
+    status = PowerStatus()
+    return bool(ctypes.windll.kernel32.GetSystemPowerStatus(ctypes.byref(status))) and status.ACLineStatus == 1
+
+
+def set_keep_awake(enabled: bool) -> bool:
+    """Request (or release) 'system required' for this thread. Returns whether it is now held."""
+    if sys.platform != "win32":
+        return False
+    import ctypes
+
+    want = enabled and on_mains_power()
+    flags = ES_CONTINUOUS | (ES_SYSTEM_REQUIRED if want else 0)
+    ctypes.windll.kernel32.SetThreadExecutionState(flags)
+    return want
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -29,7 +66,15 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     status_path = out_dir / "status.json"
     status = load_yaml(status_path) if status_path.exists() else {}  # JSON is valid YAML
+    keep_awake = bool(queue.get("keep_awake", False))
 
+    try:
+        run_steps(queue, out_dir, status_path, status, keep_awake)
+    finally:
+        set_keep_awake(False)
+
+
+def run_steps(queue: dict, out_dir, status_path, status: dict, keep_awake: bool) -> None:
     for step in queue["steps"]:
         name = step["name"]
         if status.get(name, {}).get("state") == "done":
@@ -47,7 +92,9 @@ def main() -> None:
                 write_json(status_path, status)
                 raise SystemExit(f"[queue] {name}: GPU never became free")
             started = datetime.now().isoformat(timespec="seconds")
-            print(f"[queue] {name}: attempt {attempt} started {started}", flush=True)
+            awake = set_keep_awake(keep_awake)  # re-checked per step: the charger may have changed
+            suffix = " (keeping the system awake)" if awake else ""
+            print(f"[queue] {name}: attempt {attempt} started {started}{suffix}", flush=True)
             t0 = time.perf_counter()
             with open(out_dir / f"{name}.log", "a", encoding="utf-8") as log:
                 log.write(f"\n===== attempt {attempt} at {started} =====\n")
@@ -61,6 +108,7 @@ def main() -> None:
                 "attempts": attempt,
                 "started": started,
                 "seconds": round(time.perf_counter() - t0, 1),
+                "kept_awake": awake,
             }
             write_json(status_path, status)
             print(f"[queue] {name}: exit {code} after {status[name]['seconds']} s", flush=True)
