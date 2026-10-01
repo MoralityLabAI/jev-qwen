@@ -1,0 +1,32 @@
+# Defaults shared by every run. Variant files override `variant`, suite files fill `suite`,
+# and `--set a.b=value` overrides anything. The fully resolved config is stored in each record.
+
+model:
+  id: Qwen/Qwen3.5-4B-Base
+  revision: null        # pin to the resolved commit sha after the first successful load
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: false   # true = bitsandbytes NF4 (QLoRA-style); changes the baseline, record it
+
+seed: 0
+
+variant:
+  name: unnamed
+  driver: stock         # stock | schedule (see src/jevq/harness.py)
+  loop: null            # {start, end, n_iters}; requires driver: schedule
+  halting: null         # {kind: convergence, threshold}; V4 seam, off by default
+  adapter: null         # V1; not wired yet
+
+readout:
+  modes: [choice, generate]
+  n_shots: 4
+  max_new_tokens: 16
+
+instrument:
+  enabled: true         # per-step rows for the schedule driver -> steps.jsonl
+  record_layers: false  # also one row per layer application (large)
+  logit_lens: true      # direct lens: lm_head(norm(h)) after each span iteration
+
+paths:
+  results: results
+  checkpoints: checkpoints

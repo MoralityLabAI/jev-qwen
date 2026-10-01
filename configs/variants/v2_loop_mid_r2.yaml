@@ -1,0 +1,6 @@
+# V2 (zero-shot): re-run one mid-stack macro-block (3 Gated DeltaNet + 1 Gated Attention,
+# layers 12-15) twice. No training; the weights are the vanilla checkpoint.
+variant:
+  name: v2_loop_mid_r2
+  driver: schedule
+  loop: {start: 12, end: 16, n_iters: 2}

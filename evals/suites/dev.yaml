@@ -1,0 +1,6 @@
+# Dev suite: 8 tasks x 5 difficulties x 25 examples = 1000 examples per readout.
+# The benchmark used for variant comparisons and difficulty-robustness curves.
+name: dev
+tasks: [arith_chain, var_trace, order_chain, bool_eval, tool_select, graph_hops, relation_hops, auth_gate]
+difficulties: [1, 2, 3, 4, 5]
+n_per_difficulty: 25

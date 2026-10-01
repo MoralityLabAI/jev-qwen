@@ -1,0 +1,7 @@
+# V0 through our layer-schedule driver with a single pass over the span (n_iters: 1).
+# Same function as v0_baseline; exists to (a) verify the driver on real weights and
+# (b) give V2 an uncached, instrumented reference on the same code path.
+variant:
+  name: v0_driver_identity
+  driver: schedule
+  loop: {start: 12, end: 16, n_iters: 1}

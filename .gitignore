@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Run outputs and weights stay out of git; the directories themselves are kept.
+results/*
+!results/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+data/*
+!data/.gitkeep
+!data/README.md

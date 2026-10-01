@@ -1,0 +1,6 @@
+# Smoke suite: 8 tasks x 3 difficulties x 4 examples = 96 examples per readout.
+# Cheap enough to run after every change; too small for conclusions.
+name: smoke
+tasks: [arith_chain, var_trace, order_chain, bool_eval, tool_select, graph_hops, relation_hops, auth_gate]
+difficulties: [1, 2, 3]
+n_per_difficulty: 4

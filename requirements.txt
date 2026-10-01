@@ -1,0 +1,11 @@
+# Versions verified locally on 2026-10-01 (Windows, Python 3.12, CUDA 12.8).
+# torch comes from the cu128 index; scripts/setup_env.ps1 passes it.
+torch==2.11.0
+transformers==5.17.0
+peft==0.21.1
+accelerate==1.15.0
+bitsandbytes==0.50.2
+safetensors
+pyyaml
+psutil
+pytest

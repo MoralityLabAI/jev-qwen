@@ -1,0 +1,4 @@
+# V0: vanilla Qwen3.5-4B-Base through the unmodified HF forward / generate.
+variant:
+  name: v0_baseline
+  driver: stock
