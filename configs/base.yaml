@@ -6,6 +6,7 @@ model:
   revision: 1001bb4d826a52d1f399e183466143f4da7b741b   # Hub commit downloaded 2026-10-01
   dtype: bfloat16
   device: cuda
+  cuda_memory_fraction: 0.70   # shared 16 GB card: fail with OOM past ~11.4 GB rather than spill
   load_in_4bit: false   # true = bitsandbytes NF4 (QLoRA-style); changes the baseline, record it
 
 seed: 0

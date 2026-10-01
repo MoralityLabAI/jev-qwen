@@ -42,12 +42,18 @@ def load_model(model_cfg: dict) -> tuple[torch.nn.Module, dict]:
     from transformers import AutoModelForCausalLM
 
     dtype = getattr(torch, model_cfg.get("dtype", "bfloat16"))
+    device = str(model_cfg.get("device", "cuda"))
+    fraction = model_cfg.get("cuda_memory_fraction")
+    if fraction and device.startswith("cuda"):
+        # On Windows (WDDM) a process that outgrows VRAM spills into shared system memory and
+        # slows every job on the card instead of failing. The cap turns that into a clean OOM.
+        torch.cuda.set_per_process_memory_fraction(float(fraction))
     # A single-device map streams each shard straight to its device. Loading to CPU first and
     # then calling .to() would need a full host-memory copy, which this machine often cannot commit.
     kwargs: dict = {
         "dtype": dtype,
         "revision": model_cfg.get("revision"),
-        "device_map": {"": model_cfg.get("device", "cuda")},
+        "device_map": {"": device},
     }
     quantized = bool(model_cfg.get("load_in_4bit"))
     if quantized:
@@ -74,6 +80,7 @@ def load_model(model_cfg: dict) -> tuple[torch.nn.Module, dict]:
         "class": type(model).__name__,
         "dtype": str(dtype).replace("torch.", ""),
         "load_in_4bit": quantized,
+        "cuda_memory_fraction": fraction,
         "unexpected_keys_dropped": len(loading.get("unexpected_keys", [])),
     }
     return model, info
