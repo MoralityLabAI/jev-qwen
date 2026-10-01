@@ -42,7 +42,13 @@ def load_model(model_cfg: dict) -> tuple[torch.nn.Module, dict]:
     from transformers import AutoModelForCausalLM
 
     dtype = getattr(torch, model_cfg.get("dtype", "bfloat16"))
-    kwargs: dict = {"dtype": dtype, "revision": model_cfg.get("revision")}
+    # A single-device map streams each shard straight to its device. Loading to CPU first and
+    # then calling .to() would need a full host-memory copy, which this machine often cannot commit.
+    kwargs: dict = {
+        "dtype": dtype,
+        "revision": model_cfg.get("revision"),
+        "device_map": {"": model_cfg.get("device", "cuda")},
+    }
     quantized = bool(model_cfg.get("load_in_4bit"))
     if quantized:
         from transformers import BitsAndBytesConfig
@@ -53,15 +59,12 @@ def load_model(model_cfg: dict) -> tuple[torch.nn.Module, dict]:
             bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=dtype,
         )
-        kwargs["device_map"] = {"": 0}
 
     model, loading = AutoModelForCausalLM.from_pretrained(model_cfg["id"], output_loading_info=True, **kwargs)
     # A missing key means some weights were randomly initialised: the baseline would be invalid.
     missing = [key for key in loading.get("missing_keys", []) if key != "lm_head.weight"]
     if missing:
         raise RuntimeError(f"checkpoint is missing {len(missing)} keys for the text model, e.g. {missing[:5]}")
-    if not quantized:
-        model.to(model_cfg.get("device", "cuda"))
     model.eval()
 
     info = {
