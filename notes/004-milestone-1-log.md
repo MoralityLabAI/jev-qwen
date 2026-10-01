@@ -38,6 +38,22 @@ that is correct, measurable and easy to ablate.
   accuracy, tokenizer label check, and driver equivalence on real weights are all pending.
   The VRAM figures in EXPERIMENT.md are estimates from the published config.
 
+### Later the same day (downloads approved)
+
+- Project venv created at `%USERPROFILE%\.venvs\jev-qwen`; all 37 tests pass in it.
+- Checkpoint downloaded: 9.33 GB, Hub commit `1001bb4d826a52d1f399e183466143f4da7b741b`, now
+  pinned in `configs/base.yaml`. The download needed the OS trust store (antivirus TLS
+  scanning); see `000-environment.md`.
+- Real tokenizer checked on CPU: option labels ` A`..` H` are single tokens; `encode` adds no
+  special tokens; the newline stop rule fires on ` 12\n`; longest smoke prompt is 681 tokens;
+  answers are at most 4 tokens. The tokenizer ships a chat template even though the model card
+  calls the model pretrained-only; we do not use it.
+- Loader now streams weights to the device and caps the process at 70% of VRAM, so on the
+  shared card an overflow is an OOM in our process rather than a slowdown for every job.
+- `scripts/run_milestone1.py` does steps 2-5 below in one process with one model load. It is
+  queued behind `scripts/wait_for_gpu.py` (needs 11 GB free for 90 s). The GPU had 2.5-5 GB
+  free whenever checked, so **the model is still not loaded and nothing below is measured.**
+
 ### Exact next steps, in order
 
 1. `scripts\setup_env.ps1` (once approved), then `pytest tests -q` in the new venv.
