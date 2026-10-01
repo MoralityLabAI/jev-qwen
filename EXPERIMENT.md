@@ -1,6 +1,6 @@
 # EXPERIMENT: Jev-style decision models on a Qwen3.5-4B-Base backbone
 
-Status: Milestone 1 in progress. Last updated 2026-10-01.
+Status: Milestone 1 complete (results in `notes/004-milestone-1-log.md`). Last updated 2026-10-01.
 
 This is an experimental reproduction *inspired by* public descriptions of Jev. Nothing here
 assumes that Qwen3.5-4B matches Jev's architecture or size. Every statement below is tagged as
@@ -250,12 +250,12 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
 Detected: RTX 5080 Laptop GPU, 16 GB VRAM; Ryzen AI 9 365; 31 GB RAM. Details and current
 contention in `notes/000-environment.md`.
 
-Estimates from the published config (to be replaced by `scripts/check_model_load.py` output):
+The first two rows are measured (2026-10-01); the rest are still estimates.
 
-| Configuration | Expected VRAM |
-|---------------|---------------|
-| Text-only weights, bf16 (about 4.1B params) | about 8.3 GB |
-| V0 / V2a inference, bf16, prompts under 2k tokens | 9-10 GB |
+| Configuration | VRAM |
+|---------------|------|
+| Text-only weights, bf16 (4.21B params) | 8.0 GB measured |
+| V0 / V2a inference, bf16, smoke prompts (up to 681 tokens) | 8.2 GB peak measured |
 | Same in 4-bit NF4 | about 4 GB |
 | V1 / V2b LoRA training, bf16, seq <= 1024, batch 1-2, gradient checkpointing | 11-14 GB |
 | QLoRA 4-bit training | 6-9 GB |
