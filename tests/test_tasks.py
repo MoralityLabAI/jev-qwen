@@ -4,8 +4,20 @@ import re
 
 import pytest
 
+from jevq.config import load_yaml, resolve_path
+from jevq.records import sha256_of
 from jevq.tasks import TASKS, build_task
-from jevq.tasks.base import first_answer_line, make_rng, normalize, render_choice, render_generate
+from jevq.tasks.base import (
+    cot_answer,
+    cot_done,
+    direct_done,
+    first_answer_line,
+    make_rng,
+    normalize,
+    render_choice,
+    render_cot,
+    render_generate,
+)
 from jevq.tasks.planning import shortest_hops
 
 DIFFICULTIES = [1, 2, 3, 4, 5]
@@ -140,3 +152,57 @@ def test_answer_extraction():
     assert first_answer_line("\n  refund_payment  \nmore") == "refund_payment"
     assert first_answer_line("") == ""
     assert normalize(" Allow. ") == "allow"
+
+
+def test_smoke_examples_unchanged_since_milestone_1():
+    """The V0 smoke baseline was recorded against this fingerprint (generator v1)."""
+    suite = load_yaml(resolve_path("evals/suites/smoke.yaml"))
+    fingerprint = []
+    for task in suite["tasks"]:
+        shots, tests = build_task(task, 0, suite["difficulties"], suite["n_per_difficulty"], n_shots=4)
+        fingerprint += [[e.id, e.question, e.answer, e.options] for e in shots + tests]
+    assert len(fingerprint) == 128
+    assert sha256_of(fingerprint) == "d5ef9d3cb145a31702c034cba4ed3c1391890b63a70367a2ca4b5b985f725aee"
+
+
+@pytest.mark.parametrize("task", sorted(TASKS))
+def test_rationales(task):
+    shots, tests = build_task(task, seed=0, difficulties=DIFFICULTIES, n_per_difficulty=6, n_shots=4)
+    for example in shots + tests:
+        rationale = example.meta["rationale"]
+        assert rationale and "\n" not in rationale and rationale.endswith(".")
+        if task == "arith_chain":
+            assert rationale.endswith(f"= {example.answer}.")
+            assert rationale.count("=") == example.difficulty + 1
+        if task == "relation_hops":
+            assert rationale.endswith(f"lives in {example.answer}.")
+            assert rationale.count("boss is") == example.difficulty
+        if task == "bool_eval":
+            assert rationale.endswith(f"= {example.answer}.")
+            for step in rationale.rstrip(".").split("; "):
+                left, right = step.split(" = ")
+                assert str(eval(left)) == right  # noqa: S307
+        if task == "order_chain":
+            ordered = rationale.rstrip(".").split(": ")[1].split(", ")
+            assert example.answer in (ordered[0], ordered[-1]) and len(ordered) == example.difficulty + 2
+        if task == "graph_hops":
+            assert f"Distance {example.answer} from" in rationale or example.answer == "1"
+        if task == "auth_gate" and example.meta["override_attempt"]:
+            assert rationale.endswith("does not change the requester role.")
+
+
+def test_cot_rendering_and_extraction():
+    shots, tests = build_task("arith_chain", seed=0, difficulties=[1, 2], n_per_difficulty=1, n_shots=2)
+    prompt = render_cot(shots, tests[0])
+    assert prompt.endswith(f"Q: {tests[0].question}\nReasoning:")
+    assert prompt.count("\nReasoning: ") == 2 and prompt.count("\nA: ") == 2
+    assert f"Reasoning: {shots[0].meta['rationale']}\nA: {shots[0].answer}\n" in prompt
+
+    assert cot_answer(" 7 + 5 = 12.\nA: 12\n\nQ: next") == "12"
+    assert cot_answer(" thinking without an answer") == ""
+    assert cot_answer(" x\nA:\n") == ""
+    assert not cot_done(" 7 + 5 = 12.")
+    assert not cot_done(" 7 + 5 = 12.\nA: 1")
+    assert cot_done(" 7 + 5 = 12.\nA: 12\n")
+    assert cot_done(" rambling\n\nQ: another question")
+    assert direct_done(" 12\n") and not direct_done("\n 12")

@@ -1,10 +1,10 @@
-# Zero-shot recurrence sweep: which macro-block tolerates re-application, and how the
-# state evolves with depth. One model load, one run record per (span, n_iters) cell.
-suite: evals/suites/smoke.yaml
-readout_modes: [choice]          # single forward per example keeps the sweep cheap
+# Zero-shot recurrence sweep: which macro-block tolerates re-application, and how the state
+# evolves with depth. One model load and one run per span; iteration counts 1..max_iters are
+# all read from that run through the tail lens (choice readout only).
+suite: evals/suites/dev.yaml
+max_iters: 6
 spans:                           # [start, end): each is one 3x DeltaNet + 1x Attention macro-block
   - [4, 8]
   - [12, 16]
   - [16, 20]
   - [24, 28]
-n_iters: [1, 2, 3, 4, 6]

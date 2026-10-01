@@ -86,6 +86,31 @@ def test_looped_run_records_steps(bundle, tmp_path):
     stock = run(tiny_cfg(tmp_path, {"name": "t_stock", "driver": "stock"}), bundle=bundle)
     assert overall["flops_cached_equiv_mean"] > stock["scores"]["choice"]["overall"]["flops_cached_equiv_mean"]
 
+    # Tail lens: the last iteration's watched probabilities are the run's own option
+    # probabilities, and the first iteration's are the vanilla model's.
+    looped_rows = {r["example_id"]: r for r in read_jsonl(run_dir / "examples.jsonl") if r["readout"] == "choice"}
+    stock_rows = {
+        r["example_id"]: r
+        for r in read_jsonl(tmp_path / stock["run_id"] / "examples.jsonl")
+        if r["readout"] == "choice"
+    }
+    for step in choice_steps:
+        if step["iter"] == 2:
+            assert step["lens_watch_probs"] == pytest.approx(looped_rows[step["example_id"]]["probs"], abs=1e-5)
+        if step["iter"] == 0:
+            assert step["lens_watch_probs"] == pytest.approx(stock_rows[step["example_id"]]["probs"], abs=1e-5)
+
+
+def test_cot_readout_runs(bundle, tmp_path):
+    cfg = tiny_cfg(tmp_path, {"name": "t_cot", "driver": "stock"})
+    cfg["readout"].update({"modes": ["generate_cot"], "cot_max_new_tokens": 5})
+    cfg["suite"]["tasks"] = ["arith_chain"]
+    record = run(cfg, bundle=bundle)
+    overall = record["scores"]["generate_cot"]["overall"]
+    assert overall["n"] == 4 and 0.0 <= overall["hit_token_budget_rate"] <= 1.0
+    rows = read_jsonl(tmp_path / record["run_id"] / "examples.jsonl")
+    assert all(r["output_tokens"] <= 5 and "options" in r for r in rows)
+
 
 def test_loop_requires_schedule_driver(bundle, tmp_path):
     cfg = tiny_cfg(tmp_path, {"name": "bad", "driver": "stock", "loop": {"start": 4, "end": 8, "n_iters": 2}})
@@ -119,4 +144,6 @@ def test_configs_parse():
             cfg = resolve(f"configs/variants/{name}.yaml", f"evals/suites/{suite}.yaml", ["seed=3"])
             assert cfg["variant"]["name"] == name and cfg["suite"]["name"] == suite and cfg["seed"] == 3
     sweep = load_yaml(resolve_path("configs/sweeps/loop_span.yaml"))
-    assert all(end - start == 4 and start % 4 == 0 for start, end in sweep["spans"])
+    assert all(end - start == 4 and start % 4 == 0 for start, end in sweep["spans"]) and sweep["max_iters"] >= 2
+    bench = load_yaml(resolve_path("configs/sweeps/latency.yaml"))
+    assert all(resolve_path(path).exists() for path in bench["variants"])

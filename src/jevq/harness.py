@@ -4,6 +4,8 @@ Two readouts per example:
   choice    one forward pass; the answer is the argmax over the option-label tokens at the
             final position. No tokens are emitted. This is the Jev-style readout.
   generate  greedy decoding of a short free-form answer (conventional autoregressive readout).
+  generate_cot  greedy decoding of one line of reasoning and then the answer: the emitted-
+            reasoning comparator for any hidden-computation variant.
 
 Two drivers:
   stock     the unmodified HF forward / generate (KV cache on for generate). The V0 reference.
@@ -29,7 +31,18 @@ from .looped import LoopSpec, build_schedule, forward_hidden, greedy_generate
 from .modeling import ModelBundle, load_bundle
 from .records import append_jsonl, make_record, new_run_id, sha256_of, write_json
 from .tasks import GENERATOR_VERSION, build_task
-from .tasks.base import LABELS, Example, first_answer_line, normalize, render_choice, render_generate
+from .tasks.base import (
+    LABELS,
+    Example,
+    cot_answer,
+    cot_done,
+    direct_done,
+    first_answer_line,
+    normalize,
+    render_choice,
+    render_cot,
+    render_generate,
+)
 
 
 @dataclass
@@ -71,11 +84,6 @@ def label_token_ids(tokenizer) -> list[int]:
             raise RuntimeError(f"option label {label!r} is not a single token ({tokens}); choice readout is invalid")
         ids.append(tokens[0])
     return ids
-
-
-def _answer_done(tokenizer, new_ids: list[int]) -> bool:
-    """True once a newline follows the first non-blank text of the completion."""
-    return "\n" in tokenizer.decode(new_ids).lstrip()
 
 
 def _sync(device: torch.device) -> None:
@@ -125,7 +133,10 @@ def _choice(bundle: ModelBundle, variant: Variant, prompt: str, n_options: int, 
 
 
 @torch.no_grad()
-def _generate(bundle: ModelBundle, variant: Variant, prompt: str, max_new_tokens: int, recorder) -> dict:
+def _generate(
+    bundle: ModelBundle, variant: Variant, prompt: str, max_new_tokens: int, recorder, done_fn
+) -> dict:
+    """Greedy decoding until `done_fn(text so far)` or EOS or the token budget."""
     tokenizer = bundle.tokenizer
     ids = torch.tensor([tokenizer.encode(prompt)], device=bundle.device)
     prompt_len = ids.shape[1]
@@ -137,7 +148,7 @@ def _generate(bundle: ModelBundle, variant: Variant, prompt: str, max_new_tokens
 
         class AnswerStop(StoppingCriteria):
             def __call__(self, input_ids, scores, **kwargs):
-                done = _answer_done(tokenizer, input_ids[0, prompt_len:].tolist())
+                done = done_fn(tokenizer.decode(input_ids[0, prompt_len:].tolist()))
                 return torch.full((input_ids.shape[0],), done, dtype=torch.bool, device=input_ids.device)
 
         pad = getattr(tokenizer, "pad_token_id", None)
@@ -157,7 +168,7 @@ def _generate(bundle: ModelBundle, variant: Variant, prompt: str, max_new_tokens
     else:
 
         def stop(new: list[int]) -> bool:
-            return (eos is not None and new[-1] == eos) or _answer_done(tokenizer, new)
+            return (eos is not None and new[-1] == eos) or done_fn(tokenizer.decode(new))
 
         new_ids, forwards = greedy_generate(
             bundle.text_model,
@@ -174,10 +185,8 @@ def _generate(bundle: ModelBundle, variant: Variant, prompt: str, max_new_tokens
         halted = any(f.halted_early for f in forwards)
         applications = sum(f.layer_applications for f in forwards)
 
-    text = tokenizer.decode(new_ids)
     return {
-        "pred_text": first_answer_line(text),
-        "raw_text": text,
+        "raw_text": tokenizer.decode(new_ids),
         "prompt_tokens": prompt_len,
         "output_tokens": len(new_ids),
         "n_forwards": n_forwards,
@@ -208,8 +217,13 @@ def run_example(
         out = _choice(bundle, variant, render_choice(shots, example), len(example.options), label_ids, recorder)
         pred = example.options[out["pred_index"]]
     elif readout == "generate":
-        out = _generate(bundle, variant, render_generate(shots, example), cfg["readout"]["max_new_tokens"], recorder)
-        pred = out["pred_text"]
+        prompt, budget = render_generate(shots, example), cfg["readout"]["max_new_tokens"]
+        out = _generate(bundle, variant, prompt, budget, recorder, direct_done)
+        pred = first_answer_line(out["raw_text"])
+    elif readout == "generate_cot":
+        prompt, budget = render_cot(shots, example), cfg["readout"]["cot_max_new_tokens"]
+        out = _generate(bundle, variant, prompt, budget, recorder, cot_done)
+        pred = cot_answer(out["raw_text"])
     else:
         raise ValueError(f"unknown readout {readout!r}")
     _sync(device)
@@ -223,6 +237,7 @@ def run_example(
         "difficulty": example.difficulty,
         "readout": readout,
         "answer": example.answer,
+        "options": example.options,
         "pred": pred,
         "correct": normalize(pred) == normalize(example.answer),
         "latency_s": latency,
@@ -237,6 +252,9 @@ def run_example(
         row["answer_index"] = example.answer_index
         row["p_correct"] = out["probs"][example.answer_index]
         row["confidence"] = max(out["probs"])
+    else:
+        # Decoding ran out of tokens before the stop rule fired: the answer may be cut off.
+        row["hit_token_budget"] = out["output_tokens"] >= budget
     return row
 
 
@@ -277,6 +295,8 @@ def _aggregate(rows: list[dict]) -> dict:
         out["ece"] = _ece(rows)
         out["confidence_mean"] = _mean(r["confidence"] for r in rows)
         out["label_mass_mean"] = _mean(r["label_mass"] for r in rows)
+    else:
+        out["hit_token_budget_rate"] = _mean(r["hit_token_budget"] for r in rows)
     return out
 
 
@@ -354,11 +374,15 @@ def run(cfg: dict, bundle: ModelBundle | None = None) -> dict:
         for readout in readouts:
             task_rows = []
             for example in tests:
-                recorder = (
-                    StepRecorder(lens_fn, inst["record_layers"], sync_cuda=bundle.device.type == "cuda")
-                    if record_steps
-                    else None
-                )
+                recorder = None
+                if record_steps:
+                    recorder = StepRecorder(
+                        lens_fn,
+                        inst["record_layers"],
+                        sync_cuda=bundle.device.type == "cuda",
+                        lens_mode=inst["lens_mode"],
+                        watch_ids=label_ids[: len(example.options)] if readout == "choice" else None,
+                    )
                 row = run_example(bundle, variant, fm, readout, shots, example, cfg, label_ids, recorder)
                 task_rows.append(row)
                 if recorder is not None and recorder.rows:

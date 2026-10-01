@@ -1,0 +1,9 @@
+# Paired latency benchmark (scripts/bench_latency.py). The first variant is the reference.
+suite: evals/suites/smoke.yaml
+readout: choice
+per_task: 3        # examples per task, spread over difficulties
+repeats: 5
+variants:
+  - configs/variants/v0_driver_identity.yaml   # reference: same uncached code path as the loop
+  - configs/variants/v0_baseline.yaml
+  - configs/variants/v2_loop_mid_r2.yaml

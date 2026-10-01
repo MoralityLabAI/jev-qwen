@@ -28,6 +28,10 @@ by both readouts:
   trimming and lower-casing.
 - `choice`: the same question with lettered options; one forward pass; softmax over the label
   tokens at the final position. Gives a probability per option, hence calibration metrics.
+- `generate_cot`: few-shot `Q: ... Reasoning: ... A: ...`; the model writes one line of
+  reasoning and then the answer; the answer is the text on the first `A:` line. Each task
+  generator supplies the worked solution shown in the shots (`meta["rationale"]`).
+  `hit_token_budget_rate` reports how often decoding ran out before an answer line.
 
 ## Control metrics
 

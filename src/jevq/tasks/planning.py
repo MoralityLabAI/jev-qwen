@@ -59,4 +59,9 @@ def gen_graph_hops(rng: random.Random, difficulty: int):
         f"Edges: {', '.join(rendered)}. "
         f"What is the fewest number of edges on a path from {source} to {target}?"
     )
-    return question, answer, options, {"hops": hops, "n_edges": len(edges)}
+    layers = [
+        f"{dist} from {source}: {', '.join(sorted(n for n in nodes if shortest_hops(edges, source, n) == dist))}."
+        for dist in range(1, hops + 1)
+    ]
+    rationale = "Nodes at distance " + " Distance ".join(layers)
+    return question, answer, options, {"hops": hops, "n_edges": len(edges), "rationale": rationale}

@@ -40,6 +40,8 @@ $py = "$env:USERPROFILE\.venvs\jev-qwen\Scripts\python.exe"
 & $py scripts\run_eval.py --variant configs\variants\v0_baseline.yaml --suite evals\suites\smoke.yaml
 & $py scripts\run_eval.py --variant configs\variants\v2_loop_mid_r2.yaml --set variant.loop.n_iters=3
 & $py scripts\sweep_loop.py --sweep configs\sweeps\loop_span.yaml
+& $py scripts\bench_latency.py --bench configs\sweeps\latency.yaml   # paired timing on a shared GPU
+& $py scripts\run_queue.py --queue configs\queues\m2_probe.yaml      # resumable job queue, waits for VRAM
 ```
 
 Do not set `CUDA_VISIBLE_DEVICES=-1` on this machine (see `notes/000-environment.md`).

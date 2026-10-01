@@ -92,8 +92,11 @@ About our setup (resolved by running things):
 Each is written so that a dev-suite result can contradict it. Thresholds are in section 8.
 
 - **H1 (readout).** On short-answer decision tasks, the single-pass `choice` readout of an
-  adapted model reaches the accuracy of its own `generate` readout at a small fraction of the
-  compute. *This is the documented Jev property transplanted to our backbone.*
+  adapted model reaches the accuracy of its own `generate_cot` readout at a small fraction of
+  the compute. *This is the documented Jev property transplanted to our backbone.*
+  (Revised after Milestone 1: the original wording compared against bare `generate`, which
+  emits about 3 tokens and is no cheaper to beat; the reasoning-trace readout is the
+  comparator the research question is about.)
 - **H2 (adapter is a strong baseline).** LoRA on the task distribution (V1) captures most of the
   gain available from post-training. Every later variant must beat V1 at matched trainable
   parameters and training tokens, not V0.
@@ -124,14 +127,21 @@ One mechanism per variant. Nothing in V2-V5 is combined until its own ablation e
 | **V0** baseline | nothing; unmodified HF forward/generate | no | harness ready, awaiting weights |
 | **V0-driver** | same function through our layer-schedule driver (`n_iters: 1`) | no | implemented, verified on tiny model |
 | **V1** adapter | LoRA / QLoRA on the task distribution | yes | planned |
+| **V1c** calibrated adapter | V1 with a proper-scoring-rule loss on the option distribution | yes | planned (approved addition) |
 | **V2a** zero-shot loop | one macro-block run `n_iters` times, vanilla weights | no | implemented (Milestone 1) |
 | **V2b** trained loop | V2a + LoRA trained with the loop active | yes | planned |
 | **V3** latent reasoning | k hidden-state feedback steps before the readout, no tokens emitted | yes | planned |
 | **V4** learned halting | controller picks `n_iters` per input | yes | seam implemented, controller not |
 | **V5** distillation | V3/V4 trained on teacher traces | yes | only if V3/V4 show signal |
 
-Readout is an orthogonal axis: every variant is scored with both `choice` (single pass) and
-`generate` (greedy decoding), so "fewer tokens" and "more hidden compute" are never confounded.
+Readout is an orthogonal axis, so "fewer tokens" and "more hidden compute" are never
+confounded. Three readouts exist:
+
+- `choice`: single forward pass over lettered options (the Jev-style readout);
+- `generate`: greedy decoding of the bare answer (about 3 tokens);
+- `generate_cot`: greedy decoding of one line of reasoning and then the answer. This is the
+  emitted-reasoning comparator: a hidden-computation variant is judged by how much of the
+  `generate_cot` gain over `generate` it recovers without emitting the trace.
 
 **[IMPL] V2 intervention point.** Qwen3.5-4B's text stack is 32 layers arranged as
 8 x (3 Gated DeltaNet + 1 Gated Attention), each followed by an FFN. The natural recurrent unit
@@ -149,10 +159,11 @@ projection), then read out. The driver already accepts `inputs_embeds`, which is
 probability per iteration (ACT/PonderNet-style objective). The driver already takes a
 `halt_fn` and records every decision; a non-learned convergence rule exercises that path today.
 
-**Proposed addition, not in the original plan (needs your yes/no):** a calibration-trained
-readout, "V1c": V1 trained with a proper scoring rule on the option distribution. It is the
-closest analogue of the documented RLCD objective (F3) and costs nothing architecturally. It is
-listed here rather than silently added to the sequence.
+**V1c, calibration-trained readout (approved 2026-10-01; not in the original sequence).** V1
+trained with a proper scoring rule on the option distribution. It is the closest analogue of
+the documented RLCD objective (F3) and changes nothing architecturally. It runs alongside V1
+as its own ablation: same adapter budget, different loss, compared on accuracy and on ECE,
+Brier and NLL.
 
 ---
 
@@ -204,8 +215,9 @@ request carried an override note; `over_refusal_rate`; `invalid_decision_rate`.
 
 Per-step instrumentation for schedule-driver runs (`steps.jsonl`): hidden-state norms, cosine to
 the previous state, to the first iteration and to two iterations back, relative residual
-change, direct logit-lens entropy and KL to the previous iteration, halting decision, wall
-clock per iteration.
+change, logit-lens entropy and KL to the previous iteration (the lens runs the remaining
+layers, so it is the exact output had the loop stopped there), option probabilities per
+iteration, halting decision, wall clock per iteration.
 
 Comparison rules:
 
@@ -222,8 +234,13 @@ Comparison rules:
 Evaluated on the dev suite (n = 1000 per readout; about +/-3 points at 95% for overall accuracy,
 about +/-7 points per difficulty level). "Points" are percentage points of accuracy.
 
-- **H1 is false** if, for V1, `choice` accuracy is more than 5 points below `generate` accuracy
-  overall, or if matching it needs more than 25% of `generate`'s cache-equivalent FLOPs.
+- **H1 is false** if, for V1, `choice` accuracy is more than 5 points below `generate_cot`
+  accuracy overall, or if matching it needs more than 25% of `generate_cot`'s cache-equivalent
+  FLOPs. Only the comparator changed (was bare `generate`); the 5-point and 25% thresholds
+  are as first written. Open issue: with few-shot prompts of several hundred tokens, prompt
+  processing may dominate both readouts, which would make the 25% bound unreachable for
+  reasons unrelated to the hypothesis. The measured decoding share goes into the M2 log; the
+  bound is not to be moved without a recorded decision.
 - **H2 is false** if V1 gains less than 10 points over V0 on trained difficulties.
 - **H3 is false** if some zero-shot (span, n_iters > 1) beats V0-driver by more than 3 points on
   dev. That would be a surprising and cheap positive result and gets replicated before anything else.

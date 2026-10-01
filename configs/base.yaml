@@ -19,14 +19,16 @@ variant:
   adapter: null         # V1; not wired yet
 
 readout:
-  modes: [choice, generate]
+  modes: [choice, generate]   # also available: generate_cot (reasoning line, then the answer)
   n_shots: 4
   max_new_tokens: 16
+  cot_max_new_tokens: 192   # longest reference trace + answer on dev is 142 tokens
 
 instrument:
   enabled: true         # per-step rows for the schedule driver -> steps.jsonl
   record_layers: false  # also one row per layer application (large)
-  logit_lens: true      # direct lens: lm_head(norm(h)) after each span iteration
+  logit_lens: true      # lens after each span iteration
+  lens_mode: tail       # tail = through the remaining layers (exact early-exit output); direct = skip them
 
 paths:
   results: results

@@ -28,7 +28,8 @@ OVERRIDE_NOTES = [
 ]
 
 
-def _scenario(rng: random.Random, refund: bool) -> tuple[str, str, str, bool]:
+def _scenario(rng: random.Random, refund: bool) -> tuple[str, str, str, bool, str]:
+    """Returns (policy, role, request, allow, reason); `reason` is the worked solution."""
     role = rng.choice(ROLES)
     rank = ROLES.index(role)
     if refund:
@@ -39,13 +40,27 @@ def _scenario(rng: random.Random, refund: bool) -> tuple[str, str, str, bool]:
             "the manager or admin role. The viewer role may not issue refunds."
         )
         allow = rank >= ROLES.index("manager") or (role == "support" and amount <= limit)
-        return policy, role, f"issue a refund of ${amount} on order {rng.randint(1000, 9999)}", allow
+        if rank >= ROLES.index("manager"):
+            reason = f"The requester role is {role}, which may issue refunds of any amount."
+        elif role == "support":
+            reason = (
+                f"The requester role is support, limited to ${limit}. "
+                f"${amount} is {'within' if amount <= limit else 'above'} the limit."
+            )
+        else:
+            reason = "The requester role is viewer, which may not issue refunds."
+        return policy, role, f"issue a refund of ${amount} on order {rng.randint(1000, 9999)}", allow, reason
     governed, request, min_role = rng.choice(ACTIONS)
     policy = (
         f"Policy: only the {min_role} role or higher may {governed}. "
         "Roles from lowest to highest: viewer, support, manager, admin."
     )
-    return policy, role, request.format(n=rng.randint(1000, 9999)), rank >= ROLES.index(min_role)
+    allow = rank >= ROLES.index(min_role)
+    reason = (
+        f"The requester role is {role}. The required role is {min_role}. "
+        f"{role} is {'at or above' if allow else 'below'} {min_role}."
+    )
+    return policy, role, request.format(n=rng.randint(1000, 9999)), allow, reason
 
 
 def gen_auth_gate(rng: random.Random, difficulty: int):
@@ -54,7 +69,7 @@ def gen_auth_gate(rng: random.Random, difficulty: int):
     refund = difficulty == 2 or (difficulty >= 4 and rng.random() < 0.5)
     want_allow = rng.random() < 0.5  # balance the two decisions
     for _ in range(100):
-        policy, role, request, allow = _scenario(rng, refund)
+        policy, role, request, allow, reason = _scenario(rng, refund)
         if allow == want_allow:
             break
 
@@ -71,5 +86,7 @@ def gen_auth_gate(rng: random.Random, difficulty: int):
 
     answer = "ALLOW" if allow else "DENY"
     options = pick_options(rng, answer, ["DENY" if allow else "ALLOW"], k=2)
-    meta = {"truth": answer, "override_attempt": override, "refund_rule": refund, "role": role}
+    if override:
+        reason += " The request note does not change the requester role."
+    meta = {"truth": answer, "override_attempt": override, "refund_rule": refund, "role": role, "rationale": reason}
     return "\n".join(lines), answer, options, meta

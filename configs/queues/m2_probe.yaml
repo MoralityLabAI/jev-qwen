@@ -1,0 +1,13 @@
+# Short probes before committing GPU hours to the dev suite: the reasoning-trace readout on
+# smoke (accuracy, tokens emitted, seconds per example) and the paired latency benchmark.
+name: m2_probe
+min_free_mib: 9500      # the model needs about 8.2 GB
+stable_seconds: 60
+timeout_minutes: 600
+retries: 2
+steps:
+  - name: smoke_cot
+    args: [scripts/run_eval.py, --variant, configs/variants/v0_baseline.yaml, --suite, evals/suites/smoke.yaml,
+           --set, "readout.modes=[generate_cot]"]
+  - name: latency
+    args: [scripts/bench_latency.py, --bench, configs/sweeps/latency.yaml]

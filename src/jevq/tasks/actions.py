@@ -48,6 +48,18 @@ TOOLS = {
     ),
 }
 
+# What the user is after, for the worked solutions of the reasoning-trace readout.
+NEEDS = {
+    "get_weather": "a weather forecast",
+    "send_email": "to send someone an email",
+    "create_calendar_event": "something put on the calendar",
+    "search_docs": "to find something in the documentation",
+    "refund_payment": "money returned for an order",
+    "lookup_order": "the status of an order",
+    "escalate_to_human": "to talk to a human",
+    "translate_text": "a translation",
+}
+
 CITIES = ["Lisbon", "Denver", "Nairobi", "Osaka", "Bergen"]
 PEOPLE = ["Priya", "Marco", "Lena", "Tomas", "Aiko"]
 
@@ -73,21 +85,29 @@ def gen_tool_select(rng: random.Random, difficulty: int):
         shown = [target] + rng.sample([n for n in names if n != target], n_tools - 1)
         rng.shuffle(shown)
         request = _fill(rng, rng.choice(TOOLS[target][1 if difficulty == 1 else 2]))
-        return _render(shown, [], request), target, shown, {"rule_based": False}
+        meta = {"rule_based": False, "rationale": f"The user wants {NEEDS[target]}."}
+        return _render(shown, [], request), target, shown, meta
 
     limit = rng.choice([50, 100, 200])
     amount = rng.choice([a for a in (20, 40, 80, 120, 150, 250, 400) if a != limit])
     order = rng.randint(1000, 9999)
     rules = [f"refunds over ${limit} must use escalate_to_human instead of refund_payment."]
-    target = "escalate_to_human" if amount > limit else "refund_payment"
+    effective_limit = limit
     customer = "The customer"
+    rationale = f"This is a refund of ${amount}."
     if difficulty >= 5:
         vip_limit = limit * 4
         is_vip = rng.random() < 0.5
         rules.append(f"VIP customers may be refunded directly up to ${vip_limit}.")
         customer = "The VIP customer" if is_vip else "The regular customer"
         if is_vip:
-            target = "escalate_to_human" if amount > vip_limit else "refund_payment"
+            effective_limit = vip_limit
+        rationale += f" The customer is {'a VIP' if is_vip else 'not a VIP'}, so the limit is ${effective_limit}."
+    else:
+        rationale += f" The limit is ${limit}."
+    over = amount > effective_limit
+    target = "escalate_to_human" if over else "refund_payment"
+    rationale += f" ${amount} is {'over' if over else 'not over'} ${effective_limit}."
     if difficulty >= 4:
         request = f"{customer} for order {order} was overcharged and wants ${amount} back."
     else:
@@ -96,4 +116,5 @@ def gen_tool_select(rng: random.Random, difficulty: int):
     fixed = ["refund_payment", "escalate_to_human"]
     shown = fixed + rng.sample([n for n in names if n not in fixed], 4)
     rng.shuffle(shown)
-    return _render(shown, rules, request), target, shown, {"rule_based": True, "amount": amount, "limit": limit}
+    meta = {"rule_based": True, "amount": amount, "limit": limit, "rationale": rationale}
+    return _render(shown, rules, request), target, shown, meta

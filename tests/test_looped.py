@@ -86,6 +86,29 @@ def test_recorder_rows(tiny_model, ids):
 
 
 @torch.no_grad()
+def test_tail_lens_is_the_early_exit_output(tiny_model, ids):
+    """Lens after iteration r of a long loop == the model's output with n_iters=r."""
+    lens = lambda h: tiny_model.lm_head(tiny_model.model.norm(h))  # noqa: E731
+    watch = [5, 17, 42, 63]
+    recorder = StepRecorder(lens_fn=lens, lens_mode="tail", watch_ids=watch)
+    recorder.begin_forward()
+    forward_hidden(tiny_model.model, input_ids=ids[:1], loop=LoopSpec(2, 6, 4), recorder=recorder)
+    assert [r["iter"] for r in recorder.rows] == [0, 1, 2, 3]
+    for row in recorder.rows:
+        logits, _ = driver_logits(tiny_model, ids[:1], LoopSpec(2, 6, row["iter"] + 1))
+        expected = torch.softmax(logits[0, -1, watch], dim=-1)
+        assert torch.allclose(torch.tensor(row["lens_watch_probs"]), expected, atol=1e-6)
+        assert row["lens_top1"] == int(logits[0, -1].argmax())
+
+    direct = StepRecorder(lens_fn=lens, lens_mode="direct", watch_ids=watch)
+    direct.begin_forward()
+    forward_hidden(tiny_model.model, input_ids=ids[:1], loop=LoopSpec(2, 6, 2), recorder=direct)
+    assert direct.rows[0]["lens_watch_probs"] != recorder.rows[0]["lens_watch_probs"]
+    with pytest.raises(ValueError):
+        StepRecorder(lens_mode="nope")
+
+
+@torch.no_grad()
 def test_recorder_does_not_change_the_result(tiny_model, ids):
     plain, _ = driver_logits(tiny_model, ids, LoopSpec(2, 6, 3))
     recorder = StepRecorder(record_layers=True)

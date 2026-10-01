@@ -124,6 +124,20 @@ def forward_hidden(
         return out
 
     start, end = (loop.start, loop.end) if loop is not None else (num_layers, num_layers)
+
+    def tail(h: torch.Tensor) -> torch.Tensor:
+        """Layers after the span, for the recorder's lens. Not counted as model computation."""
+        for i in range(end, num_layers):
+            h = text_model.layers[i](
+                h,
+                position_embeddings=position_embeddings,
+                attention_mask=masks[cfg.layer_types[i]],
+                position_ids=text_position_ids,
+                past_key_values=None,
+                use_cache=False,
+            )
+        return h
+
     for i in range(start):
         hidden = run_layer(i, hidden, 0)
 
@@ -136,7 +150,7 @@ def forward_hidden(
             for i in range(start, end):
                 hidden = run_layer(i, hidden, it)
             n_iters += 1
-            stats = recorder.on_span_iter(it, span_in, hidden, t0) if recorder is not None else None
+            stats = recorder.on_span_iter(it, span_in, hidden, t0, tail_fn=tail) if recorder is not None else None
             if halt_fn is not None and it + 1 < loop.n_iters:
                 if stats is None:
                     from .instrument import span_stats

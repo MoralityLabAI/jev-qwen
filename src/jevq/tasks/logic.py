@@ -23,30 +23,36 @@ def gen_order_chain(rng: random.Random, difficulty: int):
     rng.shuffle(padding)
     options = pick_options(rng, answer, others + padding)
     question = f"{' '.join(premises)} Who is the {kind}?"
-    return question, answer, options, {"chain_length": len(people)}
+    rationale = f"From tallest to shortest: {', '.join(people)}."
+    return question, answer, options, {"chain_length": len(people), "rationale": rationale}
 
 
-def _bool_expr(rng: random.Random, depth: int) -> tuple[str, bool]:
+def _bool_expr(rng: random.Random, depth: int, steps: list[str]) -> tuple[str, bool]:
+    """Returns (text, value) and appends one inner-first reduction step per operator to `steps`."""
     if depth == 0:
         value = rng.choice([True, False])
         return str(value), value
     op = rng.choice(["and", "or", "not"])
     if op == "not":
-        text, value = _bool_expr(rng, depth - 1)
-        return (f"not {text}" if depth == 1 else f"not ({text})"), not value
-    left_text, left = _bool_expr(rng, depth - 1)
-    right_text, right = _bool_expr(rng, rng.randint(0, depth - 1))
+        text, inner = _bool_expr(rng, depth - 1, steps)
+        steps.append(f"not {inner} = {not inner}")
+        return (f"not {text}" if depth == 1 else f"not ({text})"), not inner
+    left_text, left = _bool_expr(rng, depth - 1, steps)
+    right_text, right = _bool_expr(rng, rng.randint(0, depth - 1), steps)
     if depth > 1:
         left_text = f"({left_text})"
     if " " in right_text:
         right_text = f"({right_text})"
     value = (left and right) if op == "and" else (left or right)
+    steps.append(f"{left} {op} {right} = {value}")
     return f"{left_text} {op} {right_text}", value
 
 
 def gen_bool_eval(rng: random.Random, difficulty: int):
     """Evaluate a boolean expression of nesting depth difficulty+1."""
-    text, value = _bool_expr(rng, difficulty + 1)
+    steps: list[str] = []
+    text, value = _bool_expr(rng, difficulty + 1, steps)
     answer = str(value)
     options = pick_options(rng, answer, [str(not value)], k=2)
-    return f"Evaluate: {text}", answer, options, {"depth": difficulty + 1, "expr": text}
+    meta = {"depth": difficulty + 1, "expr": text, "rationale": "; ".join(steps) + "."}
+    return f"Evaluate: {text}", answer, options, meta

@@ -12,18 +12,22 @@ def gen_arith_chain(rng: random.Random, difficulty: int):
     value = rng.randint(2, 9)
     expr = str(value)
     operand = 0
+    trace = []
     for _ in range(difficulty + 1):
         op = rng.choice("+-*")
         operand = rng.randint(2, 4) if op == "*" else rng.randint(2, 9)
         expr = f"({expr} {op} {operand})"
-        value = {"+": value + operand, "-": value - operand, "*": value * operand}[op]
+        result = {"+": value + operand, "-": value - operand, "*": value * operand}[op]
+        trace.append(f"{value} {op} {operand} = {result}.")
+        value = result
     expr = expr[1:-1]  # drop the outermost parentheses
 
     offsets = [1, -1, 2, -2, 10, -10, operand, -operand]
     rng.shuffle(offsets)
     answer = str(value)
     options = pick_options(rng, answer, [str(value + off) for off in offsets])
-    return f"Compute {expr}.", answer, options, {"n_ops": difficulty + 1, "expr": expr}
+    meta = {"n_ops": difficulty + 1, "expr": expr, "rationale": " ".join(trace)}
+    return f"Compute {expr}.", answer, options, meta
 
 
 def gen_var_trace(rng: random.Random, difficulty: int):
@@ -31,7 +35,7 @@ def gen_var_trace(rng: random.Random, difficulty: int):
     names = ["x", "y", "z"]
     values = {name: rng.randint(1, 9) for name in names}
     initial = dict(values)
-    steps, touched = [], []
+    steps, touched, trace = [], [], []
     for _ in range(difficulty + 1):
         kind = rng.choice(["swap", "add", "copy", "inc"])
         a, b = rng.sample(names, 2)
@@ -52,6 +56,8 @@ def gen_var_trace(rng: random.Random, difficulty: int):
             values[a] += amount
             steps.append(f"Increase {a} by {amount}.")
             touched.append(a)
+        state = ", ".join(f"{name} = {values[name]}" for name in names)
+        trace.append(f"After step {len(steps)}: {state}.")
 
     target = rng.choice(touched)
     answer = str(values[target])
@@ -60,4 +66,4 @@ def gen_var_trace(rng: random.Random, difficulty: int):
     distractors = [str(values[n]) for n in names if n != target] + [str(initial[target])]
     distractors += [str(values[target] + off) for off in (1, -1, 2, -2, 3)]
     options = pick_options(rng, answer, distractors)
-    return question, answer, options, {"n_steps": difficulty + 1}
+    return question, answer, options, {"n_steps": difficulty + 1, "rationale": " ".join(trace)}

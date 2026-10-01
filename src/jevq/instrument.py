@@ -3,8 +3,9 @@
 One row per span iteration (and optionally per layer application) with:
 hidden-state norms, cosine similarity / relative change against the previous
 state, cosine against the first iteration and against two iterations back
-(period-2 oscillation), direct logit-lens entropy and KL, halting decision,
-and wall-clock time. All statistics are computed in float32.
+(period-2 oscillation), logit-lens entropy and KL (through the remaining layers
+by default), watched-token probabilities, halting decision, and wall-clock
+time. All statistics are computed in float32.
 """
 
 from __future__ import annotations
@@ -46,9 +47,20 @@ class StepRecorder:
         lens_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
         record_layers: bool = False,
         sync_cuda: bool = False,
+        lens_mode: str = "tail",
+        watch_ids: list[int] | None = None,
     ):
         # lens_fn maps hidden states (batch, 1, hidden) -> logits (batch, 1, vocab).
+        # lens_mode "tail" first runs the layers after the span, so the lens after iteration r is
+        # exactly the model's output had the loop stopped at r. "direct" skips them: cheap, but
+        # mid-stack states are not in the output basis and the result is close to uniform.
+        # watch_ids: token ids whose renormalised probabilities are stored per iteration
+        # (the option labels, for the choice readout).
+        if lens_mode not in ("tail", "direct"):
+            raise ValueError(f"unknown lens_mode {lens_mode!r}")
         self.lens_fn = lens_fn
+        self.lens_mode = lens_mode
+        self.watch_ids = watch_ids
         self.record_layers = record_layers
         self.sync_cuda = sync_cuda
         self.rows: list[dict] = []
@@ -74,7 +86,10 @@ class StepRecorder:
         self.rows.append(row)
 
     @torch.no_grad()
-    def on_span_iter(self, iter_idx: int, h_in: torch.Tensor, h_out: torch.Tensor, t0: float) -> dict:
+    def on_span_iter(
+        self, iter_idx: int, h_in: torch.Tensor, h_out: torch.Tensor, t0: float, tail_fn: Callable | None = None
+    ) -> dict:
+        # dt_s is taken before any lens work, so it times the span iteration alone.
         row = {"kind": "span_iter", "iter": iter_idx, "dt_s": self.now() - t0, "halted": None}
         row.update(span_stats(h_in, h_out))
 
@@ -88,7 +103,12 @@ class StepRecorder:
         self._outputs.append(last.clone())
 
         if self.lens_fn is not None:
-            logp = F.log_softmax(self.lens_fn(h_out[:, -1:]).float()[:, -1], dim=-1)
+            source = tail_fn(h_out) if self.lens_mode == "tail" and tail_fn is not None else h_out
+            logits = self.lens_fn(source[:, -1:]).float()[:, -1]
+            if self.watch_ids is not None:
+                watch = torch.tensor(self.watch_ids, device=logits.device)
+                row["lens_watch_probs"] = torch.softmax(logits[0, watch], dim=-1).tolist()
+            logp = F.log_softmax(logits, dim=-1)
             p = logp.exp()
             row["lens_entropy"] = -(p * logp).sum(-1).mean().item()
             row["lens_top1"] = int(logp[0].argmax())

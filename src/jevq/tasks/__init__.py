@@ -14,7 +14,9 @@ from .multihop import gen_relation_hops
 from .planning import gen_graph_hops
 
 # Bump when any generator changes, so records from different task versions are not compared.
-GENERATOR_VERSION = 1
+# v2 added meta["rationale"] without touching the random stream: questions, answers and options
+# are identical to v1 (same examples_sha256).
+GENERATOR_VERSION = 2
 
 
 @dataclass(frozen=True)

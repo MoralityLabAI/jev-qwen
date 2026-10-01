@@ -29,4 +29,6 @@ def gen_relation_hops(rng: random.Random, difficulty: int):
     rng.shuffle(distractors)
     # The start of the chain is the most tempting wrong answer; always offer it.
     options = pick_options(rng, answer, [city[chain[0]]] + distractors)
-    return question, answer, options, {"hops": hops}
+    links = [f"{chain[i]}'s boss is {chain[i + 1]}." for i in range(hops)]
+    rationale = f"{' '.join(links)} {chain[-1]} lives in {answer}."
+    return question, answer, options, {"hops": hops, "rationale": rationale}
