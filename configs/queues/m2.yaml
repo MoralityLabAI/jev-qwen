@@ -1,0 +1,32 @@
+# Milestone 2 queue: paired latency, V0 on dev, the zero-shot loop sweep, V0 reasoning traces.
+# Resumable: steps marked done in results/queue/m2/status.json are skipped.
+name: m2
+min_free_mib: 9500        # the model needs about 8.2 GB
+min_free_commit_gb: 10    # loading died with os error 1455 when commit memory was nearly gone
+stable_seconds: 60
+timeout_minutes: 720
+retries: 2
+steps:
+  - name: latency
+    args: [scripts/bench_latency.py, --bench, configs/sweeps/latency.yaml]
+  - name: dev_v0
+    args: [scripts/run_eval.py, --variant, configs/variants/v0_baseline.yaml, --suite, evals/suites/dev.yaml]
+  # The sweep and the reasoning traces use the first 10 examples per (task, difficulty): 400
+  # examples, a prefix of the full dev set. The sweep compares iteration counts on the same
+  # examples within one run, so it does not need the full set to rank spans; a span that looks
+  # better than vanilla gets a full-dev rerun before any claim. Traces cost about 8 s each.
+  - name: sweep_s12e16
+    args: [scripts/sweep_loop.py, --sweep, configs/sweeps/loop_span.yaml, --only, "12,16",
+           --set, "suite.n_per_difficulty=10"]
+  - name: sweep_s16e20
+    args: [scripts/sweep_loop.py, --sweep, configs/sweeps/loop_span.yaml, --only, "16,20",
+           --set, "suite.n_per_difficulty=10"]
+  - name: sweep_s24e28
+    args: [scripts/sweep_loop.py, --sweep, configs/sweeps/loop_span.yaml, --only, "24,28",
+           --set, "suite.n_per_difficulty=10"]
+  - name: sweep_s4e8
+    args: [scripts/sweep_loop.py, --sweep, configs/sweeps/loop_span.yaml, --only, "4,8",
+           --set, "suite.n_per_difficulty=10"]
+  - name: dev_v0_cot
+    args: [scripts/run_eval.py, --variant, configs/variants/v0_baseline.yaml, --suite, evals/suites/dev.yaml,
+           --set, "readout.modes=[generate_cot]", --set, "suite.n_per_difficulty=10"]

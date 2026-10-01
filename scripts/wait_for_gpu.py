@@ -25,24 +25,61 @@ def free_mib() -> int:
     return total - used
 
 
-def wait_until_free(min_free_mib: int, stable_seconds: int, timeout_minutes: float, poll_seconds: int = 15) -> bool:
-    """True once `min_free_mib` has been free for `stable_seconds`; False on timeout."""
+def free_commit_gb() -> float | None:
+    """Windows commit charge still available (RAM + page file). None on other systems.
+
+    Loading the model fails with 'paging file is too small' (os error 1455) when other jobs
+    have committed nearly everything, even while physical RAM is free.
+    """
+    if sys.platform != "win32":
+        return None
+    import ctypes
+
+    class MemoryStatus(ctypes.Structure):
+        _fields_ = [
+            ("dwLength", ctypes.c_ulong),
+            ("dwMemoryLoad", ctypes.c_ulong),
+            ("ullTotalPhys", ctypes.c_ulonglong),
+            ("ullAvailPhys", ctypes.c_ulonglong),
+            ("ullTotalPageFile", ctypes.c_ulonglong),
+            ("ullAvailPageFile", ctypes.c_ulonglong),
+            ("ullTotalVirtual", ctypes.c_ulonglong),
+            ("ullAvailVirtual", ctypes.c_ulonglong),
+            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ]
+
+    status = MemoryStatus()
+    status.dwLength = ctypes.sizeof(MemoryStatus)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+        return None
+    return status.ullAvailPageFile / 2**30
+
+
+def wait_until_free(
+    min_free_mib: int,
+    stable_seconds: int,
+    timeout_minutes: float,
+    poll_seconds: int = 15,
+    min_free_commit_gb: float = 0.0,
+) -> bool:
+    """True once VRAM (and commit memory) has been free for `stable_seconds`; False on timeout."""
     deadline = time.monotonic() + timeout_minutes * 60
     free_since = None
     while time.monotonic() < deadline:
         free = free_mib()
+        commit = free_commit_gb()
         now = time.monotonic()
-        if free >= min_free_mib:
+        if free >= min_free_mib and (commit is None or commit >= min_free_commit_gb):
             free_since = free_since or now
             if now - free_since >= stable_seconds:
-                print(f"GPU free: {free} MiB available", flush=True)
+                print(f"ready: {free} MiB VRAM free, commit free {commit and round(commit, 1)} GB", flush=True)
                 return True
         else:
             if free_since is not None:
-                print(f"GPU busy again: {free} MiB free", flush=True)
+                print(f"busy again: {free} MiB VRAM free, commit free {commit and round(commit, 1)} GB", flush=True)
             free_since = None
         time.sleep(poll_seconds)
-    print(f"timed out after {timeout_minutes} minutes; last free = {free_mib()} MiB", flush=True)
+    print(f"timed out after {timeout_minutes} minutes; last VRAM free = {free_mib()} MiB", flush=True)
     return False
 
 
@@ -52,8 +89,12 @@ def main() -> None:
     parser.add_argument("--stable-seconds", type=int, default=60, help="free memory must hold this long")
     parser.add_argument("--poll-seconds", type=int, default=15)
     parser.add_argument("--timeout-minutes", type=float, default=240)
+    parser.add_argument("--min-free-commit-gb", type=float, default=0.0)
     args = parser.parse_args()
-    if not wait_until_free(args.min_free_mib, args.stable_seconds, args.timeout_minutes, args.poll_seconds):
+    ready = wait_until_free(
+        args.min_free_mib, args.stable_seconds, args.timeout_minutes, args.poll_seconds, args.min_free_commit_gb
+    )
+    if not ready:
         sys.exit(1)
 
 

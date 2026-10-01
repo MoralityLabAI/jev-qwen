@@ -36,7 +36,13 @@ def main() -> None:
             print(f"[queue] {name}: already done, skipping", flush=True)
             continue
         for attempt in range(1, queue["retries"] + 2):
-            if not wait_until_free(queue["min_free_mib"], queue["stable_seconds"], queue["timeout_minutes"]):
+            ready = wait_until_free(
+                queue["min_free_mib"],
+                queue["stable_seconds"],
+                queue["timeout_minutes"],
+                min_free_commit_gb=queue.get("min_free_commit_gb", 0.0),
+            )
+            if not ready:
                 status[name] = {"state": "gpu_timeout", "attempts": attempt}
                 write_json(status_path, status)
                 raise SystemExit(f"[queue] {name}: GPU never became free")
@@ -47,7 +53,7 @@ def main() -> None:
                 log.write(f"\n===== attempt {attempt} at {started} =====\n")
                 log.flush()
                 code = subprocess.run(
-                    [sys.executable, *step["args"]], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT
+                    [sys.executable, "-u", *step["args"]], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT
                 ).returncode
             status[name] = {
                 "state": "done" if code == 0 else "failed",
