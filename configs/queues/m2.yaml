@@ -2,10 +2,14 @@
 # Resumable: steps marked done in results/queue/m2/status.json are skipped.
 name: m2
 min_free_mib: 9500        # the model needs about 8.2 GB
-min_free_commit_gb: 10    # loading died with os error 1455 when commit memory was nearly gone
+# Loading died once with os error 1455 (commit memory exhausted). The page file here is
+# system-managed and only grows on demand, so free commit sits at 1-4 GB even when a load would
+# succeed; a high floor would wait forever. Keep a small floor and rely on retries: the failed
+# attempt itself makes Windows grow the page file, and the retry two minutes later passed.
+min_free_commit_gb: 2
 stable_seconds: 60
 timeout_minutes: 720
-retries: 2
+retries: 4
 steps:
   - name: latency
     args: [scripts/bench_latency.py, --bench, configs/sweeps/latency.yaml]
