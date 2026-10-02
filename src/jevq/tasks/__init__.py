@@ -41,7 +41,9 @@ TASKS = {
 }
 
 
-def _generate(task: str, seed: int, split: str, difficulty: int, count: int, exclude: set[str]) -> list[Example]:
+def generate_split(task: str, seed: int, split: str, difficulty: int, count: int, exclude: set[str]) -> list[Example]:
+    """`count` examples from the (seed, task, split, difficulty) stream, skipping any question in
+    `exclude`. Every accepted question is added to `exclude`, so successive calls never repeat."""
     spec = TASKS[task]
     rng = make_rng(seed, task, split, difficulty)
     examples: list[Example] = []
@@ -74,10 +76,11 @@ def build_task(task: str, seed: int, difficulties: list[int], n_per_difficulty: 
     seen: set[str] = set()
     shot_difficulties = [difficulties[i % len(difficulties)] for i in range(n_shots)]
     pools = {
-        d: _generate(task, seed, "shot", d, shot_difficulties.count(d), seen) for d in dict.fromkeys(shot_difficulties)
+        d: generate_split(task, seed, "shot", d, shot_difficulties.count(d), seen)
+        for d in dict.fromkeys(shot_difficulties)
     }
     shots = [pools[d].pop(0) for d in shot_difficulties]
     tests: list[Example] = []
     for difficulty in difficulties:
-        tests += _generate(task, seed, "test", difficulty, n_per_difficulty, seen)
+        tests += generate_split(task, seed, "test", difficulty, n_per_difficulty, seen)
     return shots, tests

@@ -86,6 +86,37 @@ def load_model(model_cfg: dict) -> tuple[torch.nn.Module, dict]:
     return model, info
 
 
+def attach_adapter(bundle: ModelBundle, adapter_dir) -> ModelBundle:
+    """Wrap the loaded base model with a saved LoRA adapter, unmerged and frozen.
+
+    Unmerged keeps the forward pass identical to the one used in training; merging into bf16
+    weights would round the update.
+    """
+    import json
+    from pathlib import Path
+
+    from peft import PeftModel
+
+    adapter_dir = Path(adapter_dir)
+    model = PeftModel.from_pretrained(bundle.model, str(adapter_dir), is_trainable=False)
+    model.eval()
+    info = dict(bundle.info)
+    info["adapter"] = str(adapter_dir)
+    record_path = adapter_dir.parent / "train_record.json"
+    if record_path.exists():
+        with open(record_path, "r", encoding="utf-8") as fh:
+            record = json.load(fh)
+        info["adapter_train"] = {
+            "name": record.get("name"),
+            "seed": record.get("seed"),
+            "created_utc": record.get("created_utc"),
+            "git": record.get("git"),
+            "config_sha256": record.get("config_sha256"),
+            "train_sha256": record.get("data", {}).get("train_sha256"),
+        }
+    return make_bundle(model, bundle.tokenizer, info)
+
+
 def load_bundle(model_cfg: dict) -> ModelBundle:
     from transformers import AutoTokenizer
 

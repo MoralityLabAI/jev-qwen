@@ -1,0 +1,8 @@
+# V1c: V1 with one change. On choice items the loss is the Brier score of the distribution
+# over the valid option labels instead of token cross-entropy. Same data, order, adapter,
+# optimiser and steps. The closest supervised analogue of the documented RLCD aim
+# ("calibrated decisions"); see EXPERIMENT.md section 5 and notes/006-milestone-3-log.md.
+inherit: configs/train/v1_lora.yaml
+name: v1c_lora
+loss:
+  choice: brier

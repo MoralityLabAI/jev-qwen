@@ -29,7 +29,7 @@ from .flops import FlopModel, estimate
 from .hardware import describe
 from .instrument import ConvergenceHalt, StepRecorder
 from .looped import LoopSpec, build_schedule, forward_hidden, greedy_generate
-from .modeling import ModelBundle, load_bundle
+from .modeling import ModelBundle, attach_adapter, load_bundle
 from .records import append_jsonl, make_record, new_run_id, sha256_of, write_json
 from .tasks import GENERATOR_VERSION, build_task
 from .tasks.base import (
@@ -71,8 +71,6 @@ def make_variant(var_cfg: dict, num_layers: int) -> Variant:
         if loop is None:
             raise ValueError("halting requires a loop")
         halt_fn = ConvergenceHalt(halting["threshold"])
-    if var_cfg.get("adapter"):
-        raise NotImplementedError("adapter variants (V1) are not wired into the harness yet")
     return Variant(name=var_cfg["name"], driver=driver, loop=loop, halt_fn=halt_fn)
 
 
@@ -371,8 +369,14 @@ def run(cfg: dict, bundle: ModelBundle | None = None) -> dict:
     random.seed(cfg["seed"])
     torch.manual_seed(cfg["seed"])
 
+    adapter = cfg["variant"].get("adapter")
     if bundle is None:
         bundle = load_bundle(cfg["model"])
+        if adapter:
+            bundle = attach_adapter(bundle, resolve_path(adapter))
+    elif bundle.info.get("adapter") != (str(resolve_path(adapter)) if adapter else None):
+        # A shared bundle must already carry exactly this variant's adapter (or none).
+        raise ValueError(f"bundle adapter {bundle.info.get('adapter')!r} does not match variant adapter {adapter!r}")
     text_model = bundle.text_model
     variant = make_variant(cfg["variant"], text_model.config.num_hidden_layers)
     suite = cfg["suite"]

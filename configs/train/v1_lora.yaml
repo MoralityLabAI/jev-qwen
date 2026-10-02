@@ -1,0 +1,41 @@
+# V1: LoRA on the task distribution with standard token-level cross-entropy (plain SFT).
+# Measures how much of the gap comes from post-training alone (H2). Every later variant is
+# compared with this at the same adapter budget and the same training data.
+name: v1_lora
+variant: configs/variants/v0_baseline.yaml   # architecture being adapted: vanilla, no loop
+seed: 0
+
+data:
+  prompt_suite: evals/suites/dev.yaml        # few-shot prefixes come from here, as at evaluation
+  exclude_suites: [evals/suites/smoke.yaml, evals/suites/dev.yaml]
+  tasks: null                                # null = every task in prompt_suite
+  difficulties: [1, 2, 3]                    # 4 and 5 are held out to measure extrapolation
+  n_per_difficulty: 100                      # per task: 8 x 3 x 100 = 2400 training questions
+  n_val_per_difficulty: 4                    # per task: 96 validation questions
+  formats: [choice, generate, generate_cot]  # one format per question, round-robin
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  # Attention, Gated DeltaNet and FFN projections in every layer. The tiny DeltaNet gate
+  # projections (in_proj_a, in_proj_b: hidden -> 32) and the norms stay frozen.
+  target_modules: [q_proj, k_proj, v_proj, o_proj, in_proj_qkv, in_proj_z, out_proj, gate_proj, up_proj, down_proj]
+  layers_to_transform: null
+
+loss:
+  choice: ce          # ce = cross-entropy over the vocabulary; brier = Brier score on the option labels
+
+optim:
+  lr: 1.0e-4
+  warmup_steps: 20
+  min_lr_ratio: 0.1
+  grad_accum: 8       # sequences per optimizer step (batch size 1, see C2)
+  epochs: 1           # 2400 / 8 = 300 optimizer steps
+  max_grad_norm: 1.0
+  weight_decay: 0.0
+
+gradient_checkpointing: true
+eval_every: 50        # optimizer steps between validation passes
+save_every: 25        # optimizer steps between resume checkpoints
+max_steps: null
