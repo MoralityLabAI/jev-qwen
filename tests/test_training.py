@@ -83,10 +83,10 @@ def test_targets_match_inference_conditions(tokenizer):
             assert target_text == " " + LABELS[item.example.answer_index]
             assert tokenizer.decode(enc.input_ids[: enc.n_prompt]).endswith("Answer:")
         elif enc.fmt == "generate":
-            assert target_text == f" {item.example.answer}\n"
+            assert target_text == f" {item.example.answer}\n\n"
             assert tokenizer.decode(enc.input_ids[: enc.n_prompt]).endswith("\nA:")
         else:
-            assert target_text == f" {item.example.meta['rationale']}\nA: {item.example.answer}\n"
+            assert target_text == f" {item.example.meta['rationale']}\nA: {item.example.answer}\n\n"
             assert tokenizer.decode(enc.input_ids[: enc.n_prompt]).endswith("\nReasoning:")
     assert seen == set(FORMATS)
 

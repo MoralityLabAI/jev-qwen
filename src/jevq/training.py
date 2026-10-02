@@ -10,8 +10,11 @@ Targets are encoded separately from the prompt, as at inference, where the promp
 fixed and the model produces the continuation:
 
     choice        " B"                              (one label token)
-    generate      " 42\n"
-    generate_cot  " <worked solution>\nA: 42\n"
+    generate      " 42\n\n"
+    generate_cot  " <worked solution>\nA: 42\n\n"
+
+The trailing blank line matches the few-shot blocks token for token (checked against the
+real tokenizer in notes/006).
 
 Losses, averaged per sequence so every example weighs the same whatever its length:
 
@@ -134,11 +137,13 @@ def encode(tokenizer, item: Item, label_ids: list[int]) -> Encoded:
     if fmt == "choice":
         prompt, target_ids = render_choice(item.shots, example), [label_ids[example.answer_index]]
     else:
+        # Targets end with a blank line because every few-shot answer does: Qwen's tokenizer
+        # makes "\n\n" one token, and a lone "\n" there is a token the model rarely emits.
         if fmt == "generate":
-            prompt, target = render_generate(item.shots, example), f" {example.answer}\n"
+            prompt, target = render_generate(item.shots, example), f" {example.answer}\n\n"
         elif fmt == "generate_cot":
             prompt = render_cot(item.shots, example)
-            target = f" {example.meta['rationale']}\nA: {example.answer}\n"
+            target = f" {example.meta['rationale']}\nA: {example.answer}\n\n"
         else:
             raise ValueError(f"unknown format {fmt!r}")
         target_ids = tokenizer.encode(target, add_special_tokens=False)

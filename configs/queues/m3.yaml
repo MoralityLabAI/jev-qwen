@@ -1,0 +1,24 @@
+# Milestone 3 queue: train V1, evaluate it, then the same for V1c. Resumable: completed steps
+# are skipped, and an interrupted training step resumes from its last checkpoint on retry.
+name: m3
+min_free_mib: 10000       # training peaked at 9.06 GB in the probe (notes/006)
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 720
+retries: 4
+keep_awake: false         # opt-in; see scripts/run_queue.py
+steps:
+  - name: train_v1
+    args: [scripts/train_adapter.py, --config, configs/train/v1_lora.yaml]
+  - name: eval_v1_dev
+    args: [scripts/run_eval.py, --variant, configs/variants/v1_lora_s0.yaml, --suite, evals/suites/dev.yaml]
+  - name: eval_v1_cot
+    args: [scripts/run_eval.py, --variant, configs/variants/v1_lora_s0.yaml, --suite, evals/suites/dev.yaml,
+           --set, "readout.modes=[generate_cot]", --set, "suite.n_per_difficulty=10"]
+  - name: train_v1c
+    args: [scripts/train_adapter.py, --config, configs/train/v1c_lora.yaml]
+  - name: eval_v1c_dev
+    args: [scripts/run_eval.py, --variant, configs/variants/v1c_lora_s0.yaml, --suite, evals/suites/dev.yaml]
+  - name: eval_v1c_cot
+    args: [scripts/run_eval.py, --variant, configs/variants/v1c_lora_s0.yaml, --suite, evals/suites/dev.yaml,
+           --set, "readout.modes=[generate_cot]", --set, "suite.n_per_difficulty=10"]

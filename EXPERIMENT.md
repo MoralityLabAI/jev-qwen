@@ -185,10 +185,16 @@ Parameter-efficient first; all hyperparameters in `configs/`.
 2. **V1.** LoRA rank 16 on the attention, DeltaNet and FFN projections
    (`q_proj,k_proj,v_proj,o_proj`, `in_proj_qkv,in_proj_z,out_proj`, `gate_proj,up_proj,down_proj`),
    bf16 base weights if VRAM allows, otherwise 4-bit NF4 (QLoRA) and a matching 4-bit V0.
-   Loss: cross-entropy on the answer label (`choice`) plus answer tokens (`generate`).
+   Loss: token cross-entropy on the target of each training item. (Revised at M3: training
+   covers all three readout formats, `choice`, `generate` and `generate_cot`, one format per
+   question, so that H1 compares readouts of one adapted model. Details and the V1c loss in
+   `notes/006-milestone-3-log.md`; configs in `configs/train/`.)
 3. **V2b.** Same LoRA budget, restricted to the looped span, trained at a fixed `n_iters`, then
    at randomly sampled `n_iters` to test depth generalisation. Equal trainable parameters and
-   equal training tokens to V1.
+   equal training tokens to V1. (Open, to settle before M4: "restricted to the span" and "equal
+   trainable parameters" conflict, since V1 adapts all 32 layers. Either raise the rank on the
+   span to match V1's parameter count, or give V2b V1's full adapter and keep the loop as the
+   only difference. The second is the cleaner one-factor ablation.)
 4. **V3, V4.** Each trained from the vanilla checkpoint with its own adapter, compared with V1
    and with each other before any combination.
 5. **V5.** Only if V3 or V4 beats V1 on some axis. Teacher traces from a stronger reasoning
