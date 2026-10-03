@@ -89,3 +89,28 @@ V2b beats V1 on none of the three registered axes:
 - difficulty extrapolation: r2 at difficulty 4-5 is 0.810 against 0.812.
 
 V3 (latent) and V4 (halting) have not been built, so the main claim is open only through them.
+
+## J-V2b-rmp: the same comparison on one algorithmic task (xbench S1, 2026-10-04)
+
+J-V1-rmp and J-V2b-rmp are the V1 and V2b recipes (300 steps, 2,400 rows) on RMP train-region
+rows (five pointer-chase, reachability and sudoku families), evaluated on S1 at one, two and
+three passes as above.
+
+| S1 | J-V1-rmp | J-V2b-rmp-r1 | J-V2b-rmp-r2 | J-V2b-rmp-r3 |
+|---|---|---|---|---|
+| core4, depths 1-8 (675) | 0.649 | 0.599 | 0.724 | 0.686 |
+| core4, depths 9-12 (300) | 0.433 | 0.400 | 0.430 | 0.457 |
+| pointer chase, depth 4 / 5 / 6 | 0.72 / 0.48 / 0.44 | 0.40 / 0.24 / 0.08 | 0.92 / 0.92 / 0.76 | 0.84 / 0.64 / 0.72 |
+
+- **Trained depth vs J-V1-rmp, depths 1-8:** r2 against J-V1-rmp is 103 vs 52 discordant items,
+  p = 5e-5.
+- **Across passes:** r2 against r1 is 130 vs 45 (p = 9e-11); r3 against r2 is 37 vs 63
+  (p = 0.012).
+- **Depths 9-12:** no difference.
+- **Readiness on pointer chase:** depth-indexed by the registered rule (rho = 0.894 over depths
+  1, 2, 4 and 5); depth 3 never reaches 0.9. Not depth-indexed on the other families.
+
+So the conclusion that trained recurrence does not help is specific to the mixed dev suite (H4,
+which is registered on dev and stays falsified). On a single task with a consistent sequential
+step, the same recipe makes the second pass do real work. One seed; no replicate is queued for
+the RMP arms.

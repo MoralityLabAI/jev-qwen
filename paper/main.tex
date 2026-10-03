@@ -319,8 +319,19 @@ Beyond depth 8 neither extrapolates. J-V1-rmp scores 0.433 there against LOOP-T-
 while the decoder fails systematically. On pointer chasing J-V1-rmp scores 0.14 against a
 majority-class baseline of 0.12, and LOOP-T-ds 0.00. On gated chasing the figures are 0.49
 against 0.48, and 0.38 for LOOP-T-ds. Only on reachability does J-V1-rmp clear the baseline
-(0.67 against 0.56), and there it does not differ from LOOP-T-ds (0.58, $p=0.27$). Whether
-emitted reasoning (J-cot) or trained recurrence on these rows (J-V2b-rmp) changes the picture is
+(0.67 against 0.56), and there it does not differ from LOOP-T-ds (0.58, $p=0.27$).
+
+On the task's own rows, trained recurrence does what it did not do on the mixed decision suite.
+J-V2b-rmp is J-V1-rmp's training with layers 12--15 run twice. At its trained depth it reaches
+0.724 on depths 1--8, against 0.649 for J-V1-rmp at the same training budget (paired 103 to 52,
+$p=5\times10^{-5}$). The gain is in the hops. On pointer chasing at depths 4, 5 and 6, the
+one-pass exit of the same adapter scores 0.40, 0.24 and 0.08; the second pass lifts these to
+0.92, 0.92 and 0.76, while depths 1--2 are already solved after one pass. By the registered
+readiness rule this is depth-indexed ($\rho=0.89$ over the four depths that reach 0.9), but
+narrowly: depth 3 never reaches 0.9, and it holds on pointer chasing only. A third pass, beyond
+the trained depth, gives back part of the gain ($p=0.012$), and depths 9--12 are unchanged
+(0.430 against 0.433). The 4B model with a two-pass loop still tracks about six hops where the
+460k-parameter decoder tracks eight. Whether emitted reasoning (J-cot) changes the picture is
 \pending{xb1}.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every
@@ -420,14 +431,19 @@ favouring option A on S7. A typed-decision model's label space is part of what i
 Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
 and dropped into a new gate is not neutral, even when its in-domain calibration is good.
 
-\paragraph{Recurrence.} Hidden depth is not free capability at this scale and budget. Untrained,
-it drifts. Trained for 300 steps with the loop active, it computes, changing answers at each pass,
-but it lands at the accuracy of the same adapter without the loop and leaves the 4.5-point gap to
-emitted reasoning untouched. On S1 it moves answers without making them more accurate. The
-compact looped decoders show the contrast. There, recurrence is the whole architecture, trained
-from scratch on the task, and their per-pass readout tracks depth. Bolting a loop onto a
-pretrained stack and fine-tuning it briefly does not produce that. The one hint in the other
-direction is control-side: fewer injection flips at the trained depth, pending replication.
+\paragraph{Recurrence.} Hidden depth is not free capability at this scale and budget, but it is
+not useless either; what decides is the training data. Untrained, a loop drifts. Trained for 300
+steps on the mixed decision suite, it computes, changing answers at each pass, but lands at the
+accuracy of the same adapter without the loop and leaves the 4.5-point gap to emitted reasoning
+untouched. Trained for the same 300 steps on a single task whose difficulty is a number of
+sequential hops, the same loop makes its second pass do the hops the first could not: pointer
+chasing at depths 4--6 goes from 0.08--0.40 to 0.76--0.92, and the per-pass readout becomes
+depth-indexed by our registered rule. Our reading is that a loop grafted onto a pretrained stack
+can learn an iterative step when the data has one consistent step to learn, and that a mix of
+eight task families does not. The compact looped decoders take this to its end: recurrence is
+the whole architecture, trained from scratch on the task, and their readout tracks depth for
+eight visits. Neither kind extrapolates past its trained depths. On the control side, the dev
+suite-trained loop flipped fewer injected deny decisions, pending replication.
 
 \paragraph{Limitations.} Single seeds for every trained variant so far (replicates
 \pending{xb4}); latency measured on a GPU shared with other jobs; synthetic, templated decision tasks;

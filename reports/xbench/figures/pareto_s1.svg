@@ -48,6 +48,12 @@
 <text x="638.8" y="256.1">J-V2b-r2</text>
 <circle cx="631.8" cy="268.9" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="262.9">J-V2b-r3</text>
+<circle cx="631.8" cy="196.5" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="190.5">J-V2b-rmp-r1</text>
+<circle cx="631.8" cy="167.1" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="161.1">J-V2b-rmp-r2</text>
+<circle cx="631.8" cy="170.1" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="164.1">J-V2b-rmp-r3</text>
 <circle cx="407.9" cy="127.1" r="5" fill="#1f5fa8"/>
 <text x="414.9" y="121.1">LOOP-T</text>
 <circle cx="407.9" cy="123.1" r="5" fill="#1f5fa8"/>
