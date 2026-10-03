@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 import math
+import re
+import statistics
 from collections import defaultdict
 from pathlib import Path
 
@@ -21,6 +23,10 @@ OUT = ROOT / "reports" / "xbench"
 FIG = OUT / "figures"
 GATE_SUITES = {"s2", "s3", "s5", "s6", "s6c", "s6a"}
 FIXED_ITEM_SUITES = {"s1", "s2", "s4", "s7"}  # same items for every arm: paired tests apply
+# Arms outside the SPEC v1 registration (notes/xbench-log.md, addendum A1): reported beside the
+# registered arms, never entered into the R1/R2 pools or their Holm families.
+ADDENDUM_ARMS = {"J-V1c-lr3": "J-V1c"}  # addendum arm -> the registered arm it controls for
+REPLICATE = re.compile(r"^(?P<base>J-.+?)-s(?P<seed>\d+)(?P<iteration>-r\d+)?$")
 
 
 # ---------------------------------------------------------------------------- loading
@@ -35,6 +41,52 @@ def load_records() -> dict[str, dict[str, dict]]:
         record["_items"] = [json.loads(l) for l in items_path.read_text(encoding="utf-8").splitlines()] if items_path.exists() else []
         out[suite][arm] = record
     return out
+
+
+def split_addenda(all_records: dict[str, dict[str, dict]]) -> tuple[dict, dict]:
+    """(registered, addenda): seed replicates `<arm>-s<k>[-r<n>]` and ADDENDUM_ARMS go to addenda."""
+    registered: dict[str, dict[str, dict]] = defaultdict(dict)
+    addenda: dict[str, dict[str, dict]] = defaultdict(dict)
+    for suite, records in all_records.items():
+        for arm, record in records.items():
+            (addenda if REPLICATE.match(arm) or arm in ADDENDUM_ARMS else registered)[suite][arm] = record
+    return registered, addenda
+
+
+def addenda_section(registered, addenda) -> list[str]:
+    """Seed spread of each replicated arm (seed 0 = the registered record) and each addendum arm
+    against the registered arm it controls for (paired exact McNemar, not Holm-adjusted)."""
+    lines = ["## Addenda: seed replicates and control arms (outside the registered pools)", ""]
+    if not any(addenda.values()):
+        return lines + ["None yet.", ""]
+    lines += ["| Suite | Arm | Accuracy by seed (0, 1, ...) | Mean | SD | Unsafe by seed |", "|---|---|---|---|---|---|"]
+    for suite in sorted(addenda):
+        groups: dict[str, dict[int, dict]] = defaultdict(dict)
+        for arm, record in addenda[suite].items():
+            match = REPLICATE.match(arm)
+            if match and "not_applicable" not in record:
+                groups[match["base"] + (match["iteration"] or "")][int(match["seed"])] = record
+        for base, seeds in sorted(groups.items()):
+            if base in registered.get(suite, {}) and "not_applicable" not in registered[suite][base]:
+                seeds[0] = registered[suite][base]
+            ordered = [seeds[k] for k in sorted(seeds)]
+            accs = [r["metrics"]["accuracy"] for r in ordered]
+            unsafe = [unsafe_rate(r, suite) for r in ordered]
+            sd = statistics.stdev(accs) if len(accs) > 1 else None
+            lines.append(f"| {suite} | {base} | {', '.join(f'{a:.3f}' for a in accs)} (seeds {', '.join(map(str, sorted(seeds)))}) | "
+                         f"{statistics.mean(accs):.3f} | {fmt(sd)} | {', '.join(f'{k}/{n}' if n else '-' for k, n in unsafe)} |")
+    controls = [(suite, arm, ref) for suite in sorted(addenda) for arm, ref in ADDENDUM_ARMS.items()
+                if arm in addenda[suite] and ref in registered.get(suite, {}) and "not_applicable" not in addenda[suite][arm]]
+    if controls:
+        lines += ["", "| Suite | Control arm | vs | Accuracy | Ref accuracy | Shared | Control only | Ref only | p (exact) | ECE | Ref ECE |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|"]
+        for suite, arm, ref in controls:
+            a, b = addenda[suite][arm], registered[suite][ref]
+            n, a_only, b_only = paired(a["_items"], b["_items"])
+            ece = lambda r: fmt((r["metrics"].get("calibration") or {}).get("ece"))  # noqa: E731
+            lines.append(f"| {suite} | {arm} | {ref} | {fmt(a['metrics']['accuracy'])} | {fmt(b['metrics']['accuracy'])} | {n} | "
+                         f"{a_only} | {b_only} | {mcnemar_exact(a_only, b_only):.3g} | {ece(a)} | {ece(b)} |")
+    return lines + [""]
 
 
 def cost(record: dict) -> tuple[float, float]:
@@ -378,9 +430,10 @@ def monitorability(all_records) -> str:
 
 
 def main() -> None:
-    records = load_records()
+    records, addenda = split_addenda(load_records())
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "compactification.md").write_text(compactification(records), encoding="utf-8")
+    addenda_text = "\n".join(addenda_section(records, addenda))
+    (OUT / "compactification.md").write_text(compactification(records) + "\n" + addenda_text, encoding="utf-8")
     (OUT / "control.md").write_text(control(records), encoding="utf-8")
     (OUT / "monitorability.md").write_text(monitorability(records), encoding="utf-8")
     print(f"reports written to {OUT}")

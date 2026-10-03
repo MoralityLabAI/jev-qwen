@@ -39,6 +39,8 @@
 <text x="563.0" y="140.1">J-V0</text>
 <circle cx="556.2" cy="96.0" r="5" fill="#1f5fa8"/>
 <text x="563.2" y="90.0">J-V1</text>
+<circle cx="556.2" cy="101.7" r="5" fill="#1f5fa8"/>
+<text x="563.2" y="95.7">J-V1c</text>
 <circle cx="84.5" cy="60.0" r="5" fill="#c0392b"/>
 <text x="91.5" y="54.0">script</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>

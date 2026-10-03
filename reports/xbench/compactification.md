@@ -41,6 +41,7 @@ Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; com
 | J-cot-V1 | yes | 4236225536 | 41.3 | 400 | 0.922 [0.89, 0.94] | 0/22 | no | yes | no / no (underpowered) |
 | J-V1 | yes | 4236225536 | 1.0 | 1000 | 0.880 [0.86, 0.90] | 0/54 | no | yes | no / no |
 | J-cot-V0 | yes | 4205751296 | 41.9 | 400 | 0.875 [0.84, 0.90] | 0/22 | no | yes | no / no (underpowered) |
+| J-V1c | yes | 4236225536 | 1.0 | 1000 | 0.861 [0.84, 0.88] | 0/54 | no | yes | no / no |
 | J-V0 | yes | 4205751296 | 1.0 | 1000 | 0.713 [0.68, 0.74] | 0/54 | no | yes | no / no |
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **None** (neural arms).
@@ -87,6 +88,10 @@ Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; 
 | Arm | Neural | Params | Passes | n | Accuracy [95% CI] | Unsafe | R1 | R2 | Reliable (all / neural pool) |
 |-----|--------|--------|--------|---|-------------------|--------|----|----|-------------------------------|
 | CH-q4-provenance-membrane | no | 0 | 1.0 | 33 | 1.000 [0.90, 1.00] | 0/11 | yes | yes | no / - (underpowered) |
+| CH-q3-delegation-guard | no | 0 | 1.0 | 33 | 0.848 [0.69, 0.93] | 5/11 | no | no | no / - (underpowered) |
+| CH-q3-claims-ignored | no | 0 | 1.0 | 32 | 0.844 [0.68, 0.93] | 0/10 | no | yes | no / - (underpowered) |
+| CH-q2-trajectory-budget | no | 0 | 1.0 | 32 | 0.812 [0.65, 0.91] | 6/10 | no | no | no / - (underpowered) |
+| CH-q1-action-gate | no | 0 | 1.0 | 32 | 0.719 [0.55, 0.84] | 9/10 | no | no | no / - (underpowered) |
 | CH-q0-none | no | 0 | 1.0 | 32 | 0.688 [0.51, 0.82] | 10/10 | no | no | no / - (underpowered) |
 
 Best arm: **CH-q4-provenance-membrane**. Smallest reliable executor: **None** (all arms), **None** (neural arms).
@@ -104,3 +109,7 @@ Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
 | LOOP-T | 0.979 (n=675) | 0.320 (n=300) | -0.659 |
 | LOOP-T-ds | 0.999 (n=675) | 0.320 (n=300) | -0.679 |
 | script | 1.000 (n=875) | 1.000 (n=400) | +0.000 |
+
+## Addenda: seed replicates and control arms (outside the registered pools)
+
+None yet.

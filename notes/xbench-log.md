@@ -37,3 +37,15 @@ SPEC v1 was registered at commit c457b35 (2026-10-03) before any cross-arm outco
 | XC4 | Bonsai-8B parameter count recorded as 8e9 (approximate, 1-bit weights) | The cost key treats it as 8B resident parameters | — |
 | XC5 | Several suites are at ceiling for non-neural arms (S1 exact solver, S2 rule, S4 generators, S7 lexical router) | "Best arm" is then a script, so R1 against the all-arm pool fails for every neural arm by construction | Reported twice as registered: all arms and neural arms only |
 | XC6 | S7 negatives pass unless the forbidden contract is chosen, and the forbidden contract is often not in the shortlist | Negatives are easy for every arm | hermes-lite's own rule; kept for comparability |
+
+## Addenda to SPEC v1 (dated; decided before the affected outcomes)
+
+| # | Date | Addendum | Why |
+|---|------|----------|-----|
+| A1 | 2026-10-03 | Seed replicates (`<arm>-s<k>`, queue xb4) and the V1c learning-rate control `J-V1c-lr3` (queue xb5) are reported in a separate addenda table: per-seed accuracy, mean and SD, and for the control a paired exact McNemar against J-V1c. They never enter the R1/R2 pools or their Holm families; registered reliability calls use the seed-0 arms as registered | SPEC v1 registered single-seed arms. Adding replicates to the pools would change the best arm and the Holm family size after registration. No replicate or control result existed when this was decided |
+
+## Incidents
+
+| # | When | What | Fix |
+|---|------|------|-----|
+| XI1 | 2026-10-03 14:33 | xb1 `j_v1` failed twice in 25 s: the J loader resolved arm adapter paths against the repo root, but adapters live under `paths.checkpoints` outside OneDrive (since the M3 WinError 5). The smoke test patched the loader, so it missed this | `jrunner.resolve_adapter` (f856cb8) plus a regression test; the third attempt picked up the fix. No record had been written |

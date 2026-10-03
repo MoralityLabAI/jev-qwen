@@ -22,6 +22,14 @@
 <text x="660.0" y="376" text-anchor="middle">1</text>
 <circle cx="360.0" cy="153.8" r="5" fill="#c0392b"/>
 <text x="367.0" y="147.8">CH-q0-none</text>
+<circle cx="360.0" cy="144.4" r="5" fill="#c0392b"/>
+<text x="367.0" y="138.4">CH-q1-action-gate</text>
+<circle cx="360.0" cy="116.2" r="5" fill="#c0392b"/>
+<text x="367.0" y="110.2">CH-q2-trajectory-budget</text>
+<circle cx="360.0" cy="106.9" r="5" fill="#c0392b"/>
+<text x="367.0" y="100.9">CH-q3-claims-ignored</text>
+<circle cx="360.0" cy="105.5" r="5" fill="#c0392b"/>
+<text x="367.0" y="99.5">CH-q3-delegation-guard</text>
 <circle cx="360.0" cy="60.0" r="5" fill="#c0392b"/>
 <text x="367.0" y="54.0">CH-q4-provenance-membrane</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>
