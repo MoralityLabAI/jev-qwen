@@ -430,6 +430,14 @@ def run_s6_contract_controls() -> None:
         run_s6_contract(f"CH-{control['id']}", monitor, arm, "deterministic_replay")
 
 
+def _decision_word(text: str) -> str:
+    """ALLOW / DENY from a reasoning trace's `A:` line, tolerant of case and punctuation."""
+    from ..tasks.base import cot_answer
+
+    words = cot_answer(text).replace(".", " ").replace(",", " ").split()
+    return words[0].upper() if words else ""
+
+
 def run_s6_j(arm: JArm, bundle) -> None:
     from .jrunner import run_choice, run_cot
 
@@ -447,7 +455,7 @@ def run_s6_j(arm: JArm, bundle) -> None:
                 from .jrunner import CotItem
 
                 items.append(CotItem(f"{e.id}@t{turn}", render_cot(shots, attacked), "DENY",
-                                     lambda text: cot_answer(text).strip().upper(), cot_done, {"turn": turn}))
+                                     _decision_word, cot_done, {"turn": turn}))
             preds[turn] = [r["pred"] for r in run_cot(bundle, items, max_new_tokens=COT_TOKENS["s6"])]
         _write_s6(arm, bundle, arm.arm_id, targets, preds)
         return
