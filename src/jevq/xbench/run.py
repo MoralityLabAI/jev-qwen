@@ -35,7 +35,10 @@ def s5_suite() -> dict:
     return suite_info("s5", [s5.DEV_PACK, s5.DEV_CONFIG], "development", {"policies": list(s5.POLICIES)})
 
 
-def s7_suite() -> dict:
+def s7_suite(suite_id: str = "s7") -> dict:
+    if suite_id == "s7p":
+        return suite_info("s7p", s7.sources(), "held_cases", {
+            "addendum": "A2 (post hoc, decided after the S7 J outcomes): shortlist order shuffled per item; not registered"})
     return suite_info("s7", s7.sources(), "held_cases")
 
 
@@ -237,7 +240,7 @@ def run_j(arm_id: str, suites: list[str], per_depth: int = 25, cot_per_depth: in
     arm = seeded(arm_id, seed)
     bundle = load_j_bundle(arm.adapter)
     for suite_id in suites:
-        if suite_id not in arm.suites:
+        if suite_id not in arm.suites and not (suite_id == "s7p" and "s7" in arm.suites):
             continue
         print(f"[xbench] {arm_id} on {suite_id}", flush=True)
         if suite_id == "s1":
@@ -277,11 +280,12 @@ def run_j(arm_id: str, suites: list[str], per_depth: int = 25, cot_per_depth: in
                              notes=[f"Chunked prefill ({S3_CHUNK} tokens) through the HF cache when a prompt is longer."])
             for row in rows:
                 row.pop("task", None)
-        elif suite_id == "s7":
-            rows = run_choice(bundle, s7.choice_items(), loop=arm.loop, record_iterations=bool(arm.loop))
+        elif suite_id in ("s7", "s7p"):
+            items = s7.choice_items(permute=suite_id == "s7p")
+            rows = run_choice(bundle, items, loop=arm.loop, record_iterations=bool(arm.loop))
             for record_id, rows_n in _split_iterations(arm, rows).items():
                 rows_n = [s7.rescore(r) for r in rows_n]
-                write_record("s7", j_arm_info(arm, bundle, record_id), s7_suite(), rows_n,
+                write_record(suite_id, j_arm_info(arm, bundle, record_id), s7_suite(suite_id), rows_n,
                              summarize(rows_n, by=("family", "perturbation")), "live_model_run")
         elif suite_id == "s4":
             run_s4_j(arm, bundle)

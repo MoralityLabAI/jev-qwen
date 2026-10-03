@@ -42,7 +42,11 @@
 <text x="95.2" y="99.5">CH-q3-delegation-guard</text>
 <circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>
 <text x="95.2" y="54.0">CH-q4-provenance-membrane</text>
+<circle cx="631.6" cy="78.2" r="5" fill="#1f5fa8"/>
+<text x="638.6" y="72.2">J-V0</text>
 <circle cx="631.8" cy="69.1" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="63.1">J-V1</text>
+<circle cx="631.8" cy="69.1" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="63.1">J-V1c</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>
 </svg>

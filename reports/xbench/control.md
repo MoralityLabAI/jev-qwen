@@ -6,7 +6,9 @@ Unsafe = false commit / unsafe allow / escaped violation; over-refusal = false r
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| J-V0 | 74 | 0.959 | 0/18 [0.00, 0.18] | 3/56 [0.02, 0.15] | 0.065 | - |
 | J-V1 | 74 | 0.946 | 0/18 [0.00, 0.18] | 4/56 [0.03, 0.17] | 0.043 | - |
+| J-V1c | 74 | 0.946 | 2/18 [0.03, 0.33] | 2/56 [0.01, 0.12] | 0.023 | - |
 | TRM-cv | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | 0.085 | - |
 | kNN-critic | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | 0.000 | - |
 | script | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | - | - |
@@ -34,7 +36,9 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 | CH-q3-claims-ignored | 32 | 0.844 | 0/10 [0.00, 0.28] | 5/22 [0.10, 0.43] | - | attack success 0.000, benign done 0.700 |
 | CH-q3-delegation-guard | 33 | 0.848 | 5/11 [0.21, 0.72] | 0/22 [0.00, 0.15] | - | attack success 0.500, benign done 1.000 |
 | CH-q4-provenance-membrane | 33 | 1.000 | 0/11 [0.00, 0.26] | 0/22 [0.00, 0.15] | - | attack success 0.000, benign done 1.000 |
+| J-V0 | 33 | 0.939 | 1/11 [0.02, 0.38] | 1/22 [0.01, 0.22] | 0.108 | attack success 0.100, benign done 0.900 |
 | J-V1 | 33 | 0.970 | 1/11 [0.02, 0.38] | 0/22 [0.00, 0.15] | 0.040 | attack success 0.100, benign done 1.000 |
+| J-V1c | 33 | 0.970 | 1/11 [0.02, 0.38] | 0/22 [0.00, 0.15] | 0.047 | attack success 0.100, benign done 1.000 |
 
 ## S3
 
@@ -56,6 +60,9 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| J-V0 | 128 | 0.953 | 0/23 [0.00, 0.14] | - | 0.284 | - |
+| J-V1 | 128 | 0.812 | 0/23 [0.00, 0.14] | - | 0.126 | - |
+| J-V1c | 128 | 0.836 | 0/23 [0.00, 0.14] | - | 0.080 | - |
 | SkillRouter-TRM | 128 | 0.992 | 1/23 [0.01, 0.21] | - | 0.271 | - |
 | lexical-router | 128 | 1.000 | 0/23 [0.00, 0.14] | - | - | - |
 
@@ -63,6 +70,9 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
 |---|---|---|---|---|
+| J-V0 | 54 | 0 | 0 | > 10 |
+| J-V1 | 54 | 0 | 5 | > 10 |
+| J-V1c | 54 | 0 | 5 | > 10 |
 | script | 54 | 0 | None | > 10 |
 
 ![S6 scripted ladder, S4 auth_gate targets](figures/halflife_s6.svg)
@@ -77,6 +87,9 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 | CH-q3-claims-ignored | 11 | 0 | 0 | > 10 |
 | CH-q3-delegation-guard | 11 | 5 | 0 | > 10 |
 | CH-q4-provenance-membrane | 11 | 0 | 0 | > 10 |
+| J-V0 | 11 | 1 | 5 | 8 |
+| J-V1 | 11 | 1 | 4 | > 10 |
+| J-V1c | 11 | 1 | 3 | > 10 |
 
 ![S6 scripted ladder, S5 contract targets](figures/halflife_s6c.svg)
 
@@ -84,6 +97,9 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Comparison | Shared items | First only correct | Second only correct | p (Holm) |
 |---|---|---|---|---|
-| s4:J-V1c vs J-V1 | 1000 | 27 | 46 | 0.0397 |
-| s4:J-cot-V0 vs J-V0 | 400 | 83 | 23 | 1.14e-08 |
-| s4:J-cot-V1 vs J-V1 | 400 | 36 | 18 | 0.0397 |
+| s1:J-V1c vs J-V1 | 1275 | 131 | 52 | 2.36e-08 |
+| s2:J-V1c vs J-V1 | 74 | 2 | 2 | 1 |
+| s4:J-V1c vs J-V1 | 1000 | 27 | 46 | 0.103 |
+| s4:J-cot-V0 vs J-V0 | 400 | 83 | 23 | 2.27e-08 |
+| s4:J-cot-V1 vs J-V1 | 400 | 36 | 18 | 0.0793 |
+| s7:J-V1c vs J-V1 | 128 | 9 | 6 | 1 |

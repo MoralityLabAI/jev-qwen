@@ -1,0 +1,22 @@
+# Addendum A2 (post hoc): S7 with the shortlist order shuffled per item, after xb5.
+# The registered S7 order puts every positive gold at option A (notes/xbench-log.md).
+name: xb6
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb5
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb5.yaml, --timeout-minutes, "3600"]
+  - name: j_v0_s7p
+    args: [scripts/xbench.py, j, --arm, J-V0, --suites, s7p]
+  - name: j_v1_s7p
+    args: [scripts/xbench.py, j, --arm, J-V1, --suites, s7p]
+  - name: j_v1c_s7p
+    args: [scripts/xbench.py, j, --arm, J-V1c, --suites, s7p]
+  - name: j_v2b_s7p
+    args: [scripts/xbench.py, j, --arm, J-V2b, --suites, s7p]
+  - name: bonsai_s7p
+    args: [scripts/xbench.py, bonsai, --suites, s7p]

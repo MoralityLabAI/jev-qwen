@@ -16,6 +16,7 @@ from pathlib import Path
 
 import _bootstrap  # noqa: F401
 from jevq.config import ROOT
+from jevq.xbench.metrics import position_bias
 from jevq.xbench.records import RESULTS
 from jevq.xbench.stats import holm, log_rank, mcnemar_exact, spearman, wilson
 
@@ -26,6 +27,7 @@ FIXED_ITEM_SUITES = {"s1", "s2", "s4", "s7"}  # same items for every arm: paired
 # Arms outside the SPEC v1 registration (notes/xbench-log.md, addendum A1): reported beside the
 # registered arms, never entered into the R1/R2 pools or their Holm families.
 ADDENDUM_ARMS = {"J-V1c-lr3": "J-V1c"}  # addendum arm -> the registered arm it controls for
+ADDENDUM_SUITES = {"s7p": "s7"}  # A2 (post hoc): S7 with the shortlist order shuffled per item
 REPLICATE = re.compile(r"^(?P<base>J-.+?)-s(?P<seed>\d+)(?P<iteration>-r\d+)?$")
 
 
@@ -49,7 +51,8 @@ def split_addenda(all_records: dict[str, dict[str, dict]]) -> tuple[dict, dict]:
     addenda: dict[str, dict[str, dict]] = defaultdict(dict)
     for suite, records in all_records.items():
         for arm, record in records.items():
-            (addenda if REPLICATE.match(arm) or arm in ADDENDUM_ARMS else registered)[suite][arm] = record
+            extra = REPLICATE.match(arm) or arm in ADDENDUM_ARMS or suite in ADDENDUM_SUITES
+            (addenda if extra else registered)[suite][arm] = record
     return registered, addenda
 
 
@@ -86,6 +89,29 @@ def addenda_section(registered, addenda) -> list[str]:
             ece = lambda r: fmt((r["metrics"].get("calibration") or {}).get("ece"))  # noqa: E731
             lines.append(f"| {suite} | {arm} | {ref} | {fmt(a['metrics']['accuracy'])} | {fmt(b['metrics']['accuracy'])} | {n} | "
                          f"{a_only} | {b_only} | {mcnemar_exact(a_only, b_only):.3g} | {ece(a)} | {ece(b)} |")
+    for suite, ref_suite in ADDENDUM_SUITES.items():
+        rows = [(arm, r, registered.get(ref_suite, {}).get(arm)) for arm, r in sorted(addenda.get(suite, {}).items())
+                if "not_applicable" not in r and r.get("_items")]
+        if not rows:
+            continue
+        lines += ["", f"{suite} (post hoc, addendum A2): {ref_suite} with the shortlist shuffled per item. Gold share = share of "
+                  "positives whose gold sits at the most common gold position; pred share = share of predictions at the most "
+                  "common predicted position.", "",
+                  f"| Arm | {ref_suite} accuracy | {suite} accuracy | {ref_suite} positives | {suite} positives | "
+                  f"{ref_suite} pred / gold share | {suite} pred / gold share |", "|---|---|---|---|---|---|---|"]
+        for arm, record, ref in rows:
+            def pos(r):
+                if r is None:
+                    return "-", "-", "-"
+                items = r["_items"]
+                positives = [x for x in items if x.get("kind") == "positive"]
+                pos_acc = sum(bool(x["correct"]) for x in positives) / len(positives) if positives else None
+                pb = position_bias([x for x in items if x.get("probs")]) if any(x.get("probs") for x in items) else None
+                share = f"{pb['top_pred_share']:.2f} / {pb['top_gold_share']:.2f}" if pb and pb["top_gold_share"] is not None else "-"
+                return fmt(r["metrics"]["accuracy"]), fmt(pos_acc), share
+            a_acc, a_pos, a_share = pos(ref)
+            b_acc, b_pos, b_share = pos(record)
+            lines.append(f"| {arm} | {a_acc} | {b_acc} | {a_pos} | {b_pos} | {a_share} | {b_share} |")
     return lines + [""]
 
 

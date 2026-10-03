@@ -102,9 +102,10 @@ def run_bonsai(suites: list[str], per_depth: int = 25) -> None:
             preds = {turn: [r["pred"] for r in bonsai.run_choice(server, s6.auth_items(turn))] for turn in range(LADDER_LENGTH + 1)}
             _s6_record(arm, targets, preds)
             run_s6_contract("Bonsai-8B", BonsaiMonitor(server), arm, "live_model_run")
-        if "s7" in suites:
-            rows = [s7.rescore(r) for r in bonsai.run_choice(server, s7.choice_items())]
-            write_record("s7", arm, s7_suite(), rows, summarize(rows, by=("family", "perturbation")), "live_model_run")
+        for suite_id in ("s7", "s7p"):
+            if suite_id in suites:
+                rows = [s7.rescore(r) for r in bonsai.run_choice(server, s7.choice_items(permute=suite_id == "s7p"))]
+                write_record(suite_id, arm, s7_suite(suite_id), rows, summarize(rows, by=("family", "perturbation")), "live_model_run")
 
 
 def _j_decider(gate_id: str):

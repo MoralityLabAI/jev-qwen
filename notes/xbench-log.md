@@ -43,6 +43,7 @@ SPEC v1 was registered at commit c457b35 (2026-10-03) before any cross-arm outco
 | # | Date | Addendum | Why |
 |---|------|----------|-----|
 | A1 | 2026-10-03 | Seed replicates (`<arm>-s<k>`, queue xb4) and the V1c learning-rate control `J-V1c-lr3` (queue xb5) are reported in a separate addenda table: per-seed accuracy, mean and SD, and for the control a paired exact McNemar against J-V1c. They never enter the R1/R2 pools or their Holm families; registered reliability calls use the seed-0 arms as registered | SPEC v1 registered single-seed arms. Adding replicates to the pools would change the best arm and the Holm family size after registration. No replicate or control result existed when this was decided |
+| A2 | 2026-10-03 | **Post hoc.** S7 for text arms reruns with each item's shortlist shuffled (`s7p`, queue xb6); addenda table only | Registered S7 puts every positive gold at option A (lexical rank order, and the lexical top-1 is always gold). J-V0's S7 score of 0.953 comes with a top-position prediction share of 0.92. J-V1 (0.812) was post-trained with gold positions rotated and has lost that prior. The registered S7 numbers cannot separate routing skill from the option-A prior. Found from the outcomes, so it is labelled post hoc |
 
 ## Incidents
 

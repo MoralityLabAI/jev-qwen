@@ -221,3 +221,20 @@ def test_arm_adapters_resolve_under_the_checkpoint_root(tmp_path):
             assert resolve_adapter(arm.adapter) == root / arm.adapter
             assert "OneDrive" not in str(resolve_adapter(arm.adapter))
     assert resolve_adapter(str(tmp_path / "x")) == Path(tmp_path / "x")
+
+
+@needs_hl
+def test_s7_permuted_items_keep_options_and_spread_the_gold():
+    """Addendum A2: same candidates per item, ABSTAIN last, gold no longer always option A."""
+    from collections import Counter
+
+    from jevq.xbench import s7_routing as s7
+
+    base, perm = s7.choice_items(), s7.choice_items(permute=True)
+    assert [i.item_id for i in base] == [i.item_id for i in perm]
+    for a, b in zip(base, perm):
+        assert sorted(a.options) == sorted(b.options) and b.options[-1] == "ABSTAIN" and a.gold == b.gold
+    positions = Counter(i.options.index(i.gold) for i in perm if i.meta["kind"] == "positive")
+    assert {i.options.index(i.gold) for i in base if i.meta["kind"] == "positive"} == {0}
+    assert len(positions) == 5 and max(positions.values()) < 0.4 * sum(positions.values())
+    assert s7.choice_items(permute=True)[0].prompt == perm[0].prompt  # deterministic

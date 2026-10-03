@@ -8,7 +8,9 @@ negative case passes iff the chosen contract is not the forbidden one (ABSTAIN p
 
 from __future__ import annotations
 
+import hashlib
 import json
+import random
 from pathlib import Path
 
 from .foreign import HERMES_LITE, import_from
@@ -124,7 +126,17 @@ def _block(query: str, candidates: list[dict]) -> list[str]:
     return lines
 
 
-def choice_items() -> list[ChoiceItem]:
+def shuffled(key: str, candidates: list[dict]) -> list[dict]:
+    """Addendum A2 (post hoc): a fixed per-item shuffle of the shortlist, seeded by the item key.
+    The registered order is lexical rank, which puts every positive gold at option A."""
+    rng = random.Random(int(hashlib.sha256(key.encode("utf-8")).hexdigest()[:16], 16))
+    out = list(candidates)
+    rng.shuffle(out)
+    return out
+
+
+def choice_items(permute: bool = False) -> list[ChoiceItem]:
+    """Registered S7 items; `permute` gives the addendum-A2 diagnostic (suite id s7p)."""
     primary = contracts()
     by_name = {str(c["name"]): c for c in primary}
     shots = []
@@ -135,10 +147,14 @@ def choice_items() -> list[ChoiceItem]:
         route_query, cands = shortlist(query, primary)
         if target in by_name and target not in {str(c["name"]) for c in cands}:
             cands = cands[:-1] + [by_name[target]]
+        if permute:
+            cands = shuffled(f"shot:{row['query']}", cands)
         shots.append((route_query, cands, target))
     items = []
     for case in _jsonl(REGISTERED / "held_cases.jsonl"):
         route_query, cands = shortlist(str(case["query"]), primary)
+        if permute:
+            cands = shuffled(str(case["case_id"]), cands)
         names = [str(c["name"]) for c in cands]
         options = names + [ABSTAIN]
         labels = [" " + LETTERS[i] for i in range(len(options))]

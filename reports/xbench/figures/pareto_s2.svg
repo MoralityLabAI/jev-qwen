@@ -30,8 +30,12 @@
 <text x="596.3706807366058" y="376" text-anchor="middle">9</text>
 <text x="652.8307523930906" y="376" text-anchor="middle">10</text>
 <text x="709.2908240495755" y="376" text-anchor="middle">11</text>
+<circle cx="631.6" cy="72.2" r="5" fill="#1f5fa8"/>
+<text x="638.6" y="66.2">J-V0</text>
 <circle cx="631.8" cy="76.2" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="70.2">J-V1</text>
+<circle cx="631.8" cy="76.2" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="70.2">J-V1c</text>
 <circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>
 <text x="95.2" y="54.0">kNN-critic</text>
 <circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>

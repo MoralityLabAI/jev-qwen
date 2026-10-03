@@ -209,3 +209,13 @@ proposal, do not edit); llama-server is quarantined; any step would write to ano
   addenda table (per-seed accuracy, mean, SD; the control against J-V1c by paired exact
   McNemar). They do not enter the R1/R2 pools or their Holm families; reliability calls use the
   registered seed-0 arms. Details: `notes/xbench-log.md`.
+- **A2 (2026-10-03, POST HOC: decided after the S7 results of J-V0, J-V1 and J-V1c).** The
+  registered S7 shortlist is in lexical-rank order, and the lexical top-1 is the gold contract on
+  all 105 positives, so for J arms every positive gold is option A (the few-shot answers are mostly
+  A too). S7 accuracy for text arms therefore mixes routing with an option-A prior. That shows up
+  in the registered position-bias metric: J-V0 puts 0.92 of its predictions at the top position,
+  where 0.82 of golds sit. The registered S7 records stand as they are. A diagnostic suite `s7p`
+  shuffles each item's shortlist (and the shots') with a fixed seed derived from the item. It is
+  reported only in the addenda table, never in the R1/R2 pools, and is labelled post hoc wherever
+  it is cited. Queue xb6 runs it for J-V0, J-V1, J-V1c, J-V2b and Bonsai-8B. The TRM and lexical
+  routers score contracts directly and do not depend on option order.

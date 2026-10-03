@@ -34,8 +34,12 @@
 <text x="448.9" y="125.7">FF-U</text>
 <circle cx="441.9" cy="127.7" r="5" fill="#1f5fa8"/>
 <text x="448.9" y="121.7">FF-U-ds</text>
+<circle cx="631.6" cy="240.0" r="5" fill="#1f5fa8"/>
+<text x="638.6" y="234.0">J-V0</text>
 <circle cx="631.8" cy="273.4" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="267.4">J-V1</text>
+<circle cx="631.8" cy="254.8" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="248.8">J-V1c</text>
 <circle cx="407.9" cy="127.1" r="5" fill="#1f5fa8"/>
 <text x="414.9" y="121.1">LOOP-T</text>
 <circle cx="407.9" cy="123.1" r="5" fill="#1f5fa8"/>

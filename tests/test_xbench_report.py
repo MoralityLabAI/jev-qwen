@@ -41,3 +41,21 @@ def test_replicates_and_controls_are_split_off():
 
 def test_addenda_section_without_addenda():
     assert report.addenda_section({}, {})[-2] == "None yet."
+
+
+def test_s7p_goes_to_addenda_with_position_shares():
+    def s7_row(i, pos, correct):
+        options = ["a", "b", "c", "d", "e", "ABSTAIN"]
+        probs = [0.0] * 6
+        probs[pos] = 1.0
+        return {"item_id": str(i), "kind": "positive", "gold": "a", "correct": correct, "options": options, "probs": probs}
+
+    s7 = {"arm": {"arm_id": "J-V1", "neural": True}, "metrics": {"accuracy": 1.0, "n": 4}, "_items": [s7_row(i, 0, True) for i in range(4)]}
+    s7p = {"arm": {"arm_id": "J-V1", "neural": True}, "metrics": {"accuracy": 0.25, "n": 4},
+           "_items": [s7_row(0, 0, True)] + [s7_row(i, 0, False) for i in (1, 2, 3)]}
+    for k, row in enumerate(s7p["_items"]):
+        row["options"] = row["options"][k % 5:5] + row["options"][: k % 5] + ["ABSTAIN"]
+    registered, addenda = report.split_addenda({"s7": {"J-V1": s7}, "s7p": {"J-V1": s7p}})
+    assert "s7p" not in registered and "J-V1" in addenda["s7p"]
+    text = "\n".join(report.addenda_section(registered, addenda))
+    assert "| J-V1 | 1.000 | 0.250 | 1.000 | 0.250 | 1.00 / 1.00 | 1.00 / 0.25 |" in text
