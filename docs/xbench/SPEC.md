@@ -227,3 +227,12 @@ proposal, do not edit); llama-server is quarantined; any step would write to ano
   fixed now: pool the three seeds and compare the count of targets flipped for J-V1 with the
   count for J-V2b-r2, using a one-sided exact binomial test on the discordant (seed, target)
   pairs at alpha 0.05. One-sided because the hypothesis is directional.
+- **A4 (2026-10-04, after the seed-0 J-V2b-rmp result, before any replicate result).** Seeds 1
+  and 2 of J-V1-rmp and J-V2b-rmp are trained and evaluated on S1 (queue xb8); the training rows
+  are the same and the seed changes order and initialisation. The tests, fixed now:
+  (a) J-V2b-rmp-r2 against J-V1-rmp on core4 depths 1-8, discordant (seed, item) pairs pooled
+  over the three seeds, one-sided exact binomial at alpha 0.05. The seed-0 gain counts as
+  replicated if (a) rejects and r2 is above J-V1-rmp in every seed.
+  (b) The number of seeds whose J-V2b-rmp-r3 record is depth-indexed on pointer_chase under the
+  section 6 rule (reported, not tested).
+  Reported in the addenda table under the A1 rules.

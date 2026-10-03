@@ -1,0 +1,28 @@
+# Addendum A4: seed replicates of the RMP-trained arms (J-V1-rmp, J-V2b-rmp) on S1, after xb7.
+# Seeds change training order and LoRA initialisation; the 2,400 RMP rows are the same.
+name: xb8
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb7
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb7.yaml, --timeout-minutes, "4500"]
+  - name: train_v1_rmp_s1
+    args: [scripts/train_adapter.py, --config, configs/train/v1_rmp.yaml, --set, seed=1]
+  - name: j_v1_rmp_s1
+    args: [scripts/xbench.py, j, --arm, J-V1-rmp, --seed, "1", --suites, s1]
+  - name: train_v2b_rmp_s1
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_rmp.yaml, --set, seed=1]
+  - name: j_v2b_rmp_s1
+    args: [scripts/xbench.py, j, --arm, J-V2b-rmp, --seed, "1", --suites, s1]
+  - name: train_v1_rmp_s2
+    args: [scripts/train_adapter.py, --config, configs/train/v1_rmp.yaml, --set, seed=2]
+  - name: j_v1_rmp_s2
+    args: [scripts/xbench.py, j, --arm, J-V1-rmp, --seed, "2", --suites, s1]
+  - name: train_v2b_rmp_s2
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_rmp.yaml, --set, seed=2]
+  - name: j_v2b_rmp_s2
+    args: [scripts/xbench.py, j, --arm, J-V2b-rmp, --seed, "2", --suites, s1]
