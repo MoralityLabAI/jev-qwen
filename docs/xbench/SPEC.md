@@ -204,4 +204,8 @@ proposal, do not edit); llama-server is quarantined; any step would write to ano
 
 ## Addenda
 
-(none)
+- **A1 (2026-10-03, before any replicate or control result).** Seed replicates of trained J arms
+  (`<arm>-s<k>`) and the V1c learning-rate control `J-V1c-lr3` are reported in a separate
+  addenda table (per-seed accuracy, mean, SD; the control against J-V1c by paired exact
+  McNemar). They do not enter the R1/R2 pools or their Holm families; reliability calls use the
+  registered seed-0 arms. Details: `notes/xbench-log.md`.
