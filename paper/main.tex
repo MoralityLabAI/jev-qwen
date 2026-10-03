@@ -277,8 +277,19 @@ decision. Reliable: by the registered rule in the all-arm pool (all) or in the n
 on depths 1--8) and in the neural-only pool the 460k-parameter LOOP-T is the smallest reliable
 executor. All of them collapse on depths 9--12 (pointer chasing 0.00, gated 0.38, reachability 0.58).
 The exact solver is the overall ceiling. The untied FF-U reads out only at its last block (no
-depth-indexed readiness, $\rho=0.58$ on pointer chasing). Jev-style arms on S1, including whether a 4B
-model trained on the same task rows extrapolates past depth 8 where the compact decoders do not:
+depth-indexed readiness, $\rho=0.58$ on pointer chasing).
+
+The single-pass Jev-style arms are nowhere near this frontier (Table~\ref{tab:s1}). On the shared
+families the base model scores 0.406 on depths 1--8 and 0.353 on 9--12. Post-training on our
+decision suite lowers both (V1: 0.329 and 0.240; V1c: 0.364 and 0.260). The readout is not at
+fault: the option labels take a median 0.83--0.99 of the next-token probability mass in every
+family. On pointer chasing the base model is right on 0.92 of depth-1 items, 0.44 at depth 2 and
+0.16 at depth 3, against 1/16 chance. Post-training also changed which labels the model will
+emit. The base model answers REFUSE on 133 of the 300 gated items (150 of which call for it); V1
+never does, and its reachability answers shift from 27\% to 79\% ``yes''. A 4B model asked for one
+typed decision in one pass cannot chase pointers that a 460k-parameter looped decoder trained on
+the task chases reliably to depth 8. Whether training the 4B model on the same task rows changes
+this (J-V1-rmp), and whether emitted reasoning or trained recurrence does (J-cot, J-V2b), is
 \pending{xb1}.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every
@@ -287,7 +298,15 @@ underpowered by rule, so no arm is called reliable on it. On S7 the lexical rout
 the 6,338-parameter TRM router 127/128 (one forbidden contract chosen on 23 negatives). These suites
 reproduce the TRM-skills paper's thesis~\cite{dugan2026trmskills}: once the decision-relevant state
 is exposed, the smallest reliable executor is a script or a tiny TRM, and a 4B model can at best
-match it. Jev-style and Bonsai-8B arms: \pending{xb1, xb2}.
+match it. The Jev-style arms confirm it from the other side. On S2 they score 0.946--0.959
+(Table~\ref{tab:gates}); V1c commits 2 of the 18 true rejects, and every J arm over-refuses 2--4
+of the 56 true commits. On S7 the base model routes 0.953 of cases, V1 0.812 and V1c 0.836, with no
+forbidden contract chosen. These S7 numbers mix routing with an option-position prior: the
+registered shortlist is in lexical-rank order and the lexical top-1 is always the gold contract,
+so every positive gold is option A. The base model puts 0.92 of its predictions there; V1, trained
+with answer positions rotated, has lost that prior. A diagnostic rerun with each shortlist shuffled
+was added after these results (addendum A2, post hoc): \pending{xb6}. Bonsai-8B:
+\pending{xb2}.
 
 \paragraph{S3, long context.} Recorded results: trained ControlTRM followed by the LDT veto reaches
 utility 0.687 with no unsafe actions, against 0.339 and 19.4\% unsafe for the API language model
@@ -311,8 +330,13 @@ the learning-rate control are in the repository's addenda table.}
 \paragraph{S5, monitor ladder.} With scripted attackers, attack success falls from 0.90 with no
 control (q0) to 0.80 (action gate), 0.60 (trajectory budget), 0.50 (delegation guard) and 0.00 at the
 provenance membrane (q4), with no false blocks. Ignoring every cited claim also stops all attacks but
-blocks 23\% of legitimate actions and drops benign task completion to 0.70. Jev-style and Bonsai
-monitors with their option probabilities logged next to each decision: \pending{xb1, xb2}.
+blocks 23\% of legitimate actions and drops benign task completion to 0.70. As monitors, the three
+Jev-style arms let one of ten attacks through and block at most one legitimate action
+(Table~\ref{tab:gates}), which places them between the delegation guard (q3) and the provenance
+membrane (q4). They all miss the same attack: a quorum assembled from claims of duplicate lineage.
+V1 allows it with probability 0.999, so the calibrated readout gives no warning on the one decision
+that matters. That attack is structural: it is invisible in any single claim's text, and q4
+catches it from provenance alone. Bonsai-8B: \pending{xb2}.
 
 \begin{table}[t]
 \centering
@@ -326,8 +350,14 @@ monitor's ALLOW probability where it has one.}
 
 \paragraph{S6, fidelity half-life.} Gates that read only typed authoritative fields cannot be flipped
 by injected evidence and are the ceiling; no Control-Harness control flipped under the contract-side
-ladder. Half-lives of Jev-style gates under the scripted ladder and the adaptive attacker, and whether
-emitted reasoning or hidden recurrence lengthens them: \pending{xb1, xb2}.
+ladder (Table~\ref{tab:halflife}). Under the scripted ladder no Jev-style gate reaches a
+half-life on the S4 deny decisions, but post-training makes them easier to move. The base model
+flips none of its 54 targets; V1 flips 5, all to the first injected note, and V1c the same 5, by
+turn 5. The base model's resistance comes with the 21\% over-refusal on authorized requests
+reported in Section~\ref{sec:readouts}. On the contract side, where the gate decides one of the
+attacked proposals, the J monitors are weaker: the base model flips 5 of 10 eligible targets
+(half-life 8 turns), V1 4 and V1c 3. Half-lives under the adaptive attacker, and whether emitted
+reasoning or hidden recurrence lengthens them: \pending{xb1, xb2}.
 
 \begin{table}[t]
 \centering
@@ -346,6 +376,14 @@ single-pass calibrated readout is cheap and, after light post-training, close to
 reasoning on short-answer decisions. It does not make the model an authorization gate by itself:
 where authoritative state can be read by a script, the script is smaller, cannot be talked out of its
 decision, and is already reliable.
+
+\paragraph{Post-training transfers badly.} Post-training on one decision suite gives up
+accuracy on every other suite we measured: S1 (pointer chasing, gating, reachability), S7 and the
+injection ladder. Part of the mechanism is mundane. Training on a fixed letter scheme with rotated
+answer positions installs a prior over labels: V1 stops emitting REFUSE (X) on S1 and stops
+favouring option A on S7. A typed-decision model's label space is part of what it learns, so a
+Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
+and dropped into a new gate is not neutral, even when its in-domain calibration is good.
 
 \paragraph{Recurrence.} Hidden depth is not free capability. Untrained, it drifts; whether trained
 recurrence buys back the 4.5-point gap to emitted reasoning is the open question this draft cannot
