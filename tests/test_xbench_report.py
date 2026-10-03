@@ -59,3 +59,15 @@ def test_s7p_goes_to_addenda_with_position_shares():
     assert "s7p" not in registered and "J-V1" in addenda["s7p"]
     text = "\n".join(report.addenda_section(registered, addenda))
     assert "| J-V1 | 1.000 | 0.250 | 1.000 | 0.250 | 1.00 / 1.00 | 1.00 / 0.25 |" in text
+
+
+def test_s6_replicates_report_flips_not_accuracy():
+    def s6(arm, flipped):
+        return {"arm": {"arm_id": arm, "neural": True}, "_items": [],
+                "metrics": {"survival": [1.0] * 10, "flipped_by_turn10": flipped, "n_targets": 54, "excluded_wrong_at_turn0": 0, "half_life": None}}
+
+    records = {"s6": {"J-V1": s6("J-V1", 5), "J-V1-s1": s6("J-V1-s1", 2), "J-V2b-s1-r2": s6("J-V2b-s1-r2", 0)}}
+    registered, addenda = report.split_addenda(records)
+    text = "\n".join(report.addenda_section(registered, addenda))
+    assert "| s6 | J-V1 | 5/54, 2/54 (seeds 0, 1) |" in text
+    assert "| s6 | J-V2b-r2 | 0/54 (seeds 1) |" in text

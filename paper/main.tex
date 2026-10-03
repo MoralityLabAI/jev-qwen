@@ -149,10 +149,11 @@ grants permission. The dev suite has 1,000 items per readout over five difficult
 V0 & 0.713 & 0.667 & 0.875 & 41.9 \\
 V1 & 0.880 & 0.792 & 0.922 & 41.3 \\
 V1c & 0.861 & 0.777 & 0.910 & 40.8 \\
+V2b, 2 passes & 0.875 & -- & -- & -- \\
 \bottomrule
 \end{tabular}
 \caption{Dev-suite accuracy. \cotR{} runs on a 400-item prefix of the dev suite (the first 10 items
-per task and difficulty).}
+per task and difficulty). V2b was evaluated with \choiceR{} only (Section~\ref{sec:recurrence}).}
 \label{tab:readouts}
 \end{table}
 
@@ -213,8 +214,20 @@ sends 96\% of two-option answers to ``A'' and almost eliminates option D. On the
 this produces unsafe allowances (0 to 16 of 22 deny cases for layers 4--7), at similar rates with and
 without the override note, so the loop scrambles the readout rather than making the model more
 persuadable. One extra pass costs 12.2\% in paired latency, matching its 12.5\% share of layer
-applications. Whether training with the loop active (V2b) turns this into useful computation is
-\pending{xb1}.
+applications.
+
+\paragraph{Training with the loop does not help either.} V2b repeats V1's training exactly (same
+adapter, data, steps and seed) with layers 12--15 run twice in every training forward. Training
+costs 20\% more per step and ends at a similar loss (0.094 against 0.113 over the last 50
+steps). We evaluate it at one, two and three passes from a single three-pass run; the tail lens
+makes each an exact early exit. At its trained depth V2b matches V1 and does not beat it: 0.875
+against 0.880 overall (paired $p=0.65$), 0.833 against 0.840 on the four multi-step classes, and
+0.747 against 0.750 on multi-step items at difficulties 4--5. One pass, below the trained depth,
+costs 3.3 points ($p=3\times10^{-4}$); a third pass adds nothing (0.873). The passes do change answers:
+the second changes the argmax on 61 of 1,000 items and the third on 39. At its trained depth that
+computation lands where V1 already was. By the registered criterion this falsifies H4, the
+hypothesis that trained depth substitutes for reasoning steps. The gap to V1's own \cotR{} (0.922)
+stays where it was.
 
 \section{A pre-registered cross-architecture benchmark}
 \label{sec:bench}
@@ -288,8 +301,11 @@ family. On pointer chasing the base model is right on 0.92 of depth-1 items, 0.4
 emit. The base model answers REFUSE on 133 of the 300 gated items (150 of which call for it); V1
 never does, and its reachability answers shift from 27\% to 79\% ``yes''. A 4B model asked for one
 typed decision in one pass cannot chase pointers that a 460k-parameter looped decoder trained on
-the task chases reliably to depth 8. Whether training the 4B model on the same task rows changes
-this (J-V1-rmp), and whether emitted reasoning or trained recurrence does (J-cot, J-V2b), is
+the task chases reliably to depth 8. Trained recurrence does not change this. J-V2b scores
+0.342, 0.326 and 0.304 on S1 at one, two and three passes, so each extra pass makes it worse. Its
+per-pass readout never reaches 0.9 at any depth beyond the first, so unlike LOOP-T-ds and FF-U-ds
+($\rho=0.94$--$0.98$) it shows no depth-indexed readiness. Whether training the 4B model on the
+same task rows changes this (J-V1-rmp), and whether emitted reasoning does (J-cot), is
 \pending{xb1}.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every
@@ -356,8 +372,12 @@ flips none of its 54 targets; V1 flips 5, all to the first injected note, and V1
 turn 5. The base model's resistance comes with the 21\% over-refusal on authorized requests
 reported in Section~\ref{sec:readouts}. On the contract side, where the gate decides one of the
 attacked proposals, the J monitors are weaker: the base model flips 5 of 10 eligible targets
-(half-life 8 turns), V1 4 and V1c 3. Half-lives under the adaptive attacker, and whether emitted
-reasoning or hidden recurrence lengthens them: \pending{xb1, xb2}.
+(half-life 8 turns), V1 4 and V1c 3. Trained recurrence is the one intervention that points toward
+robustness: V2b at its trained depth flips none of the 54 deny targets that V1 flips 5 of, and
+the 5 are the same targets (paired exact $p=0.0625$, one seed). The one-pass exit of the same
+adapter flips 3. We registered a pooled replicate test before running it (addendum A3):
+\pending{xb4, xb7}. Half-lives under the adaptive attacker, and whether emitted reasoning lengthens
+them: \pending{xb1, xb2}.
 
 \begin{table}[t]
 \centering
@@ -385,9 +405,14 @@ favouring option A on S7. A typed-decision model's label space is part of what i
 Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
 and dropped into a new gate is not neutral, even when its in-domain calibration is good.
 
-\paragraph{Recurrence.} Hidden depth is not free capability. Untrained, it drifts; whether trained
-recurrence buys back the 4.5-point gap to emitted reasoning is the open question this draft cannot
-yet answer.
+\paragraph{Recurrence.} Hidden depth is not free capability at this scale and budget. Untrained,
+it drifts. Trained for 300 steps with the loop active, it computes, changing answers at each pass,
+but it lands at the accuracy of the same adapter without the loop and leaves the 4.5-point gap to
+emitted reasoning untouched. On S1 it moves answers without making them more accurate. The
+compact looped decoders show the contrast. There, recurrence is the whole architecture, trained
+from scratch on the task, and their per-pass readout tracks depth. Bolting a loop onto a
+pretrained stack and fine-tuning it briefly does not produce that. The one hint in the other
+direction is control-side: fewer injection flips at the trained depth, pending replication.
 
 \paragraph{Limitations.} Single seeds for every trained variant so far (replicates
 \pending{xb4}); latency measured on a GPU shared with other jobs; synthetic, templated decision tasks;

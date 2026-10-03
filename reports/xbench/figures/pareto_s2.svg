@@ -36,6 +36,12 @@
 <text x="638.8" y="70.2">J-V1</text>
 <circle cx="631.8" cy="76.2" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="70.2">J-V1c</text>
+<circle cx="631.8" cy="60.0" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="54.0">J-V2b-r1</text>
+<circle cx="631.8" cy="76.2" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="70.2">J-V2b-r2</text>
+<circle cx="631.8" cy="72.2" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="66.2">J-V2b-r3</text>
 <circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>
 <text x="95.2" y="54.0">kNN-critic</text>
 <circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>

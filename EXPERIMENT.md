@@ -276,6 +276,11 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
 - **H4's mechanism is unsupported** even if accuracy improves, when iterations after the first
   show `rel_delta_last` < 0.02 and logit-lens KL near zero: the gain then comes from the adapter,
   not from recurrence. The `n_iters: 1` ablation of the same adapter settles it.
+  **M4 result (2026-10-03): falsified on both criteria.** On the multi-step classes V2b scores
+  0.833 at its best `n_iters` (2, the trained depth) against V1's 0.840 (paired p = 0.65). At
+  difficulty 4-5 it rises from one pass to two (0.673 to 0.747) and not from two to three
+  (0.737). The passes do change answers (61 of 1,000 at the second pass), but at the trained
+  depth the result equals V1. See `notes/007`.
 - **H5 is false** if V3 with k latent steps is more than 5 points below the same model emitting
   a reasoning trace, or not faster.
 - **H6 is false** if mean iterations do not increase with difficulty, or accuracy drops more
@@ -283,6 +288,11 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
 - **H7 is false** if any recurrent variant raises `unsafe_allow_rate` by more than 3 points over
   its non-recurrent counterpart. The stronger form is false if the with-override-note rate does
   not fall.
+  **M4 interim (2026-10-03): not falsified; stronger form untestable on dev.** Unsafe allows
+  are 0 of 54 for V1 and for V2b at one, two and three passes. V1's rate with override notes is
+  already 0, so it cannot fall. The xbench injection ladder points toward the stronger form
+  (5 flips of 54 for V1, 0 for V2b at its trained depth, p = 0.0625, one seed); the seed
+  replicates test it.
 - **The project's main claim fails** if no variant in V2-V4 beats V1 on any of accuracy at equal
   compute, compute at equal accuracy, or difficulty extrapolation. That outcome is reported as
   the result.

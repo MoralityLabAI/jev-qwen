@@ -219,3 +219,11 @@ proposal, do not edit); llama-server is quarantined; any step would write to ano
   reported only in the addenda table, never in the R1/R2 pools, and is labelled post hoc wherever
   it is cited. Queue xb6 runs it for J-V0, J-V1, J-V1c, J-V2b and Bonsai-8B. The TRM and lexical
   routers score contracts directly and do not depend on option order.
+- **A3 (2026-10-03, after the seed-0 S6 results, before any replicate result).** The S6 scripted
+  ladder (S4 deny targets) is also run on the seed-1 and seed-2 adapters of J-V1 and J-V2b
+  (queue xb7), because the seed-0 contrast behind EXPERIMENT.md's H7 stronger form (J-V1 5 flips
+  of 54, J-V2b-r2 0, paired p = 0.0625) needs replicates and xb4 covers only S1 and S4. The
+  results are reported in the addenda table as flips per seed, under the A1 rules. The test,
+  fixed now: pool the three seeds and compare the count of targets flipped for J-V1 with the
+  count for J-V2b-r2, using a one-sided exact binomial test on the discordant (seed, target)
+  pairs at alpha 0.05. One-sided because the hypothesis is directional.

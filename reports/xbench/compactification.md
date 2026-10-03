@@ -14,6 +14,9 @@ Params = resident parameters (host included); passes = sequential forward passes
 | FF-U | yes | 1839616 | 1.0 | 975 | 0.761 [0.73, 0.79] | - | no | - | no / no |
 | J-V0 | yes | 4205751296 | 1.0 | 1275 | 0.400 [0.37, 0.43] | - | no | - | no / no |
 | J-V1c | yes | 4236225536 | 1.0 | 1275 | 0.351 [0.32, 0.38] | - | no | - | no / no |
+| J-V2b-r1 | yes | 4236225536 | 1.0 | 1275 | 0.342 [0.32, 0.37] | - | no | - | no / no |
+| J-V2b-r2 | yes | 4236225536 | 1.0 | 1275 | 0.326 [0.30, 0.35] | - | no | - | no / no |
+| J-V2b-r3 | yes | 4236225536 | 1.0 | 1275 | 0.304 [0.28, 0.33] | - | no | - | no / no |
 | J-V1 | yes | 4236225536 | 1.0 | 1275 | 0.289 [0.26, 0.31] | - | no | - | no / no |
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **LOOP-T** (neural arms).
@@ -26,12 +29,15 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 
 | Arm | Neural | Params | Passes | n | Accuracy [95% CI] | Unsafe | R1 | R2 | Reliable (all / neural pool) |
 |-----|--------|--------|--------|---|-------------------|--------|----|----|-------------------------------|
+| J-V2b-r1 | yes | 4236225536 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / no (underpowered) |
 | TRM-cv | yes | 4239362 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / no (underpowered) |
 | kNN-critic | no | 0 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / - (underpowered) |
 | script | no | 0 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / - (underpowered) |
 | J-V0 | yes | 4205751296 | 1.0 | 74 | 0.959 [0.89, 0.99] | 0/18 | no | yes | no / no (underpowered) |
+| J-V2b-r3 | yes | 4236225536 | 1.0 | 74 | 0.959 [0.89, 0.99] | 0/18 | no | yes | no / no (underpowered) |
 | J-V1 | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 0/18 | no | yes | no / no (underpowered) |
 | J-V1c | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 2/18 | no | no | no / no (underpowered) |
+| J-V2b-r2 | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 2/18 | no | no | no / no (underpowered) |
 
 Best arm: **kNN-critic**. Smallest reliable executor: **None** (all arms), **None** (neural arms).
 
@@ -46,8 +52,11 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | script | no | 0 | 1.0 | 1000 | 1.000 [1.00, 1.00] | 0/54 | yes | yes | yes / - |
 | J-cot-V1 | yes | 4236225536 | 41.3 | 400 | 0.922 [0.89, 0.94] | 0/22 | no | yes | no / no (underpowered) |
 | J-V1 | yes | 4236225536 | 1.0 | 1000 | 0.880 [0.86, 0.90] | 0/54 | no | yes | no / no |
+| J-V2b-r2 | yes | 4236225536 | 1.0 | 1000 | 0.875 [0.85, 0.89] | 0/54 | no | yes | no / no |
 | J-cot-V0 | yes | 4205751296 | 41.9 | 400 | 0.875 [0.84, 0.90] | 0/22 | no | yes | no / no (underpowered) |
+| J-V2b-r3 | yes | 4236225536 | 1.0 | 1000 | 0.873 [0.85, 0.89] | 0/54 | no | yes | no / no |
 | J-V1c | yes | 4236225536 | 1.0 | 1000 | 0.861 [0.84, 0.88] | 0/54 | no | yes | no / no |
+| J-V2b-r1 | yes | 4236225536 | 1.0 | 1000 | 0.847 [0.82, 0.87] | 0/54 | no | yes | no / no |
 | J-V0 | yes | 4205751296 | 1.0 | 1000 | 0.713 [0.68, 0.74] | 0/54 | no | yes | no / no |
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **None** (neural arms).
@@ -63,8 +72,11 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | lexical-router | no | 0 | 1.0 | 128 | 1.000 [0.97, 1.00] | 0/23 | yes | - | yes / - |
 | SkillRouter-TRM | yes | 6338 | 1.0 | 128 | 0.992 [0.96, 1.00] | 1/23 | yes | - | yes / yes |
 | J-V0 | yes | 4205751296 | 1.0 | 128 | 0.953 [0.90, 0.98] | 0/23 | no | - | no / no |
+| J-V2b-r2 | yes | 4236225536 | 1.0 | 128 | 0.859 [0.79, 0.91] | 0/23 | no | - | no / no |
+| J-V2b-r3 | yes | 4236225536 | 1.0 | 128 | 0.859 [0.79, 0.91] | 0/23 | no | - | no / no |
 | J-V1c | yes | 4236225536 | 1.0 | 128 | 0.836 [0.76, 0.89] | 0/23 | no | - | no / no |
 | J-V1 | yes | 4236225536 | 1.0 | 128 | 0.812 [0.74, 0.87] | 0/23 | no | - | no / no |
+| J-V2b-r1 | yes | 4236225536 | 1.0 | 128 | 0.789 [0.71, 0.85] | 0/23 | no | - | no / no |
 
 Best arm: **lexical-router**. Smallest reliable executor: **lexical-router** (all arms), **SkillRouter-TRM** (neural arms).
 
@@ -101,7 +113,10 @@ Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; 
 | CH-q4-provenance-membrane | no | 0 | 1.0 | 33 | 1.000 [0.90, 1.00] | 0/11 | yes | yes | no / - (underpowered) |
 | J-V1 | yes | 4236225536 | 1.0 | 33 | 0.970 [0.85, 0.99] | 1/11 | no | no | no / no (underpowered) |
 | J-V1c | yes | 4236225536 | 1.0 | 33 | 0.970 [0.85, 0.99] | 1/11 | no | no | no / no (underpowered) |
+| J-V2b-r2 | yes | 4236225536 | 1.0 | 33 | 0.970 [0.85, 0.99] | 1/11 | no | no | no / no (underpowered) |
 | J-V0 | yes | 4205751296 | 1.0 | 33 | 0.939 [0.80, 0.98] | 1/11 | no | no | no / no (underpowered) |
+| J-V2b-r1 | yes | 4236225536 | 1.0 | 33 | 0.939 [0.80, 0.98] | 2/11 | no | no | no / no (underpowered) |
+| J-V2b-r3 | yes | 4236225536 | 1.0 | 33 | 0.939 [0.80, 0.98] | 0/10 | no | yes | no / no (underpowered) |
 | CH-q3-delegation-guard | no | 0 | 1.0 | 33 | 0.848 [0.69, 0.93] | 5/11 | no | no | no / - (underpowered) |
 | CH-q3-claims-ignored | no | 0 | 1.0 | 32 | 0.844 [0.68, 0.93] | 0/10 | no | yes | no / - (underpowered) |
 | CH-q2-trajectory-budget | no | 0 | 1.0 | 32 | 0.812 [0.65, 0.91] | 6/10 | no | no | no / - (underpowered) |
@@ -123,6 +138,9 @@ Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; FF-U: 
 | J-V0 | 0.411 (n=875) | 0.375 (n=400) | -0.036 |
 | J-V1 | 0.318 (n=875) | 0.225 (n=400) | -0.093 |
 | J-V1c | 0.383 (n=875) | 0.280 (n=400) | -0.103 |
+| J-V2b-r1 | 0.376 (n=875) | 0.268 (n=400) | -0.108 |
+| J-V2b-r2 | 0.362 (n=875) | 0.247 (n=400) | -0.115 |
+| J-V2b-r3 | 0.335 (n=875) | 0.235 (n=400) | -0.100 |
 | LOOP-T | 0.979 (n=675) | 0.320 (n=300) | -0.659 |
 | LOOP-T-ds | 0.999 (n=675) | 0.320 (n=300) | -0.679 |
 | script | 1.000 (n=875) | 1.000 (n=400) | +0.000 |

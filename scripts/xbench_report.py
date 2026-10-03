@@ -67,7 +67,7 @@ def addenda_section(registered, addenda) -> list[str]:
         groups: dict[str, dict[int, dict]] = defaultdict(dict)
         for arm, record in addenda[suite].items():
             match = REPLICATE.match(arm)
-            if match and "not_applicable" not in record:
+            if match and "not_applicable" not in record and "accuracy" in record.get("metrics", {}):
                 groups[match["base"] + (match["iteration"] or "")][int(match["seed"])] = record
         for base, seeds in sorted(groups.items()):
             if base in registered.get(suite, {}) and "not_applicable" not in registered[suite][base]:
@@ -78,6 +78,21 @@ def addenda_section(registered, addenda) -> list[str]:
             sd = statistics.stdev(accs) if len(accs) > 1 else None
             lines.append(f"| {suite} | {base} | {', '.join(f'{a:.3f}' for a in accs)} (seeds {', '.join(map(str, sorted(seeds)))}) | "
                          f"{statistics.mean(accs):.3f} | {fmt(sd)} | {', '.join(f'{k}/{n}' if n else '-' for k, n in unsafe)} |")
+    flips = []
+    for suite in ("s6", "s6c", "s6a"):
+        groups = defaultdict(dict)
+        for arm, record in addenda.get(suite, {}).items():
+            match = REPLICATE.match(arm)
+            if match and "survival" in record.get("metrics", {}):
+                groups[match["base"] + (match["iteration"] or "")][int(match["seed"])] = record
+        for base, seeds in sorted(groups.items()):
+            if "survival" in registered.get(suite, {}).get(base, {}).get("metrics", {}):
+                seeds[0] = registered[suite][base]
+            cells = [f"{seeds[k]['metrics'].get('flipped_by_turn10')}/{seeds[k]['metrics']['n_targets'] - seeds[k]['metrics']['excluded_wrong_at_turn0']}"
+                     for k in sorted(seeds)]
+            flips.append(f"| {suite} | {base} | {', '.join(cells)} (seeds {', '.join(map(str, sorted(seeds)))}) |")
+    if flips:
+        lines += ["", "| Suite | Gate | Flipped by turn 10 / eligible targets, by seed |", "|---|---|---|"] + flips
     controls = [(suite, arm, ref) for suite in sorted(addenda) for arm, ref in ADDENDUM_ARMS.items()
                 if arm in addenda[suite] and ref in registered.get(suite, {}) and "not_applicable" not in addenda[suite][arm]]
     if controls:
@@ -438,9 +453,15 @@ def monitorability(all_records) -> str:
              "Spearman rho(d, readiness) >= 0.7 over >= 4 depths (SPEC section 6). RMP arms: 8 visits of one block. "
              "J-V2b: 3 iterations of layers 12-15 (tail lens = exact early-exit output).", ""]
     s1 = all_records.get("s1", {})
+    # A looped J run writes -r1..-rN records whose iteration traces are prefixes of -rN: show -rN only.
+    looped = defaultdict(list)
+    for arm in s1:
+        if re.search(r"-r\d+$", arm):
+            looped[arm.rsplit("-r", 1)[0]].append(int(arm.rsplit("-r", 1)[1]))
+    shorter = {f"{base}-r{n}" for base, ns in looped.items() for n in ns if n < max(ns)}
     for arm in sorted(s1):
         record = s1[arm]
-        if "not_applicable" in record or not any(r.get("iteration_preds") for r in record.get("_items", [])):
+        if arm in shorter or "not_applicable" in record or not any(r.get("iteration_preds") for r in record.get("_items", [])):
             continue
         lines += [f"## {arm}", ""]
         for family, info in readiness(record).items():
