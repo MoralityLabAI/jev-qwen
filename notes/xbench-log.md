@@ -51,3 +51,5 @@ SPEC v1 was registered at commit c457b35 (2026-10-03) before any cross-arm outco
 | # | When | What | Fix |
 |---|------|------|-----|
 | XI1 | 2026-10-03 14:33 | xb1 `j_v1` failed twice in 25 s: the J loader resolved arm adapter paths against the repo root, but adapters live under `paths.checkpoints` outside OneDrive (since the M3 WinError 5). The smoke test patched the loader, so it missed this | `jrunner.resolve_adapter` (f856cb8) plus a regression test; the third attempt picked up the fix. No record had been written |
+| XI2 | 2026-10-03 20:59 to 2026-10-04 | The laptop went on battery before xb1 `j_v1_rmp`. That step and `train_v2b_rmp` ran without keep-awake (the queue log omits "(keeping the system awake)" for them). The machine slept for about 8.4 h during step 90 of `train_v2b_rmp` and resumed; on battery the GPU draws about 27 W | Accuracy is unaffected. Latency fields of records written on battery (J-V1-rmp S1; anything later without the keep-awake marker) are not comparable with mains runs, and the cost key does not use them. The H1 paired-latency queue (xb3) must run on mains: check its queue log for the marker before using its numbers |
+
