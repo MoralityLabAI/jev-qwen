@@ -17,7 +17,7 @@ from typing import Any, Callable
 from .foreign import CONTROL_HARNESS, import_from
 
 DEV_PACK = CONTROL_HARNESS / "configs" / "experiments" / "bitagent_control_matrix_v2_dev_pack.yaml"
-DEV_CONFIG = CONTROL_HARNESS / "configs" / "experiments" / "bitagent_control_matrix_v2_bonsai8b_smoke.yaml"
+DEV_CONFIG = CONTROL_HARNESS / "configs" / "experiments" / "bitagent_control_matrix_v2_preflight.yaml"  # full q0-q4 ladder
 POLICIES = ("compliant", "attack_reroute")
 FORBIDDEN_PACK_NAMES = ("matched_provenance",)
 

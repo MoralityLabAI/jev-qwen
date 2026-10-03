@@ -1,0 +1,77 @@
+# xbench: control (RQ-C)
+
+Unsafe = false commit / unsafe allow / escaped violation; over-refusal = false reject / false block.
+
+## S2
+
+| Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
+|---|---|---|---|---|---|---|
+| TRM-cv | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | 0.085 | - |
+| kNN-critic | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | 0.000 | - |
+| script | 74 | 1.000 | 0/18 [0.00, 0.18] | 0/56 [0.00, 0.06] | - | - |
+
+## S4
+
+| Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
+|---|---|---|---|---|---|---|
+| J-V0 | 1000 | 0.713 | 0/54 [0.00, 0.07] | 15/71 [0.13, 0.32] | 0.032 | - |
+| J-V1 | 1000 | 0.880 | 0/54 [0.00, 0.07] | 0/71 [0.00, 0.05] | 0.069 | - |
+| J-cot-V0 | 400 | 0.875 | 0/22 [0.00, 0.15] | 0/28 [0.00, 0.12] | - | - |
+| J-cot-V1 | 400 | 0.922 | 0/22 [0.00, 0.15] | 0/28 [0.00, 0.12] | - | - |
+| script | 1000 | 1.000 | 0/54 [0.00, 0.07] | 0/71 [0.00, 0.05] | - | - |
+
+S4 unsafe / over-refusal columns use the auth_gate items only.
+
+## S5
+
+| Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
+|---|---|---|---|---|---|---|
+| CH-q0-none | 32 | 0.688 | 10/10 [0.72, 1.00] | 0/22 [0.00, 0.15] | - | attack success 0.900, benign done 1.000 |
+| CH-q4-provenance-membrane | 33 | 1.000 | 0/11 [0.00, 0.26] | 0/22 [0.00, 0.15] | - | attack success 0.000, benign done 1.000 |
+
+## S3
+
+| Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
+|---|---|---|---|---|---|---|
+| ControlTRM | 72 | 0.750 | 8/72 [0.06, 0.20] | - | - | - |
+| ControlTRM-LDT | 72 | 0.861 | 0/72 [0.00, 0.05] | - | - | - |
+| LDT | 72 | 0.417 | 0/72 [0.00, 0.05] | - | - | - |
+| RLM-API | 72 | 0.181 | 14/72 [0.12, 0.30] | - | - | - |
+| recorded-proxy_trm_ldt_fixed | 72 | 0.625 | 0/72 [0.00, 0.05] | - | - | - |
+| recorded-proxy_trm_only | 72 | 0.417 | 18/72 [0.16, 0.36] | - | - | - |
+| recorded-proxy_trm_rlm_critic_ldt | 72 | 0.236 | 0/72 [0.00, 0.05] | - | - | - |
+| recorded-rlm_ldt_membrane | 72 | 0.333 | 0/72 [0.00, 0.05] | - | - | - |
+| recorded-rlm_recursive_conductor | 72 | 0.264 | 0/72 [0.00, 0.05] | - | - | - |
+| recorded-rlm_tool_conductor | 72 | 0.333 | 0/72 [0.00, 0.05] | - | - | - |
+| recorded-trained_trm_rlm_critic_ldt | 72 | 0.292 | 0/72 [0.00, 0.05] | - | - | - |
+
+## S7
+
+| Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
+|---|---|---|---|---|---|---|
+| SkillRouter-TRM | 128 | 0.992 | 1/23 [0.01, 0.21] | - | 0.271 | - |
+| lexical-router | 128 | 1.000 | 0/23 [0.00, 0.14] | - | - | - |
+
+## S6 scripted ladder, S4 auth_gate targets
+
+| Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
+|---|---|---|---|---|
+| script | 54 | 0 | None | > 10 |
+
+![S6 scripted ladder, S4 auth_gate targets](figures/halflife_s6.svg)
+
+## S6 scripted ladder, S5 contract targets
+
+| Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
+|---|---|---|---|---|
+| CH-q0-none | 11 | 11 | 0 | > 10 |
+| CH-q4-provenance-membrane | 11 | 0 | 0 | > 10 |
+
+![S6 scripted ladder, S5 contract targets](figures/halflife_s6c.svg)
+
+## Recurrence and reasoning effects (paired, Holm across suites)
+
+| Comparison | Shared items | First only correct | Second only correct | p (Holm) |
+|---|---|---|---|---|
+| s4:J-cot-V0 vs J-V0 | 400 | 83 | 23 | 7.57e-09 |
+| s4:J-cot-V1 vs J-V1 | 400 | 36 | 18 | 0.0198 |
