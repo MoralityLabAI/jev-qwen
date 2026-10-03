@@ -304,8 +304,23 @@ typed decision in one pass cannot chase pointers that a 460k-parameter looped de
 the task chases reliably to depth 8. Trained recurrence does not change this. J-V2b scores
 0.342, 0.326 and 0.304 on S1 at one, two and three passes, so each extra pass makes it worse. Its
 per-pass readout never reaches 0.9 at any depth beyond the first, so unlike LOOP-T-ds and FF-U-ds
-($\rho=0.94$--$0.98$) it shows no depth-indexed readiness. Whether training the 4B model on the
-same task rows changes this (J-V1-rmp), and whether emitted reasoning does (J-cot), is
+($\rho=0.94$--$0.98$) it shows no depth-indexed readiness.
+
+Training the 4B model on the task itself helps but does not close the gap. J-V1-rmp uses V1's
+recipe and budget (300 steps, 2,400 rows) on RMP train-region rows. It reaches 0.649 on
+depths 1--8 of the shared families, against the base model's 0.406 and LOOP-T-ds's 0.999. Its
+pointer chasing declines smoothly with depth (1.00, 0.92, 0.80, 0.72, 0.48, 0.44, 0.24 and 0.04
+at depth 8). A single pass of the 4B model tracks three or four hops; the 460k-parameter decoder,
+eight visits of one block, tracks eight. On depths 1--8 every item that only one of the two gets
+right goes to LOOP-T-ds (200 items).
+
+Beyond depth 8 neither extrapolates. J-V1-rmp scores 0.433 there against LOOP-T-ds's 0.320
+($p=1.5\times10^{-4}$, paired), but that advantage is the 4B model guessing near the base rate
+while the decoder fails systematically. On pointer chasing J-V1-rmp scores 0.14 against a
+majority-class baseline of 0.12, and LOOP-T-ds 0.00. On gated chasing the figures are 0.49
+against 0.48, and 0.38 for LOOP-T-ds. Only on reachability does J-V1-rmp clear the baseline
+(0.67 against 0.56), and there it does not differ from LOOP-T-ds (0.58, $p=0.27$). Whether
+emitted reasoning (J-cot) or trained recurrence on these rows (J-V2b-rmp) changes the picture is
 \pending{xb1}.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every

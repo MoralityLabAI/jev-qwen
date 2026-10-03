@@ -38,6 +38,8 @@
 <text x="638.6" y="234.0">J-V0</text>
 <circle cx="631.8" cy="273.4" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="267.4">J-V1</text>
+<circle cx="631.8" cy="181.4" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="175.4">J-V1-rmp</text>
 <circle cx="631.8" cy="254.8" r="5" fill="#1f5fa8"/>
 <text x="638.8" y="248.8">J-V1c</text>
 <circle cx="631.8" cy="257.4" r="5" fill="#1f5fa8"/>
