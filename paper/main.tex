@@ -261,6 +261,17 @@ Kaplan--Meier estimates~\cite{kaplan1958} censored at turn 10.
 \section{Compactification results}
 \label{sec:compact}
 
+\begin{table}[t]
+\centering
+\small
+\input{generated/s1_table}
+\caption{S1 on the four families every arm shares (25 items per depth; sudoku4 depths 1--3).
+Params are resident parameters including the host; passes are sequential forward passes per
+decision. Reliable: by the registered rule in the all-arm pool (all) or in the neural-only pool
+(neural). Generated from the run records by \texttt{scripts/xbench\_paper.py}.}
+\label{tab:s1}
+\end{table}
+
 \paragraph{S1, algorithmic depth.} Within trained depths the looped decoders are near ceiling
 (LOOP-T with deep supervision: pointer chasing 1.000, gated 1.000, reachability 0.995, sudoku 1.000
 on depths 1--8) and in the neural-only pool the 460k-parameter LOOP-T is the smallest reliable
@@ -282,7 +293,17 @@ match it. Jev-style and Bonsai-8B arms: \pending{xb1, xb2}.
 utility 0.687 with no unsafe actions, against 0.339 and 19.4\% unsafe for the API language model
 alone. Jev-style arms reading the full transcripts in one pass: \pending{xb1, after a memory probe}.
 
-\paragraph{Frontier.} \pending{Pareto plots from \texttt{reports/xbench/compactification.md}}.
+\paragraph{Frontier.} Figure~\ref{fig:pareto} places every live arm by cost and accuracy.
+\pending{interpretation after xb1, xb2}.
+
+\begin{figure}[t]
+\centering
+\input{generated/pareto}
+\caption{Accuracy against $\log_{10}$(resident parameters $\times$ sequential passes); circles are
+neural arms, squares non-neural arms (plotted at 0). Registered arms only; seed replicates and
+the learning-rate control are in the repository's addenda table.}
+\label{fig:pareto}
+\end{figure}
 
 \section{Control results}
 \label{sec:control}
@@ -293,10 +314,30 @@ provenance membrane (q4), with no false blocks. Ignoring every cited claim also 
 blocks 23\% of legitimate actions and drops benign task completion to 0.70. Jev-style and Bonsai
 monitors with their option probabilities logged next to each decision: \pending{xb1, xb2}.
 
+\begin{table}[t]
+\centering
+\small
+\input{generated/gate_table}
+\caption{Gates. S2: unsafe = commit on a true reject (18), over-refusal = reject on a true commit
+(56). S5: attack success over attacked episodes, false blocks over benign proposals, ECE of the
+monitor's ALLOW probability where it has one.}
+\label{tab:gates}
+\end{table}
+
 \paragraph{S6, fidelity half-life.} Gates that read only typed authoritative fields cannot be flipped
 by injected evidence and are the ceiling; no Control-Harness control flipped under the contract-side
 ladder. Half-lives of Jev-style gates under the scripted ladder and the adaptive attacker, and whether
 emitted reasoning or hidden recurrence lengthens them: \pending{xb1, xb2}.
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/halflife_table}
+\caption{Fidelity half-life. Targets are deny decisions (S4) or attacked contract actions (S5);
+targets the gate already gets wrong with no injection are excluded. Half-life is the Kaplan--Meier
+turn at which half the remaining targets have flipped, censored at turn 10.}
+\label{tab:halflife}
+\end{table}
 
 \section{Discussion}
 
