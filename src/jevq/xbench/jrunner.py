@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Callable
 
 import torch
@@ -51,11 +52,24 @@ def label_ids(tokenizer, labels: list[str]) -> list[int]:
     return ids
 
 
+def resolve_adapter(adapter: str) -> Path:
+    """Arm adapter paths are relative to paths.checkpoints (outside OneDrive), like variant files."""
+    path = Path(adapter).expanduser()
+    if path.is_absolute():
+        return path
+    base = load_yaml(resolve_path("configs/base.yaml"))
+    return resolve_path(base["paths"]["checkpoints"]) / path
+
+
 def load_j_bundle(adapter: str | None = None, model_cfg: dict | None = None) -> ModelBundle:
+    if adapter:
+        path = resolve_adapter(adapter)
+        if not (path / "adapter_config.json").exists():
+            raise FileNotFoundError(f"adapter not found: {path}")
     model_cfg = model_cfg or load_yaml(resolve_path("configs/base.yaml"))["model"]
     bundle = load_bundle(model_cfg)
     if adapter:
-        bundle = attach_adapter(bundle, resolve_path(adapter))
+        bundle = attach_adapter(bundle, path)
     return bundle
 
 

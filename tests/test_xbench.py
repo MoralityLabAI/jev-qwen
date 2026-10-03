@@ -204,3 +204,20 @@ def test_s7_shortlist_contains_every_positive_gold():
     assert len(items) == 128
     assert all(i.gold in i.options for i in items if i.meta["kind"] == "positive")
     assert all(i.options[-1] == "ABSTAIN" and len(i.labels) == len(i.options) for i in items)
+
+
+def test_arm_adapters_resolve_under_the_checkpoint_root(tmp_path):
+    """Regression: arm adapters are relative to paths.checkpoints, not the repo root (the first
+    J-V1 xbench run failed on this; the end-to-end smoke test patches the loader and missed it)."""
+    from pathlib import Path
+
+    from jevq.config import load_yaml, resolve_path
+    from jevq.xbench.arms import J_ARMS
+    from jevq.xbench.jrunner import resolve_adapter
+
+    root = resolve_path(load_yaml(resolve_path("configs/base.yaml"))["paths"]["checkpoints"])
+    for arm in J_ARMS.values():
+        if arm.adapter:
+            assert resolve_adapter(arm.adapter) == root / arm.adapter
+            assert "OneDrive" not in str(resolve_adapter(arm.adapter))
+    assert resolve_adapter(str(tmp_path / "x")) == Path(tmp_path / "x")
