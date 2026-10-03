@@ -1,0 +1,15 @@
+# V1c learning-rate control, after xb4.
+name: xb5
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb4
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb4.yaml, --timeout-minutes, "3000"]
+  - name: train_v1c_lr3
+    args: [scripts/train_adapter.py, --config, configs/train/v1c_lr3.yaml]
+  - name: j_v1c_lr3
+    args: [scripts/xbench.py, j, --arm, J-V1c-lr3, --suites, s4]

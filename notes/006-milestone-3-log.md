@@ -122,3 +122,32 @@ resume save at step 25 now works). Evaluation through the harness:
 Calibration: V1 `choice` ECE 0.069 against V0's 0.032. Standard SFT roughly doubled the
 calibration error while removing V0's over-refusal on `auth_gate` (21% to 0%). This is the
 effect V1c is meant to address.
+
+## 2026-10-03: V1c results (adapter `v1c_lora_s0`)
+
+Training 300 steps in 81.4 min, final validation choice accuracy 0.906 (as V1).
+
+| | V0 | V1 | V1c |
+|---|----|----|-----|
+| `choice` accuracy (dev 1,000) | 0.713 | 0.880 | 0.861 |
+| `choice`, trained difficulties 1-3 (600) | 0.773 | 0.925 | 0.927 |
+| `choice`, held-out difficulties 4-5 (400) | 0.623 | 0.812 | 0.762 |
+| ECE | 0.032 | 0.069 | 0.055 |
+| Brier / NLL | 0.350 / 0.619 | 0.194 / 0.382 | 0.189 / 0.334 |
+| mean confidence | 0.699 | 0.944 | 0.916 |
+| `generate` | 0.667 | 0.792 | 0.777 |
+| `generate_cot` (400) | 0.875 | 0.922 | 0.910 |
+
+- **Calibration:** V1c is less overconfident (confidence 0.916 against 0.944) with better NLL,
+  but the ECE improvement over V1 (0.014) is not significant: bootstrap 95% interval
+  [-0.003, 0.029] over items. It does not recover V0's calibration (0.032).
+- **Accuracy:** V1c is 1.9 points below V1 on `choice` (46 items only V1 gets right, 27 only
+  V1c; exact McNemar p = 0.034). The whole difference is on the held-out difficulties (0.762 vs
+  0.812); on the trained ones they tie (0.927 vs 0.925).
+- **The confound registered above applies:** Brier gradients are smaller than cross-entropy
+  gradients at the same learning rate, so V1c may simply be less trained on hard items. Control
+  run queued: `configs/train/v1c_lr3.yaml` (V1c at 3x learning rate, one factor changed), queue
+  xb5. Until it reports, "the Brier loss trades held-out accuracy for calibration" is not a claim.
+- H1 accuracy half for V1c: `choice` 0.850 vs `generate_cot` 0.910 on the same 400 items, a
+  6.0-point gap, outside the 5-point bound. H1 is stated for V1; this is reported, not used to
+  re-decide H1.

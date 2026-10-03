@@ -1,0 +1,7 @@
+# Control for V1c (notes/006, registered before V1c results): Brier gradients are smaller than
+# cross-entropy gradients at the same learning rate, so a less accurate V1c may be undertrained
+# rather than hurt by the loss. Same as V1c with a 3x learning rate; one factor changed.
+inherit: configs/train/v1c_lora.yaml
+name: v1c_lr3
+optim:
+  lr: 3.0e-4

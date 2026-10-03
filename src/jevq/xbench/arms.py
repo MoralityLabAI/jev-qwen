@@ -29,6 +29,8 @@ J_ARMS = {
         JArm("J-V0", None),
         JArm("J-V1", "v1_lora_s0/adapter", trained_on="jev-qwen train split (3 formats)"),
         JArm("J-V1c", "v1c_lora_s0/adapter", trained_on="jev-qwen train split (3 formats), Brier on choice"),
+        # Learning-rate control for V1c (configs/train/v1c_lr3.yaml); S4 only.
+        JArm("J-V1c-lr3", "v1c_lr3_s0/adapter", trained_on="as J-V1c with a 3x learning rate", suites=("s4",)),
         # One run at 3 iterations; the tail lens gives the exact r1 and r2 outputs (instrument.py).
         JArm("J-V2b", "v2b_lora_s0/adapter", loop_iters=3, trained_on="jev-qwen train split, loop 12-15 x2",
              suites=("s1", "s2", "s4", "s5", "s6", "s7")),
