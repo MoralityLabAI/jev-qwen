@@ -190,6 +190,8 @@ def run_not_applicable() -> None:
         ("any", "TinyRecursivePolicy"): "No checkpoint on disk.",
         ("any", "RMP-COT"): "Designed in the RMP program, never built.",
         ("any", "Qwen2.5-3B-Q4"): "No GGUF or runtime on this PC (checked 2026-10-03).",
+        ("any", "commit-veto-LoRA-TRM"): "Not run as trained: its 16 features describe skill-package repair, not suite "
+                                         "states, and its checkpoints were on the missing D:\\ drive. TRM-cv is the S2 port.",
     }
     for (suite, arm_id), reason in cells.items():
         write_not_applicable(suite, arm_id.replace(":", "_"), reason)

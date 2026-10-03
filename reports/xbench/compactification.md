@@ -12,10 +12,11 @@ Params = resident parameters (host included); passes = sequential forward passes
 | LOOP-T | yes | 459776 | 1.0 | 975 | 0.776 [0.75, 0.80] | - | no | - | no / yes |
 | FF-U-ds | yes | 1839616 | 1.0 | 975 | 0.774 [0.75, 0.80] | - | no | - | no / yes |
 | FF-U | yes | 1839616 | 1.0 | 975 | 0.761 [0.73, 0.79] | - | no | - | no / no |
+| J-V1 | yes | 4236225536 | 1.0 | 1275 | 0.289 [0.26, 0.31] | - | no | - | no / no |
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **LOOP-T** (neural arms).
 
-Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; Qwen2.5-3B-Q4: No GGUF or runtime on this PC (checked 2026-10-03).; SkillRouter-TRM: Router features are contract-route features (S7 only).; TRM-cv: TRM-cv consumes S2 state features only.; masked_LOOP-T-ds: No RMP cell was trained on masked_pointer_chase.
+Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions only.; CH-q1-action-gate: Control-Harness controls gate S5 contract actions only.; CH-q2-trajectory-budget: Control-Harness controls gate S5 contract actions only.; CH-q3-claims-ignored: Control-Harness controls gate S5 contract actions only.; CH-q3-delegation-guard: Control-Harness controls gate S5 contract actions only.; CH-q4-provenance-membrane: Control-Harness controls gate S5 contract actions only.; ControlTRM: ControlTRM consumes S3 public features only.; LDT: LDT is a recorded S3 arm; it has no adapter for other suites.; Qwen2.5-3B-Q4: No GGUF or runtime on this PC (checked 2026-10-03).; RLM-API: Paid-API arm: recorded S3 results only; never re-called.; SkillRouter-TRM: Router features are contract-route features (S7 only).; TRM-cv: TRM-cv consumes S2 state features only.; kNN-critic: kNN-critic consumes S2 state features only.; lexical-router: The lexical router scores contract routes (S7 only).; masked_LOOP-T-ds: No RMP cell was trained on masked_pointer_chase.
 
 ![Pareto s1](figures/pareto_s1.svg)
 
@@ -26,10 +27,11 @@ Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; Qwen2.
 | TRM-cv | yes | 4239362 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / no (underpowered) |
 | kNN-critic | no | 0 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / - (underpowered) |
 | script | no | 0 | 1.0 | 74 | 1.000 [0.95, 1.00] | 0/18 | yes | yes | no / - (underpowered) |
+| J-V1 | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 0/18 | no | yes | no / no (underpowered) |
 
 Best arm: **kNN-critic**. Smallest reliable executor: **None** (all arms), **None** (neural arms).
 
-Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; commit-veto-LoRA-TRM: Its 16 features describe skill-package repair, not S2 states; checkpoints lost on D:\. TRM-cv is the port.
+Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions only.; CH-q1-action-gate: Control-Harness controls gate S5 contract actions only.; CH-q2-trajectory-budget: Control-Harness controls gate S5 contract actions only.; CH-q3-claims-ignored: Control-Harness controls gate S5 contract actions only.; CH-q3-delegation-guard: Control-Harness controls gate S5 contract actions only.; CH-q4-provenance-membrane: Control-Harness controls gate S5 contract actions only.; ControlTRM: ControlTRM consumes S3 public features only.; FF-U: RMP decoders read the RMP token vocabulary only.; FF-U-ds: RMP decoders read the RMP token vocabulary only.; J-V1-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-V2b-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-cot-V0: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; J-cot-V1: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; LDT: LDT is a recorded S3 arm; it has no adapter for other suites.; LOOP-T: RMP decoders read the RMP token vocabulary only.; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; RLM-API: Paid-API arm: recorded S3 results only; never re-called.; SkillRouter-TRM: Router features are contract-route features (S7 only).; commit-veto-LoRA-TRM: Its 16 features describe skill-package repair, not S2 states; checkpoints lost on D:\. TRM-cv is the port.; lexical-router: The lexical router scores contract routes (S7 only).
 
 ![Pareto s2](figures/pareto_s2.svg)
 
@@ -46,6 +48,8 @@ Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; com
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **None** (neural arms).
 
+Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions only.; CH-q1-action-gate: Control-Harness controls gate S5 contract actions only.; CH-q2-trajectory-budget: Control-Harness controls gate S5 contract actions only.; CH-q3-claims-ignored: Control-Harness controls gate S5 contract actions only.; CH-q3-delegation-guard: Control-Harness controls gate S5 contract actions only.; CH-q4-provenance-membrane: Control-Harness controls gate S5 contract actions only.; ControlTRM: ControlTRM consumes S3 public features only.; FF-U: RMP decoders read the RMP token vocabulary only.; FF-U-ds: RMP decoders read the RMP token vocabulary only.; J-V1-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-V2b-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; LDT: LDT is a recorded S3 arm; it has no adapter for other suites.; LOOP-T: RMP decoders read the RMP token vocabulary only.; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; RLM-API: Paid-API arm: recorded S3 results only; never re-called.; SkillRouter-TRM: Router features are contract-route features (S7 only).; TRM-cv: TRM-cv consumes S2 state features only.; kNN-critic: kNN-critic consumes S2 state features only.; lexical-router: The lexical router scores contract routes (S7 only).
+
 ![Pareto s4](figures/pareto_s4.svg)
 
 ## S7
@@ -57,7 +61,7 @@ Best arm: **script**. Smallest reliable executor: **script** (all arms), **None*
 
 Best arm: **lexical-router**. Smallest reliable executor: **lexical-router** (all arms), **SkillRouter-TRM** (neural arms).
 
-Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
+Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions only.; CH-q1-action-gate: Control-Harness controls gate S5 contract actions only.; CH-q2-trajectory-budget: Control-Harness controls gate S5 contract actions only.; CH-q3-claims-ignored: Control-Harness controls gate S5 contract actions only.; CH-q3-delegation-guard: Control-Harness controls gate S5 contract actions only.; CH-q4-provenance-membrane: Control-Harness controls gate S5 contract actions only.; ControlTRM: ControlTRM consumes S3 public features only.; FF-U: RMP decoders read the RMP token vocabulary only.; FF-U-ds: RMP decoders read the RMP token vocabulary only.; J-V1-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-V2b-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-cot-V0: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; J-cot-V1: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; LDT: LDT is a recorded S3 arm; it has no adapter for other suites.; LOOP-T: RMP decoders read the RMP token vocabulary only.; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; RLM-API: Paid-API arm: recorded S3 results only; never re-called.; TRM-cv: TRM-cv consumes S2 state features only.; kNN-critic: kNN-critic consumes S2 state features only.; script: S7's script gate is the lexical router.
 
 ![Pareto s7](figures/pareto_s7.svg)
 
@@ -79,7 +83,7 @@ Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
 
 Best arm: **ControlTRM-LDT**. Smallest reliable executor: **ControlTRM-LDT** (all arms), **ControlTRM-LDT** (neural arms).
 
-Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; J-V2b: The loop driver has no KV cache; 60K-character transcripts are out of reach (C1).; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
+Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; CH-q0-none: Control-Harness controls gate S5 contract actions only.; CH-q1-action-gate: Control-Harness controls gate S5 contract actions only.; CH-q2-trajectory-budget: Control-Harness controls gate S5 contract actions only.; CH-q3-claims-ignored: Control-Harness controls gate S5 contract actions only.; CH-q3-delegation-guard: Control-Harness controls gate S5 contract actions only.; CH-q4-provenance-membrane: Control-Harness controls gate S5 contract actions only.; FF-U: RMP decoders read the RMP token vocabulary only.; FF-U-ds: RMP decoders read the RMP token vocabulary only.; J-V1-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-V2b: The loop driver has no KV cache; 60K-character transcripts are out of reach (C1).; J-V2b-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-cot-V0: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; J-cot-V1: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; LOOP-T: RMP decoders read the RMP token vocabulary only.; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; SkillRouter-TRM: Router features are contract-route features (S7 only).; TRM-cv: TRM-cv consumes S2 state features only.; kNN-critic: kNN-critic consumes S2 state features only.; lexical-router: The lexical router scores contract routes (S7 only).; script: No script gate is registered for S3; LDT is its non-neural arm.
 
 ![Pareto s3](figures/pareto_s3.svg)
 
@@ -88,6 +92,7 @@ Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; 
 | Arm | Neural | Params | Passes | n | Accuracy [95% CI] | Unsafe | R1 | R2 | Reliable (all / neural pool) |
 |-----|--------|--------|--------|---|-------------------|--------|----|----|-------------------------------|
 | CH-q4-provenance-membrane | no | 0 | 1.0 | 33 | 1.000 [0.90, 1.00] | 0/11 | yes | yes | no / - (underpowered) |
+| J-V1 | yes | 4236225536 | 1.0 | 33 | 0.970 [0.85, 0.99] | 1/11 | no | no | no / no (underpowered) |
 | CH-q3-delegation-guard | no | 0 | 1.0 | 33 | 0.848 [0.69, 0.93] | 5/11 | no | no | no / - (underpowered) |
 | CH-q3-claims-ignored | no | 0 | 1.0 | 32 | 0.844 [0.68, 0.93] | 0/10 | no | yes | no / - (underpowered) |
 | CH-q2-trajectory-budget | no | 0 | 1.0 | 32 | 0.812 [0.65, 0.91] | 6/10 | no | no | no / - (underpowered) |
@@ -96,7 +101,7 @@ Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; 
 
 Best arm: **CH-q4-provenance-membrane**. Smallest reliable executor: **None** (all arms), **None** (neural arms).
 
-Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
+Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; FF-U: RMP decoders read the RMP token vocabulary only.; FF-U-ds: RMP decoders read the RMP token vocabulary only.; J-V1-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-V2b-rmp: S1-only arm: trained on RMP train-region rows (SPEC section 2).; J-cot-V0: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; J-cot-V1: No registered worked-solution format for this suite (SPEC section 4 lists cot only where traces exist).; LDT: LDT is a recorded S3 arm; it has no adapter for other suites.; LOOP-T: RMP decoders read the RMP token vocabulary only.; LOOP-T-ds: RMP decoders read the RMP token vocabulary only.; RLM-API: Paid-API arm: recorded S3 results only; never re-called.; SkillRouter-TRM: Router features are contract-route features (S7 only).; TRM-cv: TRM-cv consumes S2 state features only.; kNN-critic: kNN-critic consumes S2 state features only.; lexical-router: The lexical router scores contract routes (S7 only).; script: S5's script gates are the CH-q0..q4 controls.
 
 ![Pareto s5](figures/pareto_s5.svg)
 
@@ -106,6 +111,7 @@ Not applicable: LOOP-T-ds: RMP decoders read the RMP token vocabulary only.
 |-----|-------------|--------------|----------|
 | FF-U | 0.960 (n=675) | 0.313 (n=300) | -0.647 |
 | FF-U-ds | 0.972 (n=675) | 0.330 (n=300) | -0.642 |
+| J-V1 | 0.318 (n=875) | 0.225 (n=400) | -0.093 |
 | LOOP-T | 0.979 (n=675) | 0.320 (n=300) | -0.659 |
 | LOOP-T-ds | 0.999 (n=675) | 0.320 (n=300) | -0.679 |
 | script | 1.000 (n=875) | 1.000 (n=400) | +0.000 |

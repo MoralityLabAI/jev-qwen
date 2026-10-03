@@ -3,6 +3,7 @@
     python scripts/xbench.py cpu                      # every non-J arm: RMP, scripts, ports, recorded, controls
     python scripts/xbench.py j --arm J-V1 --suites s1,s2,s7
     python scripts/xbench.py import-s4 --map J-V0=<run_dir> J-cot-V0=<run_dir> ...
+    python scripts/xbench.py coverage [--fill-na]       # registered (arm, suite) cells without a record
 
 Records go to results/xbench/<suite>/<arm>/{record.json,items.jsonl}.
 """
@@ -32,6 +33,8 @@ def main() -> None:
     probe.add_argument("--arm", default="J-V0")
     imp = sub.add_parser("import-s4")
     imp.add_argument("--map", nargs="+", required=True, metavar="ARM=RUN_DIR")
+    cov = sub.add_parser("coverage")
+    cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
 
     if args.command == "cpu":
@@ -71,6 +74,18 @@ def main() -> None:
     elif args.command == "import-s4":
         mapping = dict(item.split("=", 1) for item in args.map)
         run.run_s4_recorded({k: Path(v) for k, v in mapping.items()})
+    elif args.command == "coverage":
+        from jevq.xbench import coverage
+
+        if args.fill_na:
+            for arm, suite, reason in coverage.fill_structural():
+                print(f"[coverage] wrote N/A {suite} {arm}: {reason}")
+        cells = coverage.coverage()
+        missing = sorted(cell for cell, (state, _) in cells.items() if state == "missing")
+        counts = {state: sum(v[0] == state for v in cells.values()) for state in ("live", "na", "missing")}
+        print(f"[coverage] {len(cells)} cells: {counts}")
+        for arm, suite in missing:
+            print(f"  missing: {arm} on {suite}")
 
 
 if __name__ == "__main__":
