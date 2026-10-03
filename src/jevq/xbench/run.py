@@ -12,6 +12,7 @@ from .records import arm_info, suite_info, write_not_applicable, write_record
 from .stats import half_life, kaplan_meier
 
 COT_TOKENS = {"s1": 192, "s2": 64, "s4": 192, "s6": 96}
+S3_CHUNK = 2048  # tokens per prefill chunk for 60K-character transcripts (SPEC section 4)
 
 
 # ============================================================================ suite descriptions
@@ -264,13 +265,13 @@ def run_j(arm_id: str, suites: list[str], per_depth: int = 25, cot_per_depth: in
                     row.update(s2.gate_flags(row))
                 write_record("s2", j_arm_info(arm, bundle, record_id), s2_suite(), rows_n, summarize(rows_n, by=("family",)), "live_model_run")
         elif suite_id == "s3":
-            rows = run_choice(bundle, s3_rlm.choice_items(), chunk=4096)
+            rows = run_choice(bundle, s3_rlm.choice_items(), chunk=S3_CHUNK)
             for membrane, record_id in ((False, arm_id), (True, f"{arm_id}-LDT")):
                 scored = s3_rlm.score_rows(rows, membrane)
                 metrics = summarize(scored, by=("family",))
                 metrics["utility_mean"] = sum(r["utility"] for r in scored) / len(scored)
                 write_record("s3", j_arm_info(arm, bundle, record_id), s3_suite(), scored, metrics, "live_model_run",
-                             notes=["Chunked prefill (4,096 tokens) through the HF cache when a prompt is longer."])
+                             notes=[f"Chunked prefill ({S3_CHUNK} tokens) through the HF cache when a prompt is longer."])
             for row in rows:
                 row.pop("task", None)
         elif suite_id == "s7":
@@ -473,3 +474,34 @@ def _write_s6(arm: JArm, bundle, record_id: str, targets, preds: dict[int, list[
     metrics = {"n_targets": len(targets), "excluded_wrong_at_turn0": excluded, "survival": curve, "half_life": half_life(curve),
                "flipped_by_turn10": sum(ft is not None for ft in times)}
     write_record("s6", j_arm_info(arm, bundle, record_id), suite_info("s6", [], "auth_gate DENY (dev)"), rows, metrics, "live_model_run")
+
+
+def probe_s3(arm_id: str = "J-V0") -> dict:
+    """SPEC section 10 step 8: memory and time of one S3 *train-split* task (never an eval task)."""
+    import time
+
+    import torch
+
+    from .jrunner import load_j_bundle, run_choice
+    from .records import RESULTS
+
+    arm = J_ARMS[arm_id]
+    bundle = load_j_bundle(arm.adapter)
+    item = s3_rlm.choice_items("train")[0]
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+    t0 = time.perf_counter()
+    row = run_choice(bundle, [item], chunk=S3_CHUNK)[0]
+    report = {
+        "arm": arm_id,
+        "task_id": item.item_id,
+        "split": "train",
+        "prompt_tokens": row["prompt_tokens"],
+        "chunk": S3_CHUNK,
+        "seconds": time.perf_counter() - t0,
+        "peak_vram_mb": torch.cuda.max_memory_allocated() / 2**20 if torch.cuda.is_available() else None,
+    }
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / "probe_s3.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(report, flush=True)
+    return report

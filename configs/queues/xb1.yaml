@@ -1,0 +1,43 @@
+# xbench GPU queue (docs/xbench/SPEC.md section 10). Starts after the M3 queue has finished.
+# Order: most informative J arms first; S3 (60K-character transcripts) last, after its probe,
+# so a memory failure there cannot block the rest.
+name: xb1
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_m3
+    args: [scripts/wait_queue.py, --queue, configs/queues/m3.yaml, --timeout-minutes, "900"]
+  - name: j_v1
+    args: [scripts/xbench.py, j, --arm, J-V1, --suites, "s1,s2,s5,s6,s7"]
+  - name: j_v0
+    args: [scripts/xbench.py, j, --arm, J-V0, --suites, "s1,s2,s5,s6,s7"]
+  - name: j_v1c
+    args: [scripts/xbench.py, j, --arm, J-V1c, --suites, "s1,s2,s5,s6,s7"]
+  - name: train_v2b
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_lora.yaml]
+  - name: j_v2b
+    args: [scripts/xbench.py, j, --arm, J-V2b, --suites, "s1,s2,s4,s5,s6,s7"]
+  - name: train_v1_rmp
+    args: [scripts/train_adapter.py, --config, configs/train/v1_rmp.yaml]
+  - name: j_v1_rmp
+    args: [scripts/xbench.py, j, --arm, J-V1-rmp, --suites, s1]
+  - name: train_v2b_rmp
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_rmp.yaml]
+  - name: j_v2b_rmp
+    args: [scripts/xbench.py, j, --arm, J-V2b-rmp, --suites, s1]
+  - name: j_cot_v1
+    args: [scripts/xbench.py, j, --arm, J-cot-V1, --suites, "s1,s6"]
+  - name: j_cot_v0
+    args: [scripts/xbench.py, j, --arm, J-cot-V0, --suites, "s1,s6"]
+  - name: probe_s3
+    args: [scripts/xbench.py, probe-s3, --arm, J-V0]
+  - name: s3_v0
+    args: [scripts/xbench.py, j, --arm, J-V0, --suites, s3]
+  - name: s3_v1
+    args: [scripts/xbench.py, j, --arm, J-V1, --suites, s3]
+  - name: s3_v1c
+    args: [scripts/xbench.py, j, --arm, J-V1c, --suites, s3]

@@ -22,6 +22,8 @@ def main() -> None:
     j = sub.add_parser("j")
     j.add_argument("--arm", required=True)
     j.add_argument("--suites", default="s1,s2,s4,s5,s6,s7")
+    probe = sub.add_parser("probe-s3")
+    probe.add_argument("--arm", default="J-V0")
     imp = sub.add_parser("import-s4")
     imp.add_argument("--map", nargs="+", required=True, metavar="ARM=RUN_DIR")
     args = parser.parse_args()
@@ -48,6 +50,8 @@ def main() -> None:
             run.run_not_applicable()
     elif args.command == "j":
         run.run_j(args.arm, [s.strip() for s in args.suites.split(",") if s.strip()])
+    elif args.command == "probe-s3":
+        run.probe_s3(args.arm)
     elif args.command == "import-s4":
         mapping = dict(item.split("=", 1) for item in args.map)
         run.run_s4_recorded({k: Path(v) for k, v in mapping.items()})

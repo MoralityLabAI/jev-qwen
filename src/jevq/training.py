@@ -131,6 +131,7 @@ class Encoded:
     fmt: str
     n_options: int
     answer_index: int
+    option_ids: list[int] | None = None  # per-item label tokens; default: the harness labels A..H
 
 
 def encode(tokenizer, item: Item, label_ids: list[int]) -> Encoded:
@@ -180,7 +181,8 @@ def sequence_loss(bundle: ModelBundle, loop, enc: Encoded, choice_loss: str, lab
     targets = torch.tensor(enc.targets, device=bundle.device)
     correct = None
     if enc.fmt == "choice":
-        option_logits = logits[0, torch.tensor(label_ids[: enc.n_options], device=bundle.device)]
+        ids = enc.option_ids if enc.option_ids is not None else label_ids[: enc.n_options]
+        option_logits = logits[0, torch.tensor(ids, device=bundle.device)]
         correct = bool(option_logits.argmax() == enc.answer_index)
         if choice_loss == "brier":
             return brier(option_logits, enc.answer_index), correct
@@ -264,9 +266,14 @@ def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = N
     variant = make_variant(run_cfg["variant"], num_layers)
     label_ids = label_token_ids(bundle.tokenizer)
 
-    train_items, val_items, data_info = build_items(cfg["data"], seed, run_cfg["readout"]["n_shots"])
-    train_enc = [encode(bundle.tokenizer, item, label_ids) for item in train_items]
-    val_enc = [encode(bundle.tokenizer, item, label_ids) for item in val_items]
+    if cfg["data"].get("source") == "rmp":
+        from .xbench.rmp_train import build_rmp_encoded
+
+        train_enc, val_enc, data_info = build_rmp_encoded(bundle.tokenizer, cfg["data"], seed)
+    else:
+        train_items, val_items, data_info = build_items(cfg["data"], seed, run_cfg["readout"]["n_shots"])
+        train_enc = [encode(bundle.tokenizer, item, label_ids) for item in train_items]
+        val_enc = [encode(bundle.tokenizer, item, label_ids) for item in val_items]
     data_info["max_train_tokens"] = max(len(e.input_ids) for e in train_enc)
 
     bundle = attach_lora(bundle, cfg["lora"], seed)

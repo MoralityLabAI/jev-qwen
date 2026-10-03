@@ -1,0 +1,11 @@
+# J-V1-rmp (xbench S1): V1's adapter recipe on RMP train-region rows, choice format only.
+# 5 families x 480 = 2,400 rows = 300 optimizer steps, the same budget as V1. The few-shot prefix
+# is the S1 evaluation prefix. Rows are drawn from research_gym.interp.bundle.train_example.
+inherit: configs/train/v1_lora.yaml
+name: v1_rmp
+data:
+  source: rmp
+  families: [pointer_chase, gated_pointer_chase, masked_pointer_chase, reachability, sudoku4]
+  n_per_family: 480
+  n_val_per_family: 20
+  index_offset: 1000

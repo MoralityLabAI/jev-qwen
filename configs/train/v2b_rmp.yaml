@@ -1,0 +1,4 @@
+# J-V2b-rmp (xbench S1): J-V1-rmp with the loop active (layers 12-15, two passes). One difference.
+inherit: configs/train/v1_rmp.yaml
+name: v2b_rmp
+variant: configs/variants/v2_loop_mid_r2.yaml

@@ -1,0 +1,7 @@
+# V2b (M4): V1's full adapter recipe trained with the loop active (layers 12-15, two passes).
+# One difference from V1: the architecture being adapted. Same data, order, adapter, optimiser,
+# steps (decided 2026-10-03, EXPERIMENT.md section 6). Its n_iters=1 evaluation is the ablation
+# that separates the loop from the adapter.
+inherit: configs/train/v1_lora.yaml
+name: v2b_lora
+variant: configs/variants/v2_loop_mid_r2.yaml
