@@ -86,9 +86,16 @@ def eval_questions(seed: int, suite_paths: list[str], n_shots: int) -> set[str]:
 
 
 def build_items(data_cfg: dict, seed: int, n_shots: int) -> tuple[list[Item], list[Item], dict]:
-    """(train items, val items, data description). Deterministic in `seed`."""
+    """(train items, val items, data description). Deterministic in `seed`.
+
+    The evaluation suites and their few-shot prefixes are generated at `eval_seed` (default 0, the
+    seed every benchmark uses), whatever the training seed: a seed-1 replicate must exclude the
+    real evaluation questions and be trained on the prompt it is evaluated with. The training seed
+    varies only the sampled training/validation rows (and, in `train`, initialisation and order).
+    """
     suite = load_yaml(resolve_path(data_cfg["prompt_suite"]))
-    excluded = eval_questions(seed, data_cfg["exclude_suites"], n_shots)
+    eval_seed = int(data_cfg.get("eval_seed", 0))
+    excluded = eval_questions(eval_seed, data_cfg["exclude_suites"], n_shots)
     n_excluded = len(excluded)
     formats = data_cfg["formats"]
     train: list[Item] = []
@@ -97,7 +104,7 @@ def build_items(data_cfg: dict, seed: int, n_shots: int) -> tuple[list[Item], li
     # One rotation per split across all (task, difficulty) cells, so the format totals balance.
     rotation = {"train": 0, "val": 0}
     for task in tasks:
-        shots, _ = build_task(task, seed, suite["difficulties"], suite["n_per_difficulty"], n_shots)
+        shots, _ = build_task(task, eval_seed, suite["difficulties"], suite["n_per_difficulty"], n_shots)
         for difficulty in data_cfg["difficulties"]:
             for split, count, out in (
                 ("train", data_cfg["n_per_difficulty"], train),
@@ -111,6 +118,7 @@ def build_items(data_cfg: dict, seed: int, n_shots: int) -> tuple[list[Item], li
         "prompt_suite": data_cfg["prompt_suite"],
         "exclude_suites": data_cfg["exclude_suites"],
         "n_eval_questions_excluded": n_excluded,
+        "eval_seed": eval_seed,
         "tasks": tasks,
         "difficulties": data_cfg["difficulties"],
         "n_train": len(train),

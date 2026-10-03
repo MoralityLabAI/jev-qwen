@@ -228,10 +228,11 @@ def j_arm_info(arm: JArm, bundle, record_id: str) -> dict:
                            "revision": bundle.info.get("revision_requested")})
 
 
-def run_j(arm_id: str, suites: list[str], per_depth: int = 25, cot_per_depth: int = 10) -> None:
+def run_j(arm_id: str, suites: list[str], per_depth: int = 25, cot_per_depth: int = 10, seed: int = 0) -> None:
+    from .arms import seeded
     from .jrunner import load_j_bundle, run_choice, run_cot
 
-    arm = J_ARMS[arm_id]
+    arm = seeded(arm_id, seed)
     bundle = load_j_bundle(arm.adapter)
     for suite_id in suites:
         if suite_id not in arm.suites:

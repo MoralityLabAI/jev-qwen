@@ -1,0 +1,37 @@
+# Seed replicates (EXPERIMENT.md section 6: three seeds per trained variant), after xb3.
+# Seed 1 of every variant first, so a partial run still gives two seeds of each.
+# Evaluation and few-shot prompts stay at seed 0 (training.build_items eval_seed).
+name: xb4
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb3
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb3.yaml, --timeout-minutes, "2400"]
+  - name: train_v1_s1
+    args: [scripts/train_adapter.py, --config, configs/train/v1_lora.yaml, --set, seed=1]
+  - name: j_v1_s1
+    args: [scripts/xbench.py, j, --arm, J-V1, --seed, "1", --suites, "s1,s4"]
+  - name: train_v1c_s1
+    args: [scripts/train_adapter.py, --config, configs/train/v1c_lora.yaml, --set, seed=1]
+  - name: j_v1c_s1
+    args: [scripts/xbench.py, j, --arm, J-V1c, --seed, "1", --suites, "s1,s4"]
+  - name: train_v2b_s1
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_lora.yaml, --set, seed=1]
+  - name: j_v2b_s1
+    args: [scripts/xbench.py, j, --arm, J-V2b, --seed, "1", --suites, "s1,s4"]
+  - name: train_v1_s2
+    args: [scripts/train_adapter.py, --config, configs/train/v1_lora.yaml, --set, seed=2]
+  - name: j_v1_s2
+    args: [scripts/xbench.py, j, --arm, J-V1, --seed, "2", --suites, "s1,s4"]
+  - name: train_v1c_s2
+    args: [scripts/train_adapter.py, --config, configs/train/v1c_lora.yaml, --set, seed=2]
+  - name: j_v1c_s2
+    args: [scripts/xbench.py, j, --arm, J-V1c, --seed, "2", --suites, "s1,s4"]
+  - name: train_v2b_s2
+    args: [scripts/train_adapter.py, --config, configs/train/v2b_lora.yaml, --set, seed=2]
+  - name: j_v2b_s2
+    args: [scripts/xbench.py, j, --arm, J-V2b, --seed, "2", --suites, "s1,s4"]

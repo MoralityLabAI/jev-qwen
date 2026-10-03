@@ -22,6 +22,7 @@ def main() -> None:
     j = sub.add_parser("j")
     j.add_argument("--arm", required=True)
     j.add_argument("--suites", default="s1,s2,s4,s5,s6,s7")
+    j.add_argument("--seed", type=int, default=0, help="training seed of the adapter (0 = the registered arm)")
     bon = sub.add_parser("bonsai")
     bon.add_argument("--suites", default="s1,s2,s4,s5,s6,s7")
     adapt = sub.add_parser("adaptive")
@@ -56,7 +57,7 @@ def main() -> None:
         if "na" in only:
             run.run_not_applicable()
     elif args.command == "j":
-        run.run_j(args.arm, [s.strip() for s in args.suites.split(",") if s.strip()])
+        run.run_j(args.arm, [s.strip() for s in args.suites.split(",") if s.strip()], seed=args.seed)
     elif args.command == "bonsai":
         from jevq.xbench.run_bonsai import run_bonsai
 

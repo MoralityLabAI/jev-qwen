@@ -47,3 +47,16 @@ def derived_arm_ids(arm: JArm) -> list[str]:
     if arm.loop_iters:
         return [f"{arm.arm_id}-r{n}" for n in range(1, arm.loop_iters + 1)]
     return [arm.arm_id]
+
+
+def seeded(arm_id: str, seed: int) -> JArm:
+    """The same arm trained with another seed: adapter `<name>_s<seed>`, id `<arm>-s<seed>`."""
+    from dataclasses import replace
+
+    arm = J_ARMS[arm_id]
+    if seed == 0:
+        return arm
+    if not arm.adapter or "_s0/" not in arm.adapter:
+        raise ValueError(f"{arm_id} has no seed-0 adapter to replicate")
+    return replace(arm, arm_id=f"{arm_id}-s{seed}", adapter=arm.adapter.replace("_s0/", f"_s{seed}/"),
+                   trained_on=f"{arm.trained_on} (seed {seed})")

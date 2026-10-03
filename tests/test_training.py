@@ -63,8 +63,20 @@ def test_train_data_is_disjoint_from_evaluation_and_held_out_difficulties():
     again, _, info2 = build_items(cfg, seed=0, n_shots=4)
     assert [i.example.question for i in again] == [i.example.question for i in train_items]
     assert info2["train_sha256"] == info["train_sha256"]
-    other, _, _ = build_items(cfg, seed=1, n_shots=4)
+    other, other_val, _ = build_items(cfg, seed=1, n_shots=4)
     assert [i.example.question for i in other] != [i.example.question for i in train_items]
+    # A seed-1 replicate still excludes the seed-0 evaluation suites and uses their prompts.
+    assert not {i.example.question for i in other + other_val} & held_out
+    assert all(a.shots == b.shots for a, b in zip(other, train_items) if a.example.task == b.example.task)
+
+
+def test_seed_zero_training_data_is_unchanged_by_the_eval_seed_fix():
+    """The V1 seed-0 adapter was trained on exactly this data (train_sha256 in its record)."""
+    from jevq.training import load_train_config
+
+    cfg = load_train_config("configs/train/v1_lora.yaml")
+    _, _, info = build_items(cfg["data"], seed=0, n_shots=4)
+    assert info["train_sha256"] == "29fe59b78733455dd7ed205fd2153b0e77a25b890a5c370aa9d4bc3c52985f15"
 
 
 def test_targets_match_inference_conditions(tokenizer):
