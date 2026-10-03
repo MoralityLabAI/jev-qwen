@@ -94,3 +94,31 @@ active loop (EXPERIMENT.md section 6); queues keep the machine awake while on ma
 balance, target encoding, Brier values, LR schedule, loss falls for both losses, exact resume,
 training through the loop driver (for V2b), and the harness loading the adapter with outputs
 identical to the trained model.
+
+## 2026-10-03: V1 results (adapter `v1_lora_s0`, commit c51596d)
+
+Training: 300 optimizer steps in 68.5 min, final validation choice accuracy 0.906 (the
+resume save at step 25 now works). Evaluation through the harness:
+
+| Readout | V0 dev | V1 dev | Change |
+|---------|--------|--------|--------|
+| `choice` (1,000) | 0.713 | **0.880** | +16.7 |
+| `generate` (1,000) | 0.667 | 0.792 | +12.5 |
+| `generate_cot` (400 prefix) | 0.875 | 0.922 | +4.7 |
+
+**H2 holds.** On the trained difficulties 1-3 (600 items) `choice` goes from 0.773 to 0.925
+(+15.2 points; exact McNemar p = 2e-17), above the 10-point bound. The direct-answer readout gains
++9.8, just under it. The gain also transfers to the never-trained difficulties 4-5 (+19.0 for
+`choice`), so the adapter is not only memorising the trained depths.
+
+**H1, accuracy half: holds narrowly.** On the same 400 items V1 `choice` scores 0.877 against
+`generate_cot` 0.922, a 4.5-point gap (bound: 5). The gap itself is significant (18 items only
+`choice` gets right, 36 only `generate_cot`; p = 0.02) and concentrated in sequential-state tasks
+(`var_trace` 0.78 vs 0.94, `arith_chain` 0.88 vs 1.00); on `graph_hops` `choice` is ahead
+(0.64 vs 0.56). **Efficiency half: pending** the registered paired measurement
+(`scripts/bench_h1_latency.py`, queue xb3). The unpaired medians from separate runs are 0.42 s vs
+5.28 s (12.6x), which is not the registered statistic.
+
+Calibration: V1 `choice` ECE 0.069 against V0's 0.032. Standard SFT roughly doubled the
+calibration error while removing V0's over-refusal on `auth_gate` (21% to 0%). This is the
+effect V1c is meant to address.

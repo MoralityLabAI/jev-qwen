@@ -261,7 +261,9 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
   forward passes (about 42 against 1; 4.7 s against 0.57 s median in separate runs), which is
   also what the documented Jev claim is about (F4). FLOPs stay in every record. The 5-point
   accuracy threshold and the comparator are unchanged.
+  **M3 interim (2026-10-03):** accuracy half met narrowly for V1 (gap 4.5 points on the 400-item prefix, bound 5; the gap is significant, p = 0.02). Efficiency half pending the paired benchmark (queue xb3).
 - **H2 is false** if V1 gains less than 10 points over V0 on trained difficulties.
+  **M3 result (2026-10-03): not falsified.** V1 `choice` +15.2 points on difficulties 1-3 (0.773 to 0.925, n = 600, p = 2e-17); `generate` +9.8. See `notes/006`.
 - **H3 is false** if some zero-shot (span, n_iters > 1) beats V0-driver by more than 3 points on
   dev. That would be a surprising and cheap positive result and gets replicated before anything else.
   **M2 result: not falsified.** Over four spans and 2-6 passes on the 400-example dev subset, the
@@ -323,5 +325,6 @@ pass over a four-layer block costs 12% more, exactly its share of layer applicat
 - **M2.** V0 on dev; zero-shot loop sweep (U3, U4, H3); choose the span for V2b.
   Done 2026-10-02: span 12-15 chosen; U4 still open. Log: `notes/005-milestone-2-log.md`.
 - **M3.** V1 (LoRA) with train/test splits and difficulty extrapolation.
+  V1 done 2026-10-03 (H2 holds; H1 accuracy half met narrowly); V1c and the H1 latency measurement in progress. Log: `notes/006-milestone-3-log.md`.
 - **M4.** V2b trained loop versus V1 at matched budget (H4).
 - **M5+.** V3, V4, then V5 if warranted.
