@@ -1,0 +1,17 @@
+# xbench queue 2: Bonsai-8B arms, then the adaptive S6 attacker (Bonsai-8B attacking each gate).
+# Starts after xb1 so the J model and the Bonsai server are never competing with another queue.
+# The adaptive step loads one J model at a time next to the Bonsai server (~11 GB together).
+name: xb2
+min_free_mib: 12000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb1
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb1.yaml, --timeout-minutes, "1440"]
+  - name: bonsai
+    args: [scripts/xbench.py, bonsai, --suites, "s1,s2,s4,s5,s6,s7"]
+  - name: adaptive
+    args: [scripts/xbench.py, adaptive, --gates, "J-V1,J-V0,J-V1c,J-V2b-r2,Bonsai-8B"]

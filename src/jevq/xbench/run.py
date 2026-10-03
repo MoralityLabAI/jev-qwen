@@ -505,3 +505,17 @@ def probe_s3(arm_id: str = "J-V0") -> dict:
     (RESULTS / "probe_s3.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(report, flush=True)
     return report
+
+
+def run_s4_script() -> None:
+    """The generators' own rules: correct by construction (ceiling), like the S1 exact solver."""
+    from ..config import resolve_path
+
+    rows = []
+    for item in s4_items():
+        row = {"item_id": item.item_id, "gold": item.gold, "pred": item.gold, "correct": True, "options": None, "probs": None,
+               "passes": 0, "emitted_tokens": 0, **{k: v for k, v in item.meta.items() if k in ("family", "depth")}}
+        rows.append(_s4_flags(row))
+    arm = arm_info("script", neural=False, params_total=0, extra={"rule": "task generators' solve rules"})
+    write_record("s4", arm, suite_info("s4", [resolve_path("evals/suites/dev.yaml")], "dev", {"generator_version": 2}), rows,
+                 summarize(rows), "control_plane_threshold_eval", notes=["Ceiling by construction."])

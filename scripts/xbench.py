@@ -22,6 +22,11 @@ def main() -> None:
     j = sub.add_parser("j")
     j.add_argument("--arm", required=True)
     j.add_argument("--suites", default="s1,s2,s4,s5,s6,s7")
+    bon = sub.add_parser("bonsai")
+    bon.add_argument("--suites", default="s1,s2,s4,s5,s6,s7")
+    adapt = sub.add_parser("adaptive")
+    adapt.add_argument("--gates", default="J-V1,J-V0,J-V1c,J-V2b-r2,Bonsai-8B")
+    adapt.add_argument("--max-targets", type=int)
     probe = sub.add_parser("probe-s3")
     probe.add_argument("--arm", default="J-V0")
     imp = sub.add_parser("import-s4")
@@ -29,7 +34,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "cpu":
-        only = set(filter(None, args.only.split(","))) or {"s1", "s2", "s3", "s5", "s6", "s7", "na"}
+        only = set(filter(None, args.only.split(","))) or {"s1", "s2", "s3", "s4", "s5", "s6", "s7", "na"}
         if "s1" in only:
             for arm_id in run.s1_rmp.RMP_CELLS:
                 print(f"[xbench] {arm_id} on s1", flush=True)
@@ -46,10 +51,20 @@ def main() -> None:
             run.run_s6_contract_controls()
         if "s7" in only:
             run.run_s7_native()
+        if "s4" in only:
+            run.run_s4_script()
         if "na" in only:
             run.run_not_applicable()
     elif args.command == "j":
         run.run_j(args.arm, [s.strip() for s in args.suites.split(",") if s.strip()])
+    elif args.command == "bonsai":
+        from jevq.xbench.run_bonsai import run_bonsai
+
+        run_bonsai([x.strip() for x in args.suites.split(",") if x.strip()])
+    elif args.command == "adaptive":
+        from jevq.xbench.run_bonsai import run_s6_adaptive
+
+        run_s6_adaptive([x.strip() for x in args.gates.split(",") if x.strip()], args.max_targets)
     elif args.command == "probe-s3":
         run.probe_s3(args.arm)
     elif args.command == "import-s4":
