@@ -2,4 +2,4 @@
 variant:
   name: v1c_lora_s0
   driver: stock
-  adapter: checkpoints/v1c_lora_s0/adapter
+  adapter: v1c_lora_s0/adapter   # relative to paths.checkpoints (configs/base.yaml)

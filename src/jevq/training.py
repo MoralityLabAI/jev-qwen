@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import random
 import time
 from dataclasses import dataclass
@@ -244,7 +245,7 @@ def validate(bundle: ModelBundle, loop, encoded: list[Encoded], label_ids: list[
 
 
 def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = None, stop_after: int | None = None) -> dict:
-    """Train one adapter; returns the training record. Resumes from `<out>/last` if present.
+    """Train one adapter; returns the training record. Resumes from `<out>/resume.pt` if present.
 
     `cfg["run_overrides"]` (optional) are `key=value` overrides applied to the resolved run config,
     e.g. `variant.loop.n_iters=3` for V2b. `stop_after` ends the process-equivalent early, as if
@@ -282,12 +283,12 @@ def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = N
     order = [i for epoch in range(optim_cfg["epochs"]) for i in _epoch_order(len(train_enc), seed, epoch)]
 
     step, log_rows = 0, []
-    last = out_dir / "last"
-    if (last / "state.pt").exists():
-        state = torch.load(last / "state.pt", map_location="cpu", weights_only=False)
+    resume_file = out_dir / RESUME_FILE
+    if resume_file.exists():
+        state = torch.load(resume_file, map_location="cpu", weights_only=False)
         if state["fingerprint"] != fingerprint:
-            raise SystemExit(f"{last} was written by a different config; move it away to start over")
-        _load_adapter_weights(bundle.model, last)
+            raise SystemExit(f"{resume_file} was written by a different config; move it away to start over")
+        _load_adapter_weights(bundle.model, state["adapter"])
         optimizer.load_state_dict(state["optimizer"])
         step, log_rows = state["step"], state["log"]
         torch.set_rng_state(state["torch_rng"])
@@ -338,7 +339,7 @@ def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = N
             flush=True,
         )
         if step % cfg["save_every"] == 0 and step < total_steps:
-            _save_state(bundle.model, optimizer, step, log_rows, fingerprint, last)
+            _save_state(bundle.model, optimizer, step, log_rows, fingerprint, resume_file)
         if stop_after is not None and step >= stop_after:
             return {"stopped_at": step}
 
@@ -363,10 +364,8 @@ def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = N
     with open(out_dir / "train_log.jsonl", "w", encoding="utf-8") as fh:
         for row in log_rows:
             fh.write(json.dumps(row) + "\n")
-    if last.exists():  # finished: a later run with this name must start fresh, not resume
-        for f in last.iterdir():
-            f.unlink()
-        last.rmdir()
+    if resume_file.exists():  # finished: a later run with this name must start fresh, not resume
+        _retry(resume_file.unlink)
     print(f"[train] adapter: {out_dir / 'adapter'}", flush=True)
     return record
 
@@ -379,12 +378,29 @@ def _epoch_order(n: int, seed: int, epoch: int) -> list[int]:
     return order
 
 
+RESUME_FILE = "resume.pt"
+
+
+def _retry(fn, attempts: int = 10, wait_s: float = 3.0):
+    """Run a filesystem call, retrying while something else holds the file.
+
+    Sync clients and antivirus scanners briefly lock new files on Windows; the first M3 run
+    died on exactly that (notes/006).
+    """
+    for attempt in range(attempts):
+        try:
+            return fn()
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(wait_s)
+
+
 def _adapter_state(model) -> dict:
     return {k: v.detach().cpu() for k, v in model.named_parameters() if v.requires_grad}
 
 
-def _load_adapter_weights(model, last: Path) -> None:
-    saved = torch.load(last / "adapter_weights.pt", map_location="cpu", weights_only=True)
+def _load_adapter_weights(model, saved: dict) -> None:
     params = dict(model.named_parameters())
     missing = [k for k in saved if k not in params]
     if missing:
@@ -394,24 +410,21 @@ def _load_adapter_weights(model, last: Path) -> None:
             params[name].copy_(value)
 
 
-def _save_state(model, optimizer, step: int, log_rows: list, fingerprint: str, last: Path) -> None:
-    """Atomic enough for one writer: write to a temp dir, then swap it in."""
-    tmp = last.with_name("last.tmp")
-    tmp.mkdir(parents=True, exist_ok=True)
-    torch.save(_adapter_state(model), tmp / "adapter_weights.pt")
-    torch.save(
-        {
-            "step": step,
-            "optimizer": optimizer.state_dict(),
-            "log": log_rows,
-            "fingerprint": fingerprint,
-            "torch_rng": torch.get_rng_state(),
-            "cuda_rng": torch.cuda.get_rng_state() if torch.cuda.is_initialized() else None,
-        },
-        tmp / "state.pt",
-    )
-    if last.exists():
-        for f in last.iterdir():
-            f.unlink()
-        last.rmdir()
-    tmp.rename(last)
+def _save_state(model, optimizer, step: int, log_rows: list, fingerprint: str, resume_file: Path) -> None:
+    """Everything needed to resume, in one file that replaces the previous one atomically.
+
+    One file means there is never a moment with weights from one step and optimizer state from
+    another, and no directory ever has to be deleted (which a sync client can refuse).
+    """
+    tmp = resume_file.with_name(resume_file.name + ".tmp")
+    state = {
+        "step": step,
+        "adapter": _adapter_state(model),
+        "optimizer": optimizer.state_dict(),
+        "log": log_rows,
+        "fingerprint": fingerprint,
+        "torch_rng": torch.get_rng_state(),
+        "cuda_rng": torch.cuda.get_rng_state() if torch.cuda.is_initialized() else None,
+    }
+    _retry(lambda: torch.save(state, tmp))
+    _retry(lambda: os.replace(tmp, resume_file))

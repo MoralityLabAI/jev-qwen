@@ -32,4 +32,6 @@ instrument:
 
 paths:
   results: results
-  checkpoints: checkpoints
+  # Outside OneDrive: syncing locked the resume file and killed the first V1 run (notes/006).
+  # Variant `adapter:` paths are relative to this directory.
+  checkpoints: ~/Documents/Codex/jev-qwen/checkpoints

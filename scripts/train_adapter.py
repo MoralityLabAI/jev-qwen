@@ -4,9 +4,10 @@
     python scripts/train_adapter.py --config configs/train/v1c_lora.yaml --set seed=1
     python scripts/train_adapter.py --config configs/train/v1_lora.yaml --set max_steps=6 --set name=probe
 
-Writes checkpoints/<name>_s<seed>/{adapter/, train_record.json, train_log.jsonl}. An
-interrupted run resumes from checkpoints/<name>_s<seed>/last when started again with the same
-config. Evaluate with a variant file whose `adapter:` points at the adapter directory.
+Writes <paths.checkpoints>/<name>_s<seed>/{adapter/, train_record.json, train_log.jsonl}, where
+paths.checkpoints is outside OneDrive (configs/base.yaml). An interrupted run resumes from
+<name>_s<seed>/resume.pt when started again with the same config. Evaluate with a variant file
+whose `adapter:` is the adapter directory relative to paths.checkpoints.
 """
 
 import argparse

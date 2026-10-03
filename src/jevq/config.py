@@ -40,7 +40,8 @@ def apply_override(cfg: dict, assignment: str) -> None:
 
 
 def resolve_path(path: str | Path) -> Path:
-    path = Path(path)
+    """Absolute paths and `~` paths as given; anything else relative to the repo root."""
+    path = Path(path).expanduser()
     return path if path.is_absolute() else ROOT / path
 
 

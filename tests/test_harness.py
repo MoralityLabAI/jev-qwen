@@ -143,6 +143,21 @@ def test_control_metrics():
     assert control["invalid_decision_rate"] == 0.0
 
 
+def test_adapter_paths_resolve_under_the_checkpoint_root(tmp_path):
+    from pathlib import Path
+
+    from jevq.harness import adapter_path
+
+    cfg = resolve("configs/variants/v1_lora_s0.yaml", "evals/suites/smoke.yaml")
+    root = Path(cfg["paths"]["checkpoints"]).expanduser()
+    assert root.is_absolute() and "OneDrive" not in str(root)
+    assert adapter_path(cfg) == root / "v1_lora_s0" / "adapter"
+    cfg["variant"]["adapter"] = str(tmp_path / "elsewhere")
+    assert adapter_path(cfg) == tmp_path / "elsewhere"
+    cfg["variant"]["adapter"] = None
+    assert adapter_path(cfg) is None
+
+
 def test_configs_parse():
     for name in ("v0_baseline", "v0_driver_identity", "v2_loop_mid_r2"):
         for suite in ("smoke", "dev"):

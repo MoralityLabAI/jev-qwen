@@ -21,6 +21,7 @@ import statistics
 import time
 from collections import Counter
 from dataclasses import dataclass
+from pathlib import Path
 
 import torch
 
@@ -363,18 +364,27 @@ def summarize(rows: list[dict]) -> dict:
     return scores
 
 
+def adapter_path(cfg: dict) -> Path | None:
+    """The variant's adapter directory: absolute or `~` as given, otherwise under paths.checkpoints."""
+    adapter = cfg["variant"].get("adapter")
+    if not adapter:
+        return None
+    path = Path(adapter).expanduser()
+    return path if path.is_absolute() else resolve_path(cfg["paths"]["checkpoints"]) / path
+
+
 def run(cfg: dict, bundle: ModelBundle | None = None) -> dict:
     """Run one variant over one suite; returns the record that was written to disk."""
     started = time.perf_counter()
     random.seed(cfg["seed"])
     torch.manual_seed(cfg["seed"])
 
-    adapter = cfg["variant"].get("adapter")
+    adapter = adapter_path(cfg)
     if bundle is None:
         bundle = load_bundle(cfg["model"])
         if adapter:
-            bundle = attach_adapter(bundle, resolve_path(adapter))
-    elif bundle.info.get("adapter") != (str(resolve_path(adapter)) if adapter else None):
+            bundle = attach_adapter(bundle, adapter)
+    elif bundle.info.get("adapter") != (str(adapter) if adapter else None):
         # A shared bundle must already carry exactly this variant's adapter (or none).
         raise ValueError(f"bundle adapter {bundle.info.get('adapter')!r} does not match variant adapter {adapter!r}")
     text_model = bundle.text_model

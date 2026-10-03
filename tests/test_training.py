@@ -130,7 +130,7 @@ def test_training_lowers_the_loss_and_writes_an_adapter(tiny_model, tokenizer, t
     assert last < first * 0.8, (first, last)
     assert "val_choice_accuracy" in log[-1] and "val_ce_generate" in log[-1]
     assert (tmp_path / "adapter" / "adapter_config.json").exists()
-    assert not (tmp_path / "last").exists()
+    assert not (tmp_path / "resume.pt").exists() and not (tmp_path / "resume.pt.tmp").exists()
     assert record["model"]["trainable_params"] > 0
     assert record["data"]["n_train"] == 8 and record["config"]["loss"]["choice"] == choice_loss
 
@@ -141,7 +141,7 @@ def test_resume_reproduces_an_uninterrupted_run(tiny_model, tokenizer, tmp_path)
 
     out = tmp_path / "interrupted"
     stopped = train(cfg, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=out, stop_after=3)
-    assert stopped == {"stopped_at": 3} and (out / "last" / "state.pt").exists()  # saved at step 2
+    assert stopped == {"stopped_at": 3} and (out / "resume.pt").exists()  # saved at step 2
     train(cfg, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=out)
 
     a, b = adapter_tensors(tmp_path / "straight"), adapter_tensors(out)

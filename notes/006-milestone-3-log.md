@@ -70,6 +70,26 @@ fix pending; two other jobs computing on the card throughout):
 - Direct-answer loss was about 3 per token, which led to the target fix above: most of it was
   the lone `\n` token. Four steps say nothing about learning.
 
+## 2026-10-02/03: first queue run failed; fixed
+
+The M3 queue (launched 09:01) never finished `train_v1`. Attempt 1 reached step 50 (validation
+choice accuracy 0.875 at that point) and died writing its second resume point:
+`PermissionError: [WinError 5]` on deleting the old `last/` folder. The checkpoints lived under
+OneDrive, which held a handle on the folder while it synced 366 MB of resume state. Attempts
+2-5 found no usable resume state (the old folder was already emptied), restarted from step 0,
+and died the same way at step 25. Nothing was trained to completion; the queue stopped at
+09:59 after five attempts. My own environment note said to keep large files out of OneDrive;
+the default checkpoint path ignored it.
+
+Fixes: `paths.checkpoints` is now `~/Documents/Codex/jev-qwen/checkpoints` (outside OneDrive;
+variant `adapter:` paths are relative to it), and resume state is one file written to a temp
+name and swapped in with `os.replace`, with retries on transient locks. No directory is ever
+deleted. Tests updated; the stale folder was removed.
+
+Decisions taken 2026-10-03 (user: "follow your recommendations"): H1's efficiency bound is
+paired latency (EXPERIMENT.md section 8); V2b keeps V1's full adapter and differs only by the
+active loop (EXPERIMENT.md section 6); queues keep the machine awake while on mains power.
+
 **Tested on the tiny model** (`tests/test_training.py`, 10 tests): data disjointness and
 balance, target encoding, Brier values, LR schedule, loss falls for both losses, exact resume,
 training through the loop driver (for V2b), and the harness loading the adapter with outputs

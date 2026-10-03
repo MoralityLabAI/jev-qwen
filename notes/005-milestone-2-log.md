@@ -192,4 +192,7 @@ DeltaNet layers use the reference PyTorch kernels (no `flash-linear-attention`).
 
 ### Open
 
-- H1 efficiency metric (FLOPs vs paired latency): awaiting a decision; see above.
+- H1 efficiency metric: **decided 2026-10-03** (user: "follow your recommendations"). H1's
+  efficiency bound is now "at least 5x faster than `generate_cot` in paired latency"; the FLOP
+  bound is retired with a revision record in EXPERIMENT.md section 8. Decided before any V1
+  result existed.

@@ -6,7 +6,7 @@ min_free_commit_gb: 2
 stable_seconds: 60
 timeout_minutes: 720
 retries: 4
-keep_awake: false         # opt-in; see scripts/run_queue.py
+keep_awake: true          # approved 2026-10-03; only on mains power, see scripts/run_queue.py
 steps:
   - name: train_v1
     args: [scripts/train_adapter.py, --config, configs/train/v1_lora.yaml]

@@ -191,10 +191,11 @@ Parameter-efficient first; all hyperparameters in `configs/`.
    `notes/006-milestone-3-log.md`; configs in `configs/train/`.)
 3. **V2b.** Same LoRA budget, restricted to the looped span, trained at a fixed `n_iters`, then
    at randomly sampled `n_iters` to test depth generalisation. Equal trainable parameters and
-   equal training tokens to V1. (Open, to settle before M4: "restricted to the span" and "equal
-   trainable parameters" conflict, since V1 adapts all 32 layers. Either raise the rank on the
-   span to match V1's parameter count, or give V2b V1's full adapter and keep the loop as the
-   only difference. The second is the cleaner one-factor ablation.)
+   equal training tokens to V1. (Decided 2026-10-03: "restricted to the span" and "equal
+   trainable parameters" conflict, since V1 adapts all 32 layers. V2b gets V1's full adapter
+   configuration, data, order and steps, and the active loop is the only difference; its own
+   `n_iters: 1` run is the ablation that separates the loop from the adapter. A span-only
+   adapter can be a later variant if V2b shows an effect.)
 4. **V3, V4.** Each trained from the vanilla checkpoint with its own adapter, compared with V1
    and with each other before any combination.
 5. **V5.** Only if V3 or V4 beats V1 on some axis. Teacher traces from a stronger reasoning
@@ -249,12 +250,17 @@ Evaluated on the dev suite (n = 1000 per readout; about +/-3 points at 95% for o
 about +/-7 points per difficulty level). "Points" are percentage points of accuracy.
 
 - **H1 is false** if, for V1, `choice` accuracy is more than 5 points below `generate_cot`
-  accuracy overall, or if matching it needs more than 25% of `generate_cot`'s cache-equivalent
-  FLOPs. Only the comparator changed (was bare `generate`); the 5-point and 25% thresholds
-  are as first written. Open issue: with few-shot prompts of several hundred tokens, prompt
-  processing may dominate both readouts, which would make the 25% bound unreachable for
-  reasons unrelated to the hypothesis. The measured decoding share goes into the M2 log; the
-  bound is not to be moved without a recorded decision.
+  accuracy overall, or if `choice` is not at least 5x faster than `generate_cot` in paired
+  latency (`scripts/bench_latency.py`: same examples, variants interleaved, median of the
+  per-example ratio).
+  *Revision record (decided 2026-10-03, before any V1 result existed).* The efficiency bound was
+  first "at most 25% of `generate_cot`'s cache-equivalent FLOPs". M2 measured V0 `choice` at
+  88% of `generate_cot`'s FLOPs: the few-shot prompt (about 375 tokens) dominates both readouts
+  and a generated token costs the same FLOPs as a prompt token, so the bound was unreachable for
+  reasons unrelated to the hypothesis. What emitted reasoning actually costs is sequential
+  forward passes (about 42 against 1; 4.7 s against 0.57 s median in separate runs), which is
+  also what the documented Jev claim is about (F4). FLOPs stay in every record. The 5-point
+  accuracy threshold and the comparator are unchanged.
 - **H2 is false** if V1 gains less than 10 points over V0 on trained difficulties.
 - **H3 is false** if some zero-shot (span, n_iters > 1) beats V0-driver by more than 3 points on
   dev. That would be a surprising and cheap positive result and gets replicated before anything else.
