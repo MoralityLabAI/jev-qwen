@@ -1,0 +1,15 @@
+# xbench queue 3: paired H1 latency (choice vs generate_cot, V1 and V1c), after xb2.
+name: xb3
+min_free_mib: 10000
+min_free_commit_gb: 2
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb2
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb2.yaml, --timeout-minutes, "2000"]
+  - name: h1_latency_v1
+    args: [scripts/bench_h1_latency.py, --variant, configs/variants/v1_lora_s0.yaml]
+  - name: h1_latency_v1c
+    args: [scripts/bench_h1_latency.py, --variant, configs/variants/v1c_lora_s0.yaml]
