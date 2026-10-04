@@ -151,3 +151,7 @@ Training 300 steps in 81.4 min, final validation choice accuracy 0.906 (as V1).
 - H1 accuracy half for V1c: `choice` 0.850 vs `generate_cot` 0.910 on the same 400 items, a
   6.0-point gap, outside the 5-point bound. H1 is stated for V1; this is reported, not used to
   re-decide H1.
+
+## Update 2026-10-04 (replicates)
+
+Over three training seeds the V1c accuracy cost reported above does not replicate (S4 mean 0.863 vs V1 0.868, pooled paired p = 0.33). The calibration gain does: V1c has the lower ECE and NLL in every seed. See `notes/008-replicates-log.md`.
