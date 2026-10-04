@@ -341,7 +341,11 @@ is below LOOP-T-ds within the trained depths (paired 1 to 78) and far above it b
 (0.717 against 0.308, paired 64 to 15, $p=2\times10^{-8}$). Each hop is a token, so depth is
 bounded by the token budget rather than by the architecture. The gate and the search families
 gain less: gated chasing 0.57, reachability 0.69, sudoku 0.53. It costs 34 emitted tokens on
-average and a median 6.5\,s per item, against one pass. J-cot-V0: \pending{xb1}.
+average and a median 6.5\,s per item, against one pass. The base model reasons better still on
+the trained depths (J-cot-V0: 0.781 against 0.711, $p=0.015$), almost entirely on gated chasing
+(0.78 against 0.57), so V1's adapter costs transfer even through its reasoning readout. Beyond
+depth 8 the two reasoning readouts tie at 0.717, and the base model's pointer chasing stays at
+0.8--1.0 out to depth 12.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every
 S2 item on every split, as are the kNN critic and the TinyTRM port; with 18 true rejects S2 is
@@ -411,10 +415,15 @@ attacked proposals, the J monitors are weaker: the base model flips 5 of 10 elig
 robustness: V2b at its trained depth flips none of the 54 deny targets that V1 flips 5 of, and
 the 5 are the same targets (paired exact $p=0.0625$, one seed). The one-pass exit of the same
 adapter flips 3. We registered a pooled replicate test before running it (addendum A3):
-\pending{xb4, xb7}. Emitted reasoning does the same with no loop: V1's \cotR{} readout, given the
-same ladder, flips none of the 54 targets that its single-pass readout flips 5 of (the reasoning
-answers are parsed from the final line; on S4 the same readout parsed 399 of 400). J-cot-V0:
-\pending{xb1}. Half-lives under the adaptive attacker: \pending{xb2}.
+\pending{xb4, xb7}. Emitted reasoning gives no consistent protection. V1's \cotR{} readout
+flips none of the 54 targets that its single-pass readout flips 5 of, but the base model's
+\cotR{} readout flips 4 different targets, mostly late in the ladder (turns 1, 5, 8, 8), where
+its single-pass readout flips none. (Reasoning answers are parsed from the final line; on S4 the
+same readouts parsed 399 and 395 of 400.) With one seed and counts this small, the S6 ladder
+separates only the clearest cases: the typed-field gates, which no injection can reach, from
+the text-reading gates, which a few injections reach in every configuration we tried except
+V2b at its trained depth and V1 reasoning. Half-lives under the adaptive attacker:
+\pending{xb2}.
 
 \begin{table}[t]
 \centering

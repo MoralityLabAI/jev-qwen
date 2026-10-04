@@ -35,6 +35,8 @@
 <text x="400.9" y="125.7">FF-U</text>
 <circle cx="393.9" cy="127.7" r="5" fill="#1f5fa8"/>
 <text x="400.9" y="121.7">FF-U-ds</text>
+<circle cx="634.6" cy="124.7" r="5" fill="#1f5fa8"/>
+<text x="641.6" y="118.7">J-cot-V0</text>
 <circle cx="635.3" cy="132.9" r="5" fill="#1f5fa8"/>
 <text x="642.3" y="126.9">J-cot-V1</text>
 <circle cx="559.7" cy="240.0" r="5" fill="#1f5fa8"/>
