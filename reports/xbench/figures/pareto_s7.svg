@@ -17,34 +17,37 @@
 <text x="52" y="124.0" text-anchor="end">0.8</text>
 <line x1="56" y1="60.0" x2="660" y2="60.0" stroke="#eee"/>
 <text x="52" y="64.0" text-anchor="end">1.0</text>
-<text x="31.76996417175759" y="376" text-anchor="middle">-1</text>
-<text x="88.2300358282424" y="376" text-anchor="middle">0</text>
-<text x="144.69010748472724" y="376" text-anchor="middle">1</text>
-<text x="201.15017914121205" y="376" text-anchor="middle">2</text>
-<text x="257.61025079769684" y="376" text-anchor="middle">3</text>
-<text x="314.0703224541817" y="376" text-anchor="middle">4</text>
-<text x="370.53039411066646" y="376" text-anchor="middle">5</text>
-<text x="426.9904657671513" y="376" text-anchor="middle">6</text>
-<text x="483.4505374236361" y="376" text-anchor="middle">7</text>
-<text x="539.910609080121" y="376" text-anchor="middle">8</text>
-<text x="596.3706807366058" y="376" text-anchor="middle">9</text>
-<text x="652.8307523930906" y="376" text-anchor="middle">10</text>
-<text x="709.2908240495755" y="376" text-anchor="middle">11</text>
-<circle cx="631.6" cy="74.1" r="5" fill="#1f5fa8"/>
-<text x="638.6" y="68.1">J-V0</text>
-<circle cx="631.8" cy="116.2" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="110.2">J-V1</text>
-<circle cx="631.8" cy="109.2" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="103.2">J-V1c</text>
-<circle cx="631.8" cy="123.3" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="117.3">J-V2b-r1</text>
-<circle cx="631.8" cy="102.2" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="96.2">J-V2b-r2</text>
-<circle cx="631.8" cy="102.2" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="96.2">J-V2b-r3</text>
-<circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>
-<text x="95.2" y="54.0">lexical-router</text>
-<circle cx="302.9" cy="62.3" r="5" fill="#1f5fa8"/>
-<text x="309.9" y="56.3">SkillRouter-TRM</text>
+<text x="33.92472061943438" y="376" text-anchor="middle">-1</text>
+<text x="86.07527938056562" y="376" text-anchor="middle">0</text>
+<text x="138.22583814169684" y="376" text-anchor="middle">1</text>
+<text x="190.37639690282808" y="376" text-anchor="middle">2</text>
+<text x="242.5269556639593" y="376" text-anchor="middle">3</text>
+<text x="294.6775144250905" y="376" text-anchor="middle">4</text>
+<text x="346.8280731862218" y="376" text-anchor="middle">5</text>
+<text x="398.978631947353" y="376" text-anchor="middle">6</text>
+<text x="451.1291907084842" y="376" text-anchor="middle">7</text>
+<text x="503.2797494696155" y="376" text-anchor="middle">8</text>
+<text x="555.4303082307467" y="376" text-anchor="middle">9</text>
+<text x="607.5808669918779" y="376" text-anchor="middle">10</text>
+<text x="659.7314257530091" y="376" text-anchor="middle">11</text>
+<text x="711.8819845141404" y="376" text-anchor="middle">12</text>
+<circle cx="633.9" cy="130.3" r="5" fill="#1f5fa8"/>
+<text x="640.9" y="124.3">Bonsai-8B</text>
+<circle cx="588.0" cy="74.1" r="5" fill="#1f5fa8"/>
+<text x="595.0" y="68.1">J-V0</text>
+<circle cx="588.1" cy="116.2" r="5" fill="#1f5fa8"/>
+<text x="595.1" y="110.2">J-V1</text>
+<circle cx="588.1" cy="109.2" r="5" fill="#1f5fa8"/>
+<text x="595.1" y="103.2">J-V1c</text>
+<circle cx="588.1" cy="123.3" r="5" fill="#1f5fa8"/>
+<text x="595.1" y="117.3">J-V2b-r1</text>
+<circle cx="588.1" cy="102.2" r="5" fill="#1f5fa8"/>
+<text x="595.1" y="96.2">J-V2b-r2</text>
+<circle cx="588.1" cy="102.2" r="5" fill="#1f5fa8"/>
+<text x="595.1" y="96.2">J-V2b-r3</text>
+<circle cx="86.1" cy="60.0" r="5" fill="#c0392b"/>
+<text x="93.1" y="54.0">lexical-router</text>
+<circle cx="284.3" cy="62.3" r="5" fill="#1f5fa8"/>
+<text x="291.3" y="56.3">SkillRouter-TRM</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>
 </svg>

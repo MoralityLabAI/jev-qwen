@@ -6,6 +6,7 @@ Unsafe = false commit / unsafe allow / escaped violation; over-refusal = false r
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| Bonsai-8B | 74 | 0.811 | 8/18 [0.25, 0.66] | 6/56 [0.05, 0.21] | 0.120 | - |
 | J-V0 | 74 | 0.959 | 0/18 [0.00, 0.18] | 3/56 [0.02, 0.15] | 0.065 | - |
 | J-V1 | 74 | 0.946 | 0/18 [0.00, 0.18] | 4/56 [0.03, 0.17] | 0.043 | - |
 | J-V1c | 74 | 0.946 | 2/18 [0.03, 0.33] | 2/56 [0.01, 0.12] | 0.023 | - |
@@ -20,6 +21,7 @@ Unsafe = false commit / unsafe allow / escaped violation; over-refusal = false r
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| Bonsai-8B | 1000 | 0.627 | 7/54 [0.06, 0.24] | 8/71 [0.06, 0.21] | 0.050 | - |
 | J-V0 | 1000 | 0.713 | 0/54 [0.00, 0.07] | 15/71 [0.13, 0.32] | 0.032 | - |
 | J-V1 | 1000 | 0.880 | 0/54 [0.00, 0.07] | 0/71 [0.00, 0.05] | 0.069 | - |
 | J-V1c | 1000 | 0.861 | 0/54 [0.00, 0.07] | 0/71 [0.00, 0.05] | 0.055 | - |
@@ -36,6 +38,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| Bonsai-8B | 30 | 0.767 | 3/7 [0.16, 0.75] | 4/23 [0.07, 0.37] | 0.124 | attack success 0.300, benign done 1.000 |
 | CH-q0-none | 32 | 0.688 | 10/10 [0.72, 1.00] | 0/22 [0.00, 0.15] | - | attack success 0.900, benign done 1.000 |
 | CH-q1-action-gate | 32 | 0.719 | 9/10 [0.60, 0.98] | 0/22 [0.00, 0.15] | - | attack success 0.800, benign done 1.000 |
 | CH-q2-trajectory-budget | 32 | 0.812 | 6/10 [0.31, 0.83] | 0/22 [0.00, 0.15] | - | attack success 0.600, benign done 1.000 |
@@ -75,6 +78,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Arm | n | Accuracy | Unsafe [95% CI] | Over-refusal [95% CI] | ECE | Episodes |
 |---|---|---|---|---|---|---|
+| Bonsai-8B | 128 | 0.766 | 0/23 [0.00, 0.14] | - | 0.124 | - |
 | J-V0 | 128 | 0.953 | 0/23 [0.00, 0.14] | - | 0.284 | - |
 | J-V1 | 128 | 0.812 | 0/23 [0.00, 0.14] | - | 0.126 | - |
 | J-V1c | 128 | 0.836 | 0/23 [0.00, 0.14] | - | 0.080 | - |
@@ -88,6 +92,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
 |---|---|---|---|---|
+| Bonsai-8B | 54 | 5 | 29 | 4 |
 | J-V0 | 54 | 0 | 0 | > 10 |
 | J-V1 | 54 | 0 | 5 | > 10 |
 | J-V1c | 54 | 0 | 5 | > 10 |
@@ -104,6 +109,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 | Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
 |---|---|---|---|---|
+| Bonsai-8B | 11 | 4 | 3 | > 10 |
 | CH-q0-none | 11 | 11 | 0 | > 10 |
 | CH-q1-action-gate | 11 | 10 | 0 | > 10 |
 | CH-q2-trajectory-budget | 11 | 7 | 0 | > 10 |

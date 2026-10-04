@@ -19,6 +19,7 @@ Params = resident parameters (host included); passes = sequential forward passes
 | J-V1-rmp | yes | 4236225536 | 1.0 | 1275 | 0.595 [0.57, 0.62] | - | no | - | no / no |
 | J-V2b-rmp-r1 | yes | 4236225536 | 1.0 | 1275 | 0.545 [0.52, 0.57] | - | no | - | no / no |
 | J-V0 | yes | 4205751296 | 1.0 | 1275 | 0.400 [0.37, 0.43] | - | no | - | no / no |
+| Bonsai-8B | yes | 8000000000 | 4.0 | 1275 | 0.383 [0.36, 0.41] | - | no | - | no / no |
 | J-V1c | yes | 4236225536 | 1.0 | 1275 | 0.351 [0.32, 0.38] | - | no | - | no / no |
 | J-V2b-r1 | yes | 4236225536 | 1.0 | 1275 | 0.342 [0.32, 0.37] | - | no | - | no / no |
 | J-V2b-r2 | yes | 4236225536 | 1.0 | 1275 | 0.326 [0.30, 0.35] | - | no | - | no / no |
@@ -44,6 +45,7 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | J-V1 | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 0/18 | no | yes | no / no (underpowered) |
 | J-V1c | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 2/18 | no | no | no / no (underpowered) |
 | J-V2b-r2 | yes | 4236225536 | 1.0 | 74 | 0.946 [0.87, 0.98] | 2/18 | no | no | no / no (underpowered) |
+| Bonsai-8B | yes | 8000000000 | 4.0 | 74 | 0.811 [0.71, 0.88] | 8/18 | no | no | no / no (underpowered) |
 
 Best arm: **kNN-critic**. Smallest reliable executor: **None** (all arms), **None** (neural arms).
 
@@ -64,6 +66,7 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | J-V1c | yes | 4236225536 | 1.0 | 1000 | 0.861 [0.84, 0.88] | 0/54 | no | yes | no / no |
 | J-V2b-r1 | yes | 4236225536 | 1.0 | 1000 | 0.847 [0.82, 0.87] | 0/54 | no | yes | no / no |
 | J-V0 | yes | 4205751296 | 1.0 | 1000 | 0.713 [0.68, 0.74] | 0/54 | no | yes | no / no |
+| Bonsai-8B | yes | 8000000000 | 4.0 | 1000 | 0.627 [0.60, 0.66] | 7/54 | no | no | no / no |
 
 Best arm: **script**. Smallest reliable executor: **script** (all arms), **None** (neural arms).
 
@@ -83,6 +86,7 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | J-V1c | yes | 4236225536 | 1.0 | 128 | 0.836 [0.76, 0.89] | 0/23 | no | - | no / no |
 | J-V1 | yes | 4236225536 | 1.0 | 128 | 0.812 [0.74, 0.87] | 0/23 | no | - | no / no |
 | J-V2b-r1 | yes | 4236225536 | 1.0 | 128 | 0.789 [0.71, 0.85] | 0/23 | no | - | no / no |
+| Bonsai-8B | yes | 8000000000 | 4.0 | 128 | 0.766 [0.69, 0.83] | 0/23 | no | - | no / no |
 
 Best arm: **lexical-router**. Smallest reliable executor: **lexical-router** (all arms), **SkillRouter-TRM** (neural arms).
 
@@ -132,6 +136,7 @@ Not applicable: Bonsai-8B: Server context 8,192 tokens; transcripts exceed it.; 
 | CH-q3-delegation-guard | no | 0 | 1.0 | 33 | 0.848 [0.69, 0.93] | 5/11 | no | no | no / - (underpowered) |
 | CH-q3-claims-ignored | no | 0 | 1.0 | 32 | 0.844 [0.68, 0.93] | 0/10 | no | yes | no / - (underpowered) |
 | CH-q2-trajectory-budget | no | 0 | 1.0 | 32 | 0.812 [0.65, 0.91] | 6/10 | no | no | no / - (underpowered) |
+| Bonsai-8B | yes | 8000000000 | 4.0 | 30 | 0.767 [0.59, 0.88] | 3/7 | no | no | no / no (underpowered) |
 | CH-q1-action-gate | no | 0 | 1.0 | 32 | 0.719 [0.55, 0.84] | 9/10 | no | no | no / - (underpowered) |
 | CH-q0-none | no | 0 | 1.0 | 32 | 0.688 [0.51, 0.82] | 10/10 | no | no | no / - (underpowered) |
 
@@ -145,6 +150,7 @@ Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; FF-U: 
 
 | Arm | ID accuracy | OOD accuracy | OOD - ID |
 |-----|-------------|--------------|----------|
+| Bonsai-8B | 0.385 (n=875) | 0.378 (n=400) | -0.008 |
 | FF-U | 0.960 (n=675) | 0.313 (n=300) | -0.647 |
 | FF-U-ds | 0.972 (n=675) | 0.330 (n=300) | -0.642 |
 | J-V0 | 0.411 (n=875) | 0.375 (n=400) | -0.036 |

@@ -31,6 +31,8 @@
 <text x="578.3035896824792" y="376" text-anchor="middle">10</text>
 <text x="627.6658363189058" y="376" text-anchor="middle">11</text>
 <text x="677.0280829553325" y="376" text-anchor="middle">12</text>
+<circle cx="603.2" cy="245.2" r="5" fill="#1f5fa8"/>
+<text x="610.2" y="239.2">Bonsai-8B</text>
 <circle cx="393.9" cy="131.7" r="5" fill="#1f5fa8"/>
 <text x="400.9" y="125.7">FF-U</text>
 <circle cx="393.9" cy="127.7" r="5" fill="#1f5fa8"/>

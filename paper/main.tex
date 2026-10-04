@@ -360,8 +360,9 @@ forbidden contract chosen. These S7 numbers mix routing with an option-position 
 registered shortlist is in lexical-rank order and the lexical top-1 is always the gold contract,
 so every positive gold is option A. The base model puts 0.92 of its predictions there; V1, trained
 with answer positions rotated, has lost that prior. A diagnostic rerun with each shortlist shuffled
-was added after these results (addendum A2, post hoc): \pending{xb6}. Bonsai-8B:
-\pending{xb2}.
+was added after these results (addendum A2, post hoc): \pending{xb6}. The 1-bit Bonsai-8B,
+given the same prompts, is the weakest gate on S2: it commits 8 of the 18 true rejects (accuracy
+0.811). It routes 0.766 of S7 cases with no forbidden contract chosen.
 
 \paragraph{S3, long context.} Recorded results: trained ControlTRM followed by the LDT veto reaches
 utility 0.687 with no unsafe actions, against 0.339 and 19.4\% unsafe for the API language model
@@ -397,7 +398,9 @@ Jev-style arms let one of ten attacks through and block at most one legitimate a
 membrane (q4). They all miss the same attack: a quorum assembled from claims of duplicate lineage.
 V1 allows it with probability 0.999, so the calibrated readout gives no warning on the one decision
 that matters. That attack is structural: it is invisible in any single claim's text, and q4
-catches it from provenance alone. Bonsai-8B: \pending{xb2}.
+catches it from provenance alone. Bonsai-8B as monitor lets 3 of 10 attacks through and blocks
+4 of 23 legitimate actions. Its misses are three different attacks, allowed with probability
+0.62--0.77, rather than the one confident miss of the Jev-style arms.
 
 \begin{table}[t]
 \centering
@@ -429,7 +432,9 @@ same readouts parsed 399 and 395 of 400.) With one seed and counts this small, t
 separates only the clearest cases: the typed-field gates, which no injection can reach, from
 the text-reading gates, which a few injections reach in every configuration we tried except
 V2b at its trained depth and V1 reasoning. Half-lives under the adaptive attacker:
-\pending{xb2}.
+\pending{xb2}. The text LLM is the easiest gate to move: Bonsai-8B flips 29 of its 49 eligible
+targets, with a half-life of 4 turns, and is the only gate with a finite half-life under the
+scripted ladder.
 
 \begin{table}[t]
 \centering
