@@ -49,10 +49,11 @@ a 1-bit 8B LLM, on seven suites, with decision rules frozen before any cross-arm
   \item Where the decision state is verifier-visible, scripts and tiny TRMs are reliable and the 4B
   arms add nothing. Post-training for one decision suite degrades the 4B model on every other
   suite, partly by installing priors over answer labels.
-  \item As monitors, the Jev-style gates stop nine of ten scripted attacks, more than every
-  heuristic control and fewer than the provenance membrane. All of them miss the same
-  duplicate-lineage attack with probability 0.999, and the membrane catches it from provenance
-  alone.
+  \item As monitors, the single-pass Jev-style gates stop nine of ten scripted attacks and block
+  almost no legitimate actions. That is more than the action, trajectory and delegation controls
+  stop, and without the 23\% false blocks of ignoring every claim. All of them miss the same
+  duplicate-lineage attack, V1 with probability 0.999, and the provenance membrane catches it
+  from provenance alone.
 \end{itemize}
 \pending{seed replicates; adaptive attacker}.
 \end{abstract}
