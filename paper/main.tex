@@ -24,25 +24,37 @@ Benchmarked Against Looped Decoders and TRM Skill Gates}
 \maketitle
 
 \begin{abstract}
-TypeSafe's Jev is described as a ``System One'' model: it returns typed, calibrated decisions over a
-pre-enumerated output space from a single query instead of generating text. Its weights, size and
-architecture are not public. We ask how much of that behaviour a small open base model can be given,
-and which executor a control harness should actually use for each decision gate. Starting from
-Qwen3.5-4B-Base, we compare three readouts of the same model: a single forward pass scored over
-option labels (\choiceR), a direct short answer (\genR), and one line of emitted reasoning followed
-by the answer (\cotR). A LoRA adapter trained on all three formats (0.72\% of parameters) raises
-single-pass accuracy on an eight-family decision suite from 0.713 to 0.880 and brings it within 4.5
-points of the same model's reasoning readout on a shared 400-item subset, while emitting no tokens.
-Re-running a mid-stack block of the untrained model at inference (zero-shot depth recurrence) never
-helps: across four blocks and up to six passes the state is pushed by a near-constant vector each
-pass and the damage surfaces mostly as collapse onto one option letter. We then register a
-cross-architecture benchmark that places these Jev-style arms next to 0.46--1.8M-parameter looped
-decoders, 6k-parameter TRM skill routers, script, MeTTa and LDT gates, and an 8B LLM on seven shared
-suites, with decision rules frozen before any cross-arm outcome. On suites where the decision state
-is verifier-visible, scripts and tiny TRMs are already reliable; on algorithmic depth tasks a
-460k-parameter looped decoder is reliable within its trained depths and collapses beyond them.
-\pending{Jev-style arms on the shared suites, adaptive-attack half-lives, seed replicates, paired
-latency for H1}.
+TypeSafe's Jev is described as a ``System One'' model: it returns typed, calibrated decisions over
+a pre-enumerated output space from a single query instead of generating text. Its weights, size and
+architecture are not public. We ask how much of that behaviour a small open base model can be
+given, and which executor a control harness should actually use for each decision gate. Starting
+from Qwen3.5-4B-Base, we compare a single forward pass scored over option labels (\choiceR) with a
+direct short answer and with one line of emitted reasoning (\cotR). A LoRA adapter (0.72\% of
+parameters) raises single-pass accuracy on an eight-family decision suite from 0.713 to 0.880. That
+brings it within 4.5 points of the same model's reasoning readout at one twenty-first of its paired
+latency, inside both of our pre-registered bounds, the accuracy bound by half a point.
+
+Depth recurrence behaves differently depending on the training data. Untrained, a re-run block
+drifts. Trained on the mixed suite, the loop matches the same adapter without it and does not beat
+it. Trained on a single algorithmic task, its second pass does the hops the first could not
+(pointer chasing at depths 4--6 rises from 0.08--0.40 to 0.76--0.92).
+
+We then register a benchmark that places these arms next to 0.46--1.8M-parameter looped decoders,
+TRM skill gates of 6k--17k parameters, script, nearest-neighbour, LDT and Control-Harness gates, and
+a 1-bit 8B LLM, on seven suites, with decision rules frozen before any cross-arm outcome.
+\begin{itemize}
+  \item On algorithmic depth, the 460k-parameter looped decoder is the best executor within its
+  trained depths. Emitted reasoning is the only readout that extrapolates beyond them (0.72
+  against 0.31). The 4B single pass is at chance there.
+  \item Where the decision state is verifier-visible, scripts and tiny TRMs are reliable and the 4B
+  arms add nothing. Post-training for one decision suite degrades the 4B model on every other
+  suite, partly by installing priors over answer labels.
+  \item As monitors, the Jev-style gates stop nine of ten scripted attacks, more than every
+  heuristic control and fewer than the provenance membrane. All of them miss the same
+  duplicate-lineage attack with probability 0.999, and the membrane catches it from provenance
+  alone.
+\end{itemize}
+\pending{seed replicates; adaptive attacker}.
 \end{abstract}
 
 \section{Introduction}
@@ -478,13 +490,38 @@ the whole architecture, trained from scratch on the task, and their readout trac
 eight visits. Neither kind extrapolates past its trained depths. On the control side, the dev
 suite-trained loop flipped fewer injected deny decisions, pending replication.
 
-\paragraph{Limitations.} Single seeds for every trained variant so far (replicates
-\pending{xb4}); latency measured on a GPU shared with other jobs; synthetic, templated decision tasks;
-an underpowered S2; RMP baselines from a programme whose own gate (G0) is not yet met for every seed;
-Jev itself is not available for comparison, so nothing here measures Jev.
+\paragraph{Limitations.}
+\begin{itemize}
+  \item \emph{Seeds.} Single seeds for every trained variant so far (replicates
+  \pending{xb4, xb7, xb8}).
+  \item \emph{Measurement.} Latency was measured on a GPU shared with other jobs; the registered
+  measure is therefore a paired ratio.
+  \item \emph{Tasks.} The decision tasks are synthetic and templated. S2 is underpowered, and
+  S7's registered option order confounds routing with a position prior (addendum A2).
+  \item \emph{Baselines and arms.} The RMP baselines come from a programme whose own gate (G0) is
+  not yet met for every seed. No MeTTa gate could be run: the implementations are on a missing
+  drive.
+  \item \emph{Jev.} Jev itself is not available for comparison, so nothing here measures Jev.
+\end{itemize}
 
 \section{Conclusion}
-\pending{after the queued results}.
+A small Jev-style model can be built from an open 4B base. A light adapter gives a typed,
+calibrated, single-pass readout within five points of the model's own reasoning at a twentieth of
+its latency. The benchmark mostly says where such a model should \emph{not} be the gate of record:
+\begin{itemize}
+  \item Where the decision state is typed and verifier-visible, a script or a tiny TRM is smaller
+  and already reliable.
+  \item Where the decision requires iterating a step, a compact looped decoder trained on that
+  step does it to its trained depth, and emitted reasoning does it beyond.
+  \item Where the threat is provenance, only a provenance membrane is immune, and the calibrated
+  readout fails with full confidence.
+\end{itemize}
+What remains is the role the control harness already has room for: a cheap monitor layer above
+heuristic controls and below a structural membrane, whose failure modes a harness can measure.
+Those failure modes are transfer cost from post-training on the wrong label space, and confident
+misses on structural attacks. Recurrence grafted onto the pretrained stack earns its keep only when
+trained on a task with one consistent step. \pending{revise after the replicates and the adaptive
+attacker}.
 
 \bibliographystyle{plain}
 \bibliography{references}

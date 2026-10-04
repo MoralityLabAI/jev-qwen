@@ -195,6 +195,10 @@ def run_not_applicable() -> None:
         ("any", "Qwen2.5-3B-Q4"): "No GGUF or runtime on this PC (checked 2026-10-03).",
         ("any", "commit-veto-LoRA-TRM"): "Not run as trained: its 16 features describe skill-package repair, not suite "
                                          "states, and its checkpoints were on the missing D:\\ drive. TRM-cv is the S2 port.",
+        ("any", "MeTTa-gate"): "Not run: the MeTTa gate implementations the Morality Lab repos reference (metta-storyworld, "
+                               "harnessdojo) were on the missing D:\\ drive; hermes-lite's metta-trm-meta-skill is an S7 routing "
+                               "target, not a gate. RQ-C names MeTTa gates but SPEC section 2 omitted them without a written "
+                               "reason (recorded 2026-10-04).",
     }
     for (suite, arm_id), reason in cells.items():
         write_not_applicable(suite, arm_id.replace(":", "_"), reason)

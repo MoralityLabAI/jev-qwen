@@ -39,6 +39,7 @@ ARMS: dict[str, tuple[str, ...]] = {
     "commit-veto-LoRA-TRM": ("commit-veto-LoRA-TRM",),
     "TinyRecursivePolicy": ("TinyRecursivePolicy",),
     "RMP-COT": ("RMP-COT",),
+    "MeTTa-gate": ("MeTTa-gate",),  # named in RQ-C, not in SPEC section 2 (see run_not_applicable)
 }
 
 # Arms whose adapter exists for one suite only (SPEC section 4), with the reason for the others.
