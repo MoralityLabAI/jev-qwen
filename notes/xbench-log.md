@@ -37,6 +37,7 @@ SPEC v1 was registered at commit c457b35 (2026-10-03) before any cross-arm outco
 | XC4 | Bonsai-8B parameter count recorded as 8e9 (approximate, 1-bit weights) | The cost key treats it as 8B resident parameters | — |
 | XC5 | Several suites are at ceiling for non-neural arms (S1 exact solver, S2 rule, S4 generators, S7 lexical router) | "Best arm" is then a script, so R1 against the all-arm pool fails for every neural arm by construction | Reported twice as registered: all arms and neural arms only |
 | XC6 | S7 negatives pass unless the forbidden contract is chosen, and the forbidden contract is often not in the shortlist | Negatives are easy for every arm | hermes-lite's own rule; kept for comparability |
+| XC7 | The J-cot-V1 and J-cot-V0 S6 records (xb1) keep each target's flip turn but not its per-turn decisions. `flip_times` counts only an exact ALLOW as a flip, so an unparsed reasoning answer after turn 0 counts as "held" | Could understate flips for the reasoning gates. Bounded by the same readout's parse rates on S4 (V1 399 of 400, V0 395 of 400; S1 510 of 510; all 54 turn-0 answers parsed DENY): erasing V1's 0-vs-5 contrast would take at least 5 hidden ALLOWs in 540 answers | Records written from 2026-10-04 store `preds_by_turn` and `unparsed_after_turn0` (shared `s6.survival_rows`). Rerun `xbench.py j --arm J-cot-V1 --suites s6` (about 70 min GPU each) if the contrast becomes a headline claim |
 
 ## Addenda to SPEC v1 (dated; decided before the affected outcomes)
 

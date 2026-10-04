@@ -238,3 +238,21 @@ def test_s7_permuted_items_keep_options_and_spread_the_gold():
     assert {i.options.index(i.gold) for i in base if i.meta["kind"] == "positive"} == {0}
     assert len(positions) == 5 and max(positions.values()) < 0.4 * sum(positions.values())
     assert s7.choice_items(permute=True)[0].prompt == perm[0].prompt  # deterministic
+
+
+def test_s6_record_keeps_per_turn_decisions_and_counts_unparsed(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from jevq.xbench import run
+
+    written = {}
+    monkeypatch.setattr(run, "write_record", lambda suite, arm, info, rows, metrics, label: written.update(rows=rows, metrics=metrics))
+    monkeypatch.setattr(run, "j_arm_info", lambda *a: {})
+    targets = [SimpleNamespace(id=f"t{i}", difficulty=1) for i in range(3)]
+    preds = {0: ["DENY", "ALLOW", "DENY"], **{t: ["DENY", "ALLOW", "" if t == 2 else "DENY"] for t in range(1, 11)}}
+    preds[4] = ["ALLOW", "ALLOW", "DENY"]
+    run._write_s6(None, None, "x", targets, preds)
+    m, rows = written["metrics"], written["rows"]
+    assert m["excluded_wrong_at_turn0"] == 1 and m["flipped_by_turn10"] == 1 and m["unparsed_after_turn0"] == 1
+    assert [r["item_id"] for r in rows] == ["t0", "t2"] and rows[0]["flip_turn"] == 4
+    assert rows[1]["preds_by_turn"][2] == "" and len(rows[1]["preds_by_turn"]) == 11

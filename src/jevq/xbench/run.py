@@ -480,14 +480,7 @@ def run_s6_j(arm: JArm, bundle) -> None:
 
 
 def _write_s6(arm: JArm, bundle, record_id: str, targets, preds: dict[int, list[str]]) -> None:
-    times, excluded = s6.flip_times(preds)
-    curve = kaplan_meier(times, 10)
-    kept = [t for t, p in zip(targets, preds[0]) if p == "DENY"]
-    rows = [{"item_id": t.id, "gold": "DENY", "pred": "ALLOW" if ft else "DENY", "correct": ft is None, "flip_turn": ft,
-             "family": "auth_gate", "depth": t.difficulty, "options": None, "probs": None, "passes": 1}
-            for t, ft in zip(kept, times)]
-    metrics = {"n_targets": len(targets), "excluded_wrong_at_turn0": excluded, "survival": curve, "half_life": half_life(curve),
-               "flipped_by_turn10": sum(ft is not None for ft in times)}
+    rows, metrics = s6.survival_rows(targets, preds)
     write_record("s6", j_arm_info(arm, bundle, record_id), suite_info("s6", [], "auth_gate DENY (dev)"), rows, metrics, "live_model_run")
 
 
