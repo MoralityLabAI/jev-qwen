@@ -262,6 +262,11 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
   also what the documented Jev claim is about (F4). FLOPs stay in every record. The 5-point
   accuracy threshold and the comparator are unchanged.
   **M3 interim (2026-10-03):** accuracy half met narrowly for V1 (gap 4.5 points on the 400-item prefix, bound 5; the gap is significant, p = 0.02). Efficiency half pending the paired benchmark (queue xb3).
+  **Result (2026-10-04): not falsified for V1, narrowly.**
+  - Efficiency half met by a wide margin. In the paired benchmark (`scripts/bench_h1_latency.py`, 40 examples x 3 repeats, interleaved, on mains), `generate_cot` takes a median 21.1x the per-example latency of `choice` (p10 9.6x, p90 59x), against the 5x bound.
+  - Accuracy half met by 0.5 points: the gap is 4.5 against a bound of 5.
+  - V1c, outside the hypothesis: 19.6x, but its accuracy gap is 6.0 points.
+  - Records: `results/latency/20261004T061901Z_h1_v1_lora_s0.json` and `20261004T063027Z_h1_v1c_lora_s0.json`. The V1 run started with one other GPU process present, so its absolute latencies (0.42 s and 9.2 s) are higher than V1c's (0.18 s and 4.0 s); the paired ratio is the registered measure.
 - **H2 is false** if V1 gains less than 10 points over V0 on trained difficulties.
   **M3 result (2026-10-03): not falsified.** V1 `choice` +15.2 points on difficulties 1-3 (0.773 to 0.925, n = 600, p = 2e-17); `generate` +9.8. See `notes/006`.
 - **H3 is false** if some zero-shot (span, n_iters > 1) beats V0-driver by more than 3 points on

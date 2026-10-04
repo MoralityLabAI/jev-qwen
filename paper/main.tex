@@ -169,8 +169,10 @@ absent for graph search (0.54$\to$0.46).
 points on the trained difficulties (0.773$\to$0.925, $n=600$, $p=2\times10^{-17}$) and by 19.0 points
 on difficulties 4--5, which it never saw. On the shared 400 items V1's \choiceR{} is 4.5 points
 behind its own \cotR{} (0.877 vs 0.922); the gap is significant ($p=0.02$) and again sits in
-sequential-state tasks. Unpaired medians from separate runs put \choiceR{} at 0.42\,s and \cotR{}
-at 5.28\,s per item; the registered paired measurement is \pending{xb3}.
+sequential-state tasks. In the registered paired benchmark (40 items, three interleaved repeats),
+\cotR{} takes a median 21 times the per-item latency of \choiceR{} (10th to 90th percentile
+9.6--59). By our pre-registered bounds (within 5 points of the model's own reasoning, at least 5
+times faster), V1's single pass meets both, the accuracy bound by half a point.
 
 \emph{Standard fine-tuning costs calibration.} The base model's \choiceR{} readout is well calibrated
 (ECE 0.032~\cite{guo2017calibration}); V1 doubles it to 0.069 while removing V0's over-refusal on
