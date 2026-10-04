@@ -88,6 +88,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 | J-V2b-r1 | 54 | 0 | 3 | > 10 |
 | J-V2b-r2 | 54 | 0 | 0 | > 10 |
 | J-V2b-r3 | 54 | 0 | 0 | > 10 |
+| J-cot-V1 | 54 | 0 | 0 | > 10 |
 | script | 54 | 0 | None | > 10 |
 
 ![S6 scripted ladder, S4 auth_gate targets](figures/halflife_s6.svg)
@@ -128,5 +129,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 | s7:J-V2b-r2 vs J-V2b-r1 | 128 | 9 | 0 | 0.0273 |
 
 s6: J-V2b-r2 vs J-V2b-r1 log-rank p = 0.0804
+
+s6: J-cot-V1 vs J-V1 log-rank p = 0.0227
 
 s6c: J-V2b-r2 vs J-V2b-r1 log-rank p = 0.854
