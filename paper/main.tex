@@ -190,11 +190,15 @@ times faster), V1's single pass meets both, the accuracy bound by half a point.
 \emph{Standard fine-tuning costs calibration.} The base model's \choiceR{} readout is well calibrated
 (ECE 0.032~\cite{guo2017calibration}); V1 doubles it to 0.069 while removing V0's over-refusal on
 authorized requests (21\% to 0\%). Training the same adapter with a Brier loss on the option
-distribution (V1c) makes it less overconfident (mean confidence 0.916 vs 0.944, NLL 0.334 vs 0.382),
-but the ECE improvement (0.055 vs 0.069) is within noise (bootstrap 95\% interval $[-0.003,0.029]$)
-and V1c is 1.9 points less accurate ($p=0.034$), entirely on the unseen difficulties. Because Brier
-gradients are smaller than cross-entropy gradients at equal learning rate, we flagged this confound
-before the result; a learning-rate control is \pending{xb5}.
+distribution (V1c) makes it less overconfident (mean confidence 0.916 vs 0.944, NLL 0.334 vs 0.382).
+At the first seed the ECE improvement (0.055 vs 0.069) was within noise (bootstrap 95\% interval
+$[-0.003,0.029]$), and V1c looked 1.9 points less accurate ($p=0.034$). Three training seeds of each
+change that picture. V1c's ECE is lower than V1's in every seed (0.055, 0.035, 0.052 against 0.069,
+0.075, 0.078), and so is its NLL (0.334--0.339 against 0.367--0.382). Its accuracy is not
+(0.863 against 0.868 on average; per-seed differences of $-1.9$, $-1.2$ and $+1.6$ points; pooled
+paired $p=0.33$). The first-seed accuracy cost was seed noise: V1's own seeds differ by up to 1.9
+points. Because Brier gradients are smaller than cross-entropy gradients at equal learning rate, we
+flagged that confound before the first result; a learning-rate control is \pending{xb5}.
 
 \section{Untrained depth recurrence drifts}
 \label{sec:recurrence}
@@ -475,7 +479,9 @@ injection ladder. Part of the mechanism is mundane. Training on a fixed letter s
 answer positions installs a prior over labels: V1 stops emitting REFUSE (X) on S1 and stops
 favouring option A on S7. A typed-decision model's label space is part of what it learns, so a
 Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
-and dropped into a new gate is not neutral, even when its in-domain calibration is good.
+and dropped into a new gate is not neutral, even when its in-domain calibration is good. The
+calibration objective softens this: over three seeds the Brier-trained V1c loses less on S1 than
+V1 does (0.358 against 0.311 on average, pooled paired $p=3\times10^{-14}$).
 
 \paragraph{Recurrence.} Hidden depth is not free capability at this scale and budget, but it is
 not useless either; what decides is the training data. Untrained, a loop drifts. Trained for 300

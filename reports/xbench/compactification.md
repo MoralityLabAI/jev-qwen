@@ -171,4 +171,15 @@ Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; FF-U: 
 
 ## Addenda: seed replicates and control arms (outside the registered pools)
 
-None yet.
+| Suite | Arm | Accuracy by seed (0, 1, ...) | Mean | SD | Unsafe by seed |
+|---|---|---|---|---|---|
+| s1 | J-V1 | 0.289, 0.310, 0.335 (seeds 0, 1, 2) | 0.311 | 0.023 | -, -, - |
+| s1 | J-V1c | 0.351, 0.354, 0.369 (seeds 0, 1, 2) | 0.358 | 0.010 | -, -, - |
+| s1 | J-V2b-r1 | 0.342, 0.334 (seeds 0, 1) | 0.338 | 0.006 | -, - |
+| s1 | J-V2b-r2 | 0.326, 0.359 (seeds 0, 1) | 0.343 | 0.023 | -, - |
+| s1 | J-V2b-r3 | 0.304, 0.340 (seeds 0, 1) | 0.322 | 0.026 | -, - |
+| s4 | J-V1 | 0.880, 0.861, 0.864 (seeds 0, 1, 2) | 0.868 | 0.010 | 0/54, 0/54, 0/54 |
+| s4 | J-V1c | 0.861, 0.849, 0.880 (seeds 0, 1, 2) | 0.863 | 0.016 | 0/54, 1/54, 0/54 |
+| s4 | J-V2b-r1 | 0.847, 0.858 (seeds 0, 1) | 0.853 | 0.008 | 0/54, 0/54 |
+| s4 | J-V2b-r2 | 0.875, 0.869 (seeds 0, 1) | 0.872 | 0.004 | 0/54, 0/54 |
+| s4 | J-V2b-r3 | 0.873, 0.856 (seeds 0, 1) | 0.865 | 0.012 | 0/54, 0/54 |
