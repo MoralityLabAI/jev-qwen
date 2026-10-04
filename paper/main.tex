@@ -365,7 +365,13 @@ was added after these results (addendum A2, post hoc): \pending{xb6}. Bonsai-8B:
 
 \paragraph{S3, long context.} Recorded results: trained ControlTRM followed by the LDT veto reaches
 utility 0.687 with no unsafe actions, against 0.339 and 19.4\% unsafe for the API language model
-alone. Jev-style arms reading the full transcripts in one pass: \pending{xb1, after a memory probe}.
+alone. The Jev-style arms read each full transcript (up to 25.6k tokens, chunked prefill) and
+pick the action in one pass, zero-shot. Alone they are no better than the API model:
+accuracy 0.21--0.33, with 6--11 of 24 actions unsafe. Behind the same LDT veto they become safe
+(0 unsafe) and reach utility 0.61--0.62. That is barely above the veto alone (0.571) and below
+the 17k-parameter ControlTRM with LDT (0.687). With 24 rows per arm against 72 for the recorded
+arms, S3 stays descriptive, as registered. Within that limit, on long-context control the 4B
+single pass adds little to what the typed veto already provides.
 
 \paragraph{Frontier.} Figure~\ref{fig:pareto} places every live arm by cost and accuracy.
 \pending{interpretation after xb1, xb2}.

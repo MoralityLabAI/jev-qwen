@@ -17,20 +17,38 @@
 <text x="52" y="124.0" text-anchor="end">0.8</text>
 <line x1="56" y1="60.0" x2="660" y2="60.0" stroke="#eee"/>
 <text x="52" y="64.0" text-anchor="end">1.0</text>
-<text x="2.7000229293828113" y="376" text-anchor="middle">-1</text>
-<text x="117.29997707061719" y="376" text-anchor="middle">0</text>
-<text x="231.89993121185157" y="376" text-anchor="middle">1</text>
-<text x="346.499885353086" y="376" text-anchor="middle">2</text>
-<text x="461.09983949432035" y="376" text-anchor="middle">3</text>
-<text x="575.6997936355548" y="376" text-anchor="middle">4</text>
-<text x="690.2997477767891" y="376" text-anchor="middle">5</text>
-<circle cx="602.7" cy="135.0" r="5" fill="#1f5fa8"/>
-<text x="609.7" y="129.0">ControlTRM</text>
-<circle cx="602.7" cy="101.7" r="5" fill="#1f5fa8"/>
-<text x="609.7" y="95.7">ControlTRM-LDT</text>
-<circle cx="117.3" cy="235.0" r="5" fill="#c0392b"/>
-<text x="124.3" y="229.0">LDT</text>
-<circle cx="602.7" cy="272.5" r="5" fill="#1f5fa8"/>
-<text x="609.7" y="266.5">recorded-trained_trm_rlm_critic_ldt</text>
+<text x="31.76996417175759" y="376" text-anchor="middle">-1</text>
+<text x="88.2300358282424" y="376" text-anchor="middle">0</text>
+<text x="144.69010748472724" y="376" text-anchor="middle">1</text>
+<text x="201.15017914121205" y="376" text-anchor="middle">2</text>
+<text x="257.61025079769684" y="376" text-anchor="middle">3</text>
+<text x="314.0703224541817" y="376" text-anchor="middle">4</text>
+<text x="370.53039411066646" y="376" text-anchor="middle">5</text>
+<text x="426.9904657671513" y="376" text-anchor="middle">6</text>
+<text x="483.4505374236361" y="376" text-anchor="middle">7</text>
+<text x="539.910609080121" y="376" text-anchor="middle">8</text>
+<text x="596.3706807366058" y="376" text-anchor="middle">9</text>
+<text x="652.8307523930906" y="376" text-anchor="middle">10</text>
+<text x="709.2908240495755" y="376" text-anchor="middle">11</text>
+<circle cx="327.4" cy="135.0" r="5" fill="#1f5fa8"/>
+<text x="334.4" y="129.0">ControlTRM</text>
+<circle cx="327.4" cy="101.7" r="5" fill="#1f5fa8"/>
+<text x="334.4" y="95.7">ControlTRM-LDT</text>
+<circle cx="631.6" cy="297.5" r="5" fill="#1f5fa8"/>
+<text x="638.6" y="291.5">J-V0</text>
+<circle cx="631.6" cy="222.5" r="5" fill="#1f5fa8"/>
+<text x="638.6" y="216.5">J-V0-LDT</text>
+<circle cx="631.8" cy="272.5" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="266.5">J-V1</text>
+<circle cx="631.8" cy="235.0" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="229.0">J-V1-LDT</text>
+<circle cx="631.8" cy="260.0" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="254.0">J-V1c</text>
+<circle cx="631.8" cy="222.5" r="5" fill="#1f5fa8"/>
+<text x="638.8" y="216.5">J-V1c-LDT</text>
+<circle cx="88.2" cy="235.0" r="5" fill="#c0392b"/>
+<text x="95.2" y="229.0">LDT</text>
+<circle cx="327.4" cy="272.5" r="5" fill="#1f5fa8"/>
+<text x="334.4" y="266.5">recorded-trained_trm_rlm_critic_ldt</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>
 </svg>

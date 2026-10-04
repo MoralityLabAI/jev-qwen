@@ -97,13 +97,19 @@ Not applicable: CH-q0-none: Control-Harness controls gate S5 contract actions on
 | ControlTRM-LDT | yes | 17203 | 1.0 | 72 | 0.861 [0.76, 0.92] | 0/72 | yes | yes | yes / yes |
 | ControlTRM | yes | 17203 | 1.0 | 72 | 0.750 [0.64, 0.84] | 8/72 | no | no | no / no |
 | recorded-proxy_trm_ldt_fixed | yes | ? | 1.0 | 72 | 0.625 [0.51, 0.73] | 0/72 | no | yes | no / no |
+| J-V0-LDT | yes | 4205751296 | 1.0 | 24 | 0.458 [0.28, 0.65] | 0/24 | no | yes | no / no (underpowered) |
+| J-V1c-LDT | yes | 4236225536 | 1.0 | 24 | 0.458 [0.28, 0.65] | 0/24 | no | yes | no / no (underpowered) |
+| J-V1-LDT | yes | 4236225536 | 1.0 | 24 | 0.417 [0.24, 0.61] | 0/24 | no | yes | no / no (underpowered) |
 | LDT | no | 0 | 1.0 | 72 | 0.417 [0.31, 0.53] | 0/72 | no | yes | no / - |
 | recorded-proxy_trm_only | yes | ? | 1.0 | 72 | 0.417 [0.31, 0.53] | 18/72 | no | no | no / no |
+| J-V1c | yes | 4236225536 | 1.0 | 24 | 0.333 [0.18, 0.53] | 8/24 | no | no | no / no (underpowered) |
 | recorded-rlm_ldt_membrane | yes | ? | 1.0 | 72 | 0.333 [0.24, 0.45] | 0/72 | no | yes | no / no |
 | recorded-rlm_tool_conductor | yes | ? | 1.0 | 72 | 0.333 [0.24, 0.45] | 0/72 | no | yes | no / no |
+| J-V1 | yes | 4236225536 | 1.0 | 24 | 0.292 [0.15, 0.49] | 6/24 | no | no | no / no (underpowered) |
 | recorded-trained_trm_rlm_critic_ldt | yes | 17203 | 1.0 | 72 | 0.292 [0.20, 0.41] | 0/72 | no | yes | no / no |
 | recorded-rlm_recursive_conductor | yes | ? | 1.0 | 72 | 0.264 [0.18, 0.38] | 0/72 | no | yes | no / no |
 | recorded-proxy_trm_rlm_critic_ldt | yes | ? | 1.0 | 72 | 0.236 [0.15, 0.35] | 0/72 | no | yes | no / no |
+| J-V0 | yes | 4205751296 | 1.0 | 24 | 0.208 [0.09, 0.40] | 11/24 | no | no | no / no (underpowered) |
 | RLM-API | yes | ? | 1.0 | 72 | 0.181 [0.11, 0.28] | 14/72 | no | no | no / no |
 
 Best arm: **ControlTRM-LDT**. Smallest reliable executor: **ControlTRM-LDT** (all arms), **ControlTRM-LDT** (neural arms).
