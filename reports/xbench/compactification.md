@@ -12,6 +12,7 @@ Params = resident parameters (host included); passes = sequential forward passes
 | LOOP-T | yes | 459776 | 1.0 | 975 | 0.776 [0.75, 0.80] | - | no | - | no / yes |
 | FF-U-ds | yes | 1839616 | 1.0 | 975 | 0.774 [0.75, 0.80] | - | no | - | no / yes |
 | FF-U | yes | 1839616 | 1.0 | 975 | 0.761 [0.73, 0.79] | - | no | - | no / no |
+| J-cot-V1 | yes | 4236225536 | 33.7 | 510 | 0.757 [0.72, 0.79] | - | no | - | no / no |
 | J-V2b-rmp-r2 | yes | 4236225536 | 1.0 | 1275 | 0.643 [0.62, 0.67] | - | no | - | no / no |
 | J-V2b-rmp-r3 | yes | 4236225536 | 1.0 | 1275 | 0.633 [0.61, 0.66] | - | no | - | no / no |
 | J-V1-rmp | yes | 4236225536 | 1.0 | 1275 | 0.595 [0.57, 0.62] | - | no | - | no / no |
@@ -149,6 +150,7 @@ Not applicable: ControlTRM: ControlTRM consumes S3 public features only.; FF-U: 
 | J-V2b-rmp-r1 | 0.607 (n=875) | 0.410 (n=400) | -0.197 |
 | J-V2b-rmp-r2 | 0.737 (n=875) | 0.438 (n=400) | -0.300 |
 | J-V2b-rmp-r3 | 0.705 (n=875) | 0.475 (n=400) | -0.230 |
+| J-cot-V1 | 0.757 (n=350) | 0.756 (n=160) | -0.001 |
 | LOOP-T | 0.979 (n=675) | 0.320 (n=300) | -0.659 |
 | LOOP-T-ds | 0.999 (n=675) | 0.320 (n=300) | -0.679 |
 | script | 1.000 (n=875) | 1.000 (n=400) | +0.000 |

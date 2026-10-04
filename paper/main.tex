@@ -331,8 +331,17 @@ readiness rule this is depth-indexed ($\rho=0.89$ over the four depths that reac
 narrowly: depth 3 never reaches 0.9, and it holds on pointer chasing only. A third pass, beyond
 the trained depth, gives back part of the gain ($p=0.012$), and depths 9--12 are unchanged
 (0.430 against 0.433). The 4B model with a two-pass loop still tracks about six hops where the
-460k-parameter decoder tracks eight. Whether emitted reasoning (J-cot) changes the picture is
-\pending{xb1}.
+460k-parameter decoder tracks eight.
+
+Emitted reasoning is the one readout that extrapolates. J-cot-V1 is V1 shown worked solutions
+that spell out the walk (``J->P->G->I->B->D->H. A: H''), evaluated on 10 items per depth. On
+pointer chasing it scores 1.0 through depth 6 and 0.9 at depths 9--11, falling to 0.6 only at
+depth 12. On the shared families it scores 0.711 on depths 1--8 and 0.717 on depths 9--12. That
+is below LOOP-T-ds within the trained depths (paired 1 to 78) and far above it beyond them
+(0.717 against 0.308, paired 64 to 15, $p=2\times10^{-8}$). Each hop is a token, so depth is
+bounded by the token budget rather than by the architecture. The gate and the search families
+gain less: gated chasing 0.57, reachability 0.69, sudoku 0.53. It costs 34 emitted tokens on
+average and a median 6.5\,s per item, against one pass. J-cot-V0: \pending{xb1}.
 
 \paragraph{S2 and S7, verifier-visible state.} The registered post-repair rule is correct on every
 S2 item on every split, as are the kNN critic and the TinyTRM port; with 18 true rejects S2 is

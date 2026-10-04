@@ -17,48 +17,51 @@
 <text x="52" y="124.0" text-anchor="end">0.8</text>
 <line x1="56" y1="60.0" x2="660" y2="60.0" stroke="#eee"/>
 <text x="52" y="64.0" text-anchor="end">1.0</text>
-<text x="31.76996417175759" y="376" text-anchor="middle">-1</text>
-<text x="88.2300358282424" y="376" text-anchor="middle">0</text>
-<text x="144.69010748472724" y="376" text-anchor="middle">1</text>
-<text x="201.15017914121205" y="376" text-anchor="middle">2</text>
-<text x="257.61025079769684" y="376" text-anchor="middle">3</text>
-<text x="314.0703224541817" y="376" text-anchor="middle">4</text>
-<text x="370.53039411066646" y="376" text-anchor="middle">5</text>
-<text x="426.9904657671513" y="376" text-anchor="middle">6</text>
-<text x="483.4505374236361" y="376" text-anchor="middle">7</text>
-<text x="539.910609080121" y="376" text-anchor="middle">8</text>
-<text x="596.3706807366058" y="376" text-anchor="middle">9</text>
-<text x="652.8307523930906" y="376" text-anchor="middle">10</text>
-<text x="709.2908240495755" y="376" text-anchor="middle">11</text>
-<circle cx="441.9" cy="131.7" r="5" fill="#1f5fa8"/>
-<text x="448.9" y="125.7">FF-U</text>
-<circle cx="441.9" cy="127.7" r="5" fill="#1f5fa8"/>
-<text x="448.9" y="121.7">FF-U-ds</text>
-<circle cx="631.6" cy="240.0" r="5" fill="#1f5fa8"/>
-<text x="638.6" y="234.0">J-V0</text>
-<circle cx="631.8" cy="273.4" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="267.4">J-V1</text>
-<circle cx="631.8" cy="181.4" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="175.4">J-V1-rmp</text>
-<circle cx="631.8" cy="254.8" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="248.8">J-V1c</text>
-<circle cx="631.8" cy="257.4" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="251.4">J-V2b-r1</text>
-<circle cx="631.8" cy="262.1" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="256.1">J-V2b-r2</text>
-<circle cx="631.8" cy="268.9" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="262.9">J-V2b-r3</text>
-<circle cx="631.8" cy="196.5" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="190.5">J-V2b-rmp-r1</text>
-<circle cx="631.8" cy="167.1" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="161.1">J-V2b-rmp-r2</text>
-<circle cx="631.8" cy="170.1" r="5" fill="#1f5fa8"/>
-<text x="638.8" y="164.1">J-V2b-rmp-r3</text>
-<circle cx="407.9" cy="127.1" r="5" fill="#1f5fa8"/>
-<text x="414.9" y="121.1">LOOP-T</text>
-<circle cx="407.9" cy="123.1" r="5" fill="#1f5fa8"/>
-<text x="414.9" y="117.1">LOOP-T-ds</text>
-<circle cx="88.2" cy="60.0" r="5" fill="#c0392b"/>
-<text x="95.2" y="54.0">script</text>
+<text x="35.318876681786705" y="376" text-anchor="middle">-1</text>
+<text x="84.6811233182133" y="376" text-anchor="middle">0</text>
+<text x="134.0433699546399" y="376" text-anchor="middle">1</text>
+<text x="183.4056165910665" y="376" text-anchor="middle">2</text>
+<text x="232.76786322749308" y="376" text-anchor="middle">3</text>
+<text x="282.13010986391964" y="376" text-anchor="middle">4</text>
+<text x="331.4923565003463" y="376" text-anchor="middle">5</text>
+<text x="380.8546031367729" y="376" text-anchor="middle">6</text>
+<text x="430.2168497731995" y="376" text-anchor="middle">7</text>
+<text x="479.5790964096261" y="376" text-anchor="middle">8</text>
+<text x="528.9413430460527" y="376" text-anchor="middle">9</text>
+<text x="578.3035896824792" y="376" text-anchor="middle">10</text>
+<text x="627.6658363189058" y="376" text-anchor="middle">11</text>
+<text x="677.0280829553325" y="376" text-anchor="middle">12</text>
+<circle cx="393.9" cy="131.7" r="5" fill="#1f5fa8"/>
+<text x="400.9" y="125.7">FF-U</text>
+<circle cx="393.9" cy="127.7" r="5" fill="#1f5fa8"/>
+<text x="400.9" y="121.7">FF-U-ds</text>
+<circle cx="635.3" cy="132.9" r="5" fill="#1f5fa8"/>
+<text x="642.3" y="126.9">J-cot-V1</text>
+<circle cx="559.7" cy="240.0" r="5" fill="#1f5fa8"/>
+<text x="566.7" y="234.0">J-V0</text>
+<circle cx="559.9" cy="273.4" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="267.4">J-V1</text>
+<circle cx="559.9" cy="181.4" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="175.4">J-V1-rmp</text>
+<circle cx="559.9" cy="254.8" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="248.8">J-V1c</text>
+<circle cx="559.9" cy="257.4" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="251.4">J-V2b-r1</text>
+<circle cx="559.9" cy="262.1" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="256.1">J-V2b-r2</text>
+<circle cx="559.9" cy="268.9" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="262.9">J-V2b-r3</text>
+<circle cx="559.9" cy="196.5" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="190.5">J-V2b-rmp-r1</text>
+<circle cx="559.9" cy="167.1" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="161.1">J-V2b-rmp-r2</text>
+<circle cx="559.9" cy="170.1" r="5" fill="#1f5fa8"/>
+<text x="566.9" y="164.1">J-V2b-rmp-r3</text>
+<circle cx="364.2" cy="127.1" r="5" fill="#1f5fa8"/>
+<text x="371.2" y="121.1">LOOP-T</text>
+<circle cx="364.2" cy="123.1" r="5" fill="#1f5fa8"/>
+<text x="371.2" y="117.1">LOOP-T-ds</text>
+<circle cx="84.7" cy="60.0" r="5" fill="#c0392b"/>
+<text x="91.7" y="54.0">script</text>
 <text x="660" y="40" text-anchor="end"><tspan fill="#1f5fa8">● neural</tspan>  <tspan fill="#c0392b">● non-neural (x = 0 means 0 params)</tspan></text>
 </svg>

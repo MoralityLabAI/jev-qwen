@@ -117,6 +117,7 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 |---|---|---|---|---|
 | s1:J-V1c vs J-V1 | 1275 | 131 | 52 | 4.25e-08 |
 | s1:J-V2b-r2 vs J-V2b-r1 | 1275 | 58 | 78 | 0.412 |
+| s1:J-cot-V1 vs J-V1 | 510 | 268 | 42 | 2.1e-40 |
 | s2:J-V1c vs J-V1 | 74 | 2 | 2 | 1 |
 | s2:J-V2b-r2 vs J-V2b-r1 | 74 | 0 | 4 | 0.412 |
 | s4:J-V1c vs J-V1 | 1000 | 27 | 46 | 0.172 |
