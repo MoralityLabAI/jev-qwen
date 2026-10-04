@@ -1,0 +1,18 @@
+# The rest of the S6 adaptive attacker (xb2 stopped after J-V1 and J-V0: os error 1455, XI3).
+# One gate per step so every 4B load starts in a fresh process (commit floor 9 GB; 2 GB let a load fail).
+name: xb9
+min_free_mib: 10000
+min_free_commit_gb: 9
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: wait_xb8
+    args: [scripts/wait_queue.py, --queue, configs/queues/xb8.yaml, --timeout-minutes, "5000"]
+  - name: adaptive_v1c
+    args: [scripts/xbench.py, adaptive, --gates, J-V1c]
+  - name: adaptive_v2b_r2
+    args: [scripts/xbench.py, adaptive, --gates, J-V2b-r2]
+  - name: adaptive_bonsai
+    args: [scripts/xbench.py, adaptive, --gates, Bonsai-8B]

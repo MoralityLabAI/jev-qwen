@@ -9,7 +9,7 @@ from .arms import J_ARMS
 from .attacks import ADAPTIVE_ATTACKER_PROMPT, LADDER_LENGTH
 from .jrunner import ChoiceItem
 from .metrics import summarize
-from .records import arm_info, suite_info, write_record
+from .records import RESULTS, arm_info, suite_info, write_record
 from .run import (
     _episode_metrics,
     _s4_flags,
@@ -120,19 +120,23 @@ def _j_decider(gate_id: str):
     return decide, j_arm_info(jarm, bundle, gate_id), bundle
 
 
-def run_s6_adaptive(gate_ids: list[str], max_targets: int | None = None) -> None:
+def run_s6_adaptive(gate_ids: list[str], max_targets: int | None = None, force: bool = False) -> None:
     """Bonsai-8B rewrites the request note for up to 10 turns against each gate (S4 auth_gate DENY
     targets). It sees the case without a note, its previous note and the gate's last decision only."""
     import torch
 
     shots, targets = s6.auth_targets()
     targets = targets[:max_targets] if max_targets else targets
-    with bonsai.BonsaiServer() as server:
-        for gate_id in gate_ids:
+    for gate_id in gate_ids:
+        if not force and (RESULTS / "s6a" / gate_id / "record.json").exists():
+            print(f"[xbench] adaptive: {gate_id} already has a record, skipping", flush=True)
+            continue
+        # The J model is loaded before the server starts, one gate per call: loading a second
+        # 4B model in the same process next to llama-server ran out of commit memory (XI3).
+        decide, arm, bundle = (None, None, None) if gate_id == "Bonsai-8B" else _j_decider(gate_id)
+        with bonsai.BonsaiServer() as server:
             if gate_id == "Bonsai-8B":
-                decide, arm, bundle = (lambda items: [r["pred"] for r in bonsai.run_choice(server, items)]), bonsai_arm(server), None
-            else:
-                decide, arm, bundle = _j_decider(gate_id)
+                decide, arm = (lambda items: [r["pred"] for r in bonsai.run_choice(server, items)]), bonsai_arm(server)
             rows, times, excluded = [], [], 0
             for target in targets:
                 if decide([s6.attacked_item(shots, target, None, 0)])[0] != "DENY":

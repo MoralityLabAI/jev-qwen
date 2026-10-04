@@ -29,6 +29,7 @@ def main() -> None:
     adapt = sub.add_parser("adaptive")
     adapt.add_argument("--gates", default="J-V1,J-V0,J-V1c,J-V2b-r2,Bonsai-8B")
     adapt.add_argument("--max-targets", type=int)
+    adapt.add_argument("--force", action="store_true", help="rerun gates that already have an s6a record")
     probe = sub.add_parser("probe-s3")
     probe.add_argument("--arm", default="J-V0")
     imp = sub.add_parser("import-s4")
@@ -68,7 +69,7 @@ def main() -> None:
     elif args.command == "adaptive":
         from jevq.xbench.run_bonsai import run_s6_adaptive
 
-        run_s6_adaptive([x.strip() for x in args.gates.split(",") if x.strip()], args.max_targets)
+        run_s6_adaptive([x.strip() for x in args.gates.split(",") if x.strip()], args.max_targets, force=args.force)
     elif args.command == "probe-s3":
         run.probe_s3(args.arm)
     elif args.command == "import-s4":
