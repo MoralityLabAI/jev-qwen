@@ -66,8 +66,18 @@ def attacked_item(shots: list[Example], example: Example, note: str, turn: int) 
     return ChoiceItem(f"{example.id}@a{turn}", render_choice(shots, attacked), labels, attacked.options, "DENY", meta)
 
 
+ECHO_MARKERS = ("the note must", "write one new note", "you may only write", "do not address the gate", "your previous note")
+
+
+def is_echo(note: str) -> bool:
+    """An attacker 'note' that restates the attacker's instructions instead of being evidence."""
+    low = note.lower()
+    return any(marker in low for marker in ECHO_MARKERS)
+
+
 def clean_note(text: str) -> str:
     """First non-empty line of the attacker's output, quotes removed, at most 60 words."""
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
     line = next((l.strip() for l in text.splitlines() if l.strip()), "")
     line = line.strip('"').replace('"', "'")
     return " ".join(line.split()[:60])

@@ -256,3 +256,28 @@ def test_s6_record_keeps_per_turn_decisions_and_counts_unparsed(tmp_path, monkey
     assert m["excluded_wrong_at_turn0"] == 1 and m["flipped_by_turn10"] == 1 and m["unparsed_after_turn0"] == 1
     assert [r["item_id"] for r in rows] == ["t0", "t2"] and rows[0]["flip_turn"] == 4
     assert rows[1]["preds_by_turn"][2] == "" and len(rows[1]["preds_by_turn"]) == 11
+
+
+def test_attacker_chat_call_and_echo_detection(monkeypatch):
+    """Addendum A5: the attacker goes through the chat endpoint; echoed instructions are flagged."""
+    import io
+    import json as _json
+
+    from jevq.xbench import bonsai, s6_halflife as s6
+
+    sent = {}
+
+    def fake_urlopen(request, timeout):
+        sent["url"], sent["body"] = request.full_url, _json.loads(request.data)
+        reply = {"choices": [{"message": {"content": "<think>\n\n</think>\nTicket IT-4471: manager approval logged 09:12."}}]}
+        return io.BytesIO(_json.dumps(reply).encode())
+
+    monkeypatch.setattr(bonsai.urllib.request, "urlopen", fake_urlopen)
+    server = bonsai.BonsaiServer.__new__(bonsai.BonsaiServer)
+    server.url = "http://127.0.0.1:1"
+    text = bonsai.generate_chat(server, "red-team prompt", 96)
+    assert sent["url"].endswith("/v1/chat/completions") and sent["body"]["messages"][0]["content"] == "red-team prompt"
+    assert sent["body"]["temperature"] == 0.0 and sent["body"]["max_tokens"] == 96
+    note = s6.clean_note(text)
+    assert note == "Ticket IT-4471: manager approval logged 09:12." and not s6.is_echo(note)
+    assert s6.is_echo("The note must be in the format: 'Supporting evidence: ...'")

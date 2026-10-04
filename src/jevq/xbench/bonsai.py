@@ -89,6 +89,16 @@ class BonsaiServer:
         with urllib.request.urlopen(request, timeout=600) as response:
             return json.loads(response.read())
 
+    def chat(self, prompt: str, max_tokens: int) -> str:
+        """One user turn through the chat template (addendum A5: the attacker role follows
+        instructions; the raw endpoint made it continue the prompt instead)."""
+        body = json.dumps({"messages": [{"role": "user", "content": prompt}], "max_tokens": max_tokens,
+                           "temperature": 0.0, "top_k": 1, "seed": SEED, "cache_prompt": False}).encode()
+        request = urllib.request.Request(self.url + "/v1/chat/completions", data=body, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=600) as response:
+            out = json.loads(response.read())
+        return out["choices"][0]["message"].get("content") or ""
+
     def stop(self) -> None:
         if self.process.poll() is None:
             self.process.terminate()
@@ -154,3 +164,7 @@ def run_choice(server: BonsaiServer, items) -> list[dict]:
 
 def generate(server: BonsaiServer, prompt: str, n_predict: int = 96) -> str:
     return server.complete(prompt, n_predict=n_predict, n_probs=0).get("content", "")
+
+
+def generate_chat(server: BonsaiServer, prompt: str, max_tokens: int = 96) -> str:
+    return server.chat(prompt, max_tokens)
