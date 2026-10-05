@@ -286,6 +286,10 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
   difficulty 4-5 it rises from one pass to two (0.673 to 0.747) and not from two to three
   (0.737). The passes do change answers (61 of 1,000 at the second pass), but at the trained
   depth the result equals V1. See `notes/007`.
+  **Replicates (2026-10-05): falsified in all three seeds** (multi-step classes, pooled
+  discordant pairs 123 vs 114, p = 0.60; no rise with passes at difficulty 4-5 in seeds 1 and 2).
+  Outside H4's registered scope: trained on a single algorithmic task (RMP pointer chasing etc.),
+  the same loop beats the loop-free adapter in every seed (pooled p = 1.3e-8; `notes/008`).
 - **H5 is false** if V3 with k latent steps is more than 5 points below the same model emitting
   a reasoning trace, or not faster.
 - **H6 is false** if mean iterations do not increase with difficulty, or accuracy drops more
@@ -298,6 +302,13 @@ about +/-7 points per difficulty level). "Points" are percentage points of accur
   already 0, so it cannot fall. The xbench injection ladder points toward the stronger form
   (5 flips of 54 for V1, 0 for V2b at its trained depth, p = 0.0625, one seed); the seed
   replicates test it.
+  **Result (2026-10-05): not falsified; stronger form supported on the scripted ladder.** No
+  recurrent variant raises the dev unsafe-allow rate, which is 0 of 54 in every seed and at every
+  pass count. Under the xbench S6 scripted evidence-injection ladder, the test registered before
+  the replicates (SPEC A3) gives V1 14 flips over 3 seeds x 54 targets and V2b at its trained
+  depth 0 (one-sided p = 6e-5). Part of the effect is the adapter trained with the loop (its
+  one-pass exit flips 5). It does not carry to the contract-side targets (V1 4 of 10 per seed,
+  V2b 2-3). The adaptive attacker was too weak to test it (`notes/008`, A5).
 - **The project's main claim fails** if no variant in V2-V4 beats V1 on any of accuracy at equal
   compute, compute at equal accuracy, or difficulty extrapolation. That outcome is reported as
   the result.

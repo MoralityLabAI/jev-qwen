@@ -31,7 +31,7 @@ SPEC v1 was registered at commit c457b35 (2026-10-03) before any cross-arm outco
 
 | # | Compromise | Effect | Removal path |
 |---|------------|--------|--------------|
-| XC1 | RMP arms other than LOOP-T-ds use the "final" snapshots written by the running Phase 0 queue (`FF-U-core4-ds-s1-final.pt` dated 2026-10-03 11:49) | They may differ from whatever that queue reports as final later | Re-run `xbench.py cpu --only s1` after Phase 0 closes; checkpoint sha256 is in every record |
+| XC1 | RMP arms other than LOOP-T-ds use the "final" snapshots written by the running Phase 0 queue (`FF-U-core4-ds-s1-final.pt` dated 2026-10-03 11:49) | They may differ from whatever that queue reports as final later | Re-run `xbench.py cpu --only s1` after Phase 0 closes; checkpoint sha256 is in every record | **Closed 2026-10-05:** Phase 0 finished; all four checkpoints are byte-identical (sha256) to the ones scored, so no rerun was needed.
 | XC2 | S2 has 18 reject truths in all its eval splits together (C-sig 2, near-miss 10 + 6) | By rule R2 no arm can be called reliable on S2 alone (underpowered) | A larger commit/veto pack |
 | XC3 | S3 J arms run zero-shot with 2,048-token chunked prefill; the recorded arms have 3 replicate seeds | J has 24 rows per arm against 72 recorded; S3 stays descriptive (SPEC 8) | — |
 | XC4 | Bonsai-8B parameter count recorded as 8e9 (approximate, 1-bit weights) | The cost key treats it as 8B resident parameters | — |
