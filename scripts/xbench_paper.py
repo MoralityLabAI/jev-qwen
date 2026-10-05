@@ -106,31 +106,67 @@ def halflife_table(registered) -> str:
     return "\n".join(lines + [r"\bottomrule", r"\end{tabular}", ""])
 
 
+# Arm families for the frontier plot: (label, mark style). Order is the legend order.
+FAMILIES = [
+    ("script / rule (0 params)", "mark=square*, black"),
+    ("TRM gate (6k--17k)", "mark=triangle*, orange!90!black, mark size=2.6pt"),
+    ("looped decoder (0.46--1.8M)", "mark=diamond*, green!50!black, mark size=2.8pt"),
+    ("4B single pass", "mark=*, blue!80!black"),
+    ("4B reasoning", "mark=o, blue!80!black, thick"),
+    ("8B LLM, 1-bit", "mark=x, red!80!black, thick, mark size=3pt"),
+]
+
+
+def family(arm: str, record: dict) -> int:
+    if arm.startswith("J-cot"):
+        return 4
+    if arm.startswith("J-"):
+        return 3
+    if arm.startswith("Bonsai"):
+        return 5
+    if arm.startswith(("LOOP-T", "FF-U")):
+        return 2
+    if "TRM" in arm:
+        return 1
+    return 0 if not record["arm"].get("neural") else 1
+
+
 def pareto(registered, suites=("s1", "s4", "s7")) -> str:
-    """Accuracy against log10(resident params x passes), one axis per suite; non-neural arms at x=0."""
-    blocks = []
-    for suite in suites:
+    """Accuracy against log10(resident params x passes), one panel per suite in a row, one mark per
+    arm family and a shared legend (per-point labels overlap where the 4B arms cluster)."""
+    panels = []
+    for index, suite in enumerate(suites):
         records = live(registered.get(suite, {}))
-        if not records:
-            continue
-        neural, other = [], []
+        points: dict[int, list[str]] = {}
         for arm, record in sorted(records.items()):
             params, passes = cost(record)
             if math.isnan(params):
                 continue
             x = math.log10(max(params, 1) * passes) if params else 0.0
-            (neural if record["arm"].get("neural") else other).append(f"({x:.2f},{record['metrics']['accuracy']:.3f}) [{tex(arm)}]")
-        blocks += [
-            r"\begin{tikzpicture}",
-            rf"\begin{{axis}}[width=0.48\linewidth, height=5cm, title={{{suite.upper()}}}, xlabel={{$\log_{{10}}$(params $\times$ passes)}},"
-            r" ylabel={accuracy}, ymin=0, ymax=1.05, xmin=-0.5, xmax=12, grid=major,"
-            r" nodes near coords, point meta=explicit symbolic, every node near coord/.style={font=\tiny, anchor=west, rotate=20}]",
-        ]
-        for points, style in ((neural, "only marks, mark=*"), (other, "only marks, mark=square*")):
-            if points:
-                blocks.append(rf"\addplot+[{style}] coordinates {{" + " ".join(points) + "};")
-        blocks += [r"\end{axis}", r"\end{tikzpicture}", ""]
-    return "\n".join(blocks)
+            points.setdefault(family(arm, record), []).append(f"({x:.2f},{record['metrics']['accuracy']:.3f})")
+        opts = f"title={{{suite.upper()}}}" + (r", ylabel={accuracy}, legend to name=paretolegend, legend columns=3,"
+                                                r" legend style={font=\footnotesize, draw=none, /tikz/every even column/.append style={column sep=0.8em}}"
+                                                if index == 0 else "")
+        panel = [rf"\nextgroupplot[{opts}]"]
+        if index == 0:  # legend images independent of which families have points in this panel
+            for label, style in FAMILIES:
+                panel += [rf"\addlegendimage{{only marks, {style}}}", rf"\addlegendentry{{{label}}}"]
+        for fam, coords in sorted(points.items()):
+            panel.append(rf"\addplot[only marks, {FAMILIES[fam][1]}, forget plot] coordinates {{" + " ".join(coords) + "};")
+        panels += panel
+    return "\n".join([
+        r"\begin{tikzpicture}",
+        r"\begin{groupplot}[group style={group size=" + str(len(suites)) + r" by 1, horizontal sep=0.9cm},"
+        r" width=0.37\linewidth, height=4.4cm, xmin=-0.7, xmax=12, ymin=0, ymax=1.05, grid=major,"
+        r" xlabel={$\log_{10}$(params $\times$ passes)}, tick label style={font=\scriptsize},"
+        r" label style={font=\small}, title style={font=\small}]",
+        *panels,
+        r"\end{groupplot}",
+        r"\end{tikzpicture}",
+        "",
+        r"\smallskip\ref{paretolegend}",
+        "",
+    ])
 
 
 def main() -> None:

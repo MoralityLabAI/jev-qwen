@@ -11,3 +11,11 @@ checkpoints/*
 data/*
 !data/.gitkeep
 !data/README.md
+
+# LaTeX build files (main.pdf is committed)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.bbl
+paper/*.toc

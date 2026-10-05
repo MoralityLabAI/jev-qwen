@@ -1,8 +1,17 @@
 # Small Jev paper (draft)
 
-`main.tex` + `references.bib` + `generated/*.tex`, same layout as the other Morality Lab papers (article class,
-booktabs, pgfplots). There is no LaTeX toolchain on this PC: build on Overleaf (upload `main.tex`, `references.bib` and the `generated/` folder)
-or any TeX Live with `pdflatex main && bibtex main && pdflatex main && pdflatex main`.
+`main.tex` + `references.bib` + `generated/*.tex`, same layout as the other Morality Lab papers
+(article class, booktabs, pgfplots with groupplots). `main.pdf` is the current build.
+
+Build with MiKTeX (installed per-user on this PC; missing packages install on first use):
+
+```powershell
+$tex = "$env:LOCALAPPDATA\Programs\MiKTeX\miktex\bin\x64"
+cd paper
+& $tex\pdflatex main; & $tex\bibtex main; & $tex\pdflatex main; & $tex\pdflatex main
+```
+
+On Overleaf, upload `main.tex`, `references.bib` and the `generated/` folder.
 
 Text marked `\pending{...}` (red) is a result still running in the job queues; nothing in red is a
 claim. Every number outside those markers comes from a run record:

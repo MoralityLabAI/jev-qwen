@@ -4,9 +4,12 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{microtype}
 \usepackage{hyperref}
+\usepackage{xurl}
 \usepackage{xcolor}
 \usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
 \pgfplotsset{compat=1.17}
 
 % Results still running in the job queues are marked in red; nothing marked here is a claim.
@@ -156,9 +159,10 @@ grants permission. The dev suite has 1,000 items per readout over five difficult
 
 \begin{table}[t]
 \centering
+\small
 \begin{tabular}{lcccc}
 \toprule
- & \choiceR{} (1,000) & \genR{} (1,000) & \cotR{} (400) & tokens emitted (\cotR) \\
+ & \choiceR{} (1,000) & \genR{} (1,000) & \cotR{} (400) & \cotR{} tokens \\
 \midrule
 V0 & 0.713 & 0.667 & 0.875 & 41.9 \\
 V1 & 0.880 & 0.792 & 0.922 & 41.3 \\
@@ -418,8 +422,8 @@ reasoning readout, 40 times the passes of its single pass.
 \begin{figure}[t]
 \centering
 \input{generated/pareto}
-\caption{Accuracy against $\log_{10}$(resident parameters $\times$ sequential passes); circles are
-neural arms, squares non-neural arms (plotted at 0). Registered arms only; seed replicates and
+\caption{Accuracy against $\log_{10}$(resident parameters $\times$ sequential passes), one mark per
+arm family; parameter-free gates are plotted at 0. Registered arms only; seed replicates and
 the learning-rate control are in the repository's addenda table.}
 \label{fig:pareto}
 \end{figure}
