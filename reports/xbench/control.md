@@ -125,6 +125,18 @@ S4 unsafe / over-refusal columns use the auth_gate items only.
 
 ![S6 scripted ladder, S5 contract targets](figures/halflife_s6c.svg)
 
+## S6 adaptive attacker (Bonsai-8B), S4 auth_gate targets
+
+| Gate | Targets | Wrong at turn 0 (excluded) | Flipped by turn 10 | Half-life (turn) |
+|---|---|---|---|---|
+| Bonsai-8B | 54 | 5 | 2 | > 10 |
+| J-V0 | 54 | 0 | 2 | > 10 |
+| J-V1 | 54 | 0 | 0 | > 10 |
+| J-V1c | 54 | 0 | 0 | > 10 |
+| J-V2b-r2 | 54 | 0 | 0 | > 10 |
+
+![S6 adaptive attacker (Bonsai-8B), S4 auth_gate targets](figures/halflife_s6a.svg)
+
 ## Recurrence and reasoning effects (paired, Holm across suites)
 
 | Comparison | Shared items | First only correct | Second only correct | p (Holm) |

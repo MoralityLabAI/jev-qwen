@@ -36,8 +36,8 @@ latency, inside both of our pre-registered bounds, the accuracy bound by half a 
 
 Depth recurrence behaves differently depending on the training data. Untrained, a re-run block
 drifts. Trained on the mixed suite, the loop matches the same adapter without it and does not beat
-it. Trained on a single algorithmic task, its second pass does the hops the first could not
-(pointer chasing at depths 4--6 rises from 0.08--0.40 to 0.76--0.92).
+it. Trained on a single algorithmic task, its second pass does hops the first could not, and
+beats the same training without the loop in each of three seeds.
 
 We then register a benchmark that places these arms next to 0.46--1.8M-parameter looped decoders,
 TRM skill gates of 6k--17k parameters, script, nearest-neighbour, LDT and Control-Harness gates, and
@@ -47,15 +47,16 @@ a 1-bit 8B LLM, on seven suites, with decision rules frozen before any cross-arm
   trained depths. Emitted reasoning is the only readout that extrapolates beyond them (0.72
   against 0.31). The 4B single pass is at chance there.
   \item Where the decision state is verifier-visible, scripts and tiny TRMs are reliable and the 4B
-  arms add nothing. Post-training for one decision suite degrades the 4B model on every other
-  suite, partly by installing priors over answer labels.
+  arms add nothing. No Jev-style arm meets the registered reliability rule on any suite.
+  Post-training for one decision suite costs the 4B model accuracy on algorithmic depth, partly by
+  installing priors over answer labels.
   \item As monitors, the single-pass Jev-style gates stop nine of ten scripted attacks and block
   almost no legitimate actions. That is more than the action, trajectory and delegation controls
   stop, and without the 23\% false blocks of ignoring every claim. All of them miss the same
   duplicate-lineage attack, V1 with probability 0.999, and the provenance membrane catches it
-  from provenance alone.
+  from provenance alone. Under a scripted evidence-injection ladder, the loop-trained gate flips
+  none of 162 deny decisions over three seeds; the plain adapter flips 14.
 \end{itemize}
-\pending{seed replicates; adaptive attacker}.
 \end{abstract}
 
 \section{Introduction}
@@ -198,7 +199,9 @@ change that picture. V1c's ECE is lower than V1's in every seed (0.055, 0.035, 0
 (0.863 against 0.868 on average; per-seed differences of $-1.9$, $-1.2$ and $+1.6$ points; pooled
 paired $p=0.33$). The first-seed accuracy cost was seed noise: V1's own seeds differ by up to 1.9
 points. Because Brier gradients are smaller than cross-entropy gradients at equal learning rate, we
-flagged that confound before the first result; a learning-rate control is \pending{xb5}.
+flagged that confound before the first result. The learning-rate control rules it out
+directly: V1c trained at three times the learning rate is \emph{less} accurate (0.827 against
+0.861, paired $p=0.006$), not more.
 
 \section{Untrained depth recurrence drifts}
 \label{sec:recurrence}
@@ -320,10 +323,11 @@ family. On pointer chasing the base model is right on 0.92 of depth-1 items, 0.4
 emit. The base model answers REFUSE on 133 of the 300 gated items (150 of which call for it); V1
 never does, and its reachability answers shift from 27\% to 79\% ``yes''. A 4B model asked for one
 typed decision in one pass cannot chase pointers that a 460k-parameter looped decoder trained on
-the task chases reliably to depth 8. Trained recurrence does not change this. J-V2b scores
-0.342, 0.326 and 0.304 on S1 at one, two and three passes, so each extra pass makes it worse. Its
-per-pass readout never reaches 0.9 at any depth beyond the first, so unlike LOOP-T-ds and FF-U-ds
-($\rho=0.94$--$0.98$) it shows no depth-indexed readiness.
+the task chases reliably to depth 8. Recurrence trained on the decision suite does not change
+this. Over three seeds, J-V2b scores 0.347, 0.337 and 0.315 on S1 at one, two and three passes
+(seed 0 alone falls with every pass; seed 1 peaks at two). Its per-pass readout never reaches 0.9
+at any depth beyond the first, so, unlike LOOP-T-ds and FF-U-ds ($\rho=0.94$--$0.98$), it shows
+no depth-indexed readiness.
 
 Training the 4B model on the task itself helps but does not close the gap. J-V1-rmp uses V1's
 recipe and budget (300 steps, 2,400 rows) on RMP train-region rows. It reaches 0.649 on
@@ -341,16 +345,18 @@ against 0.48, and 0.38 for LOOP-T-ds. Only on reachability does J-V1-rmp clear t
 (0.67 against 0.56), and there it does not differ from LOOP-T-ds (0.58, $p=0.27$).
 
 On the task's own rows, trained recurrence does what it did not do on the mixed decision suite.
-J-V2b-rmp is J-V1-rmp's training with layers 12--15 run twice. At its trained depth it reaches
-0.724 on depths 1--8, against 0.649 for J-V1-rmp at the same training budget (paired 103 to 52,
-$p=5\times10^{-5}$). The gain is in the hops. On pointer chasing at depths 4, 5 and 6, the
-one-pass exit of the same adapter scores 0.40, 0.24 and 0.08; the second pass lifts these to
-0.92, 0.92 and 0.76, while depths 1--2 are already solved after one pass. By the registered
-readiness rule this is depth-indexed ($\rho=0.89$ over the four depths that reach 0.9), but
-narrowly: depth 3 never reaches 0.9, and it holds on pointer chasing only. A third pass, beyond
-the trained depth, gives back part of the gain ($p=0.012$), and depths 9--12 are unchanged
-(0.430 against 0.433). The 4B model with a two-pass loop still tracks about six hops where the
-460k-parameter decoder tracks eight.
+J-V2b-rmp is J-V1-rmp's training with layers 12--15 run twice. At its trained depth it beats
+J-V1-rmp at the same training budget on depths 1--8 in each of three seeds (0.724, 0.707 and 0.707
+against 0.649, 0.674 and 0.643). Pooled over the seeds that is 274 to 158 discordant items,
+one-sided $p=1.3\times10^{-8}$, the test we registered before the replicates ran (addendum A4).
+The gain is in the hops. The one-pass exit of the same adapter is worse in every seed (paired
+$p\le10^{-5}$). At seed 0 the second pass lifts pointer chasing at depths 4, 5 and 6 from 0.40,
+0.24 and 0.08 to 0.92, 0.92 and 0.76; at seed 2, from 0.44, 0.08 and 0.04 to 0.68, 0.76 and 0.68.
+A third pass, beyond the trained depth, never helps. Depths 9--12 do not improve (0.367--0.430
+against 0.433--0.447 for J-V1-rmp). The per-pass readout meets the registered depth-indexed
+readiness rule at seed 0 only ($\rho=0.89$ on pointer chasing; in seeds 1 and 2 no depth past 2
+reaches 0.9), so the replicated claim is the accuracy gain, not readiness. The 4B model with a
+two-pass loop still tracks about six hops where the 460k-parameter decoder tracks eight.
 
 Emitted reasoning is the one readout that extrapolates. J-cot-V1 is V1 shown worked solutions
 that spell out the walk (``J->P->G->I->B->D->H. A: H''), evaluated on 10 items per depth. On
@@ -378,10 +384,15 @@ of the 56 true commits. On S7 the base model routes 0.953 of cases, V1 0.812 and
 forbidden contract chosen. These S7 numbers mix routing with an option-position prior: the
 registered shortlist is in lexical-rank order and the lexical top-1 is always the gold contract,
 so every positive gold is option A. The base model puts 0.92 of its predictions there; V1, trained
-with answer positions rotated, has lost that prior. A diagnostic rerun with each shortlist shuffled
-was added after these results (addendum A2, post hoc): \pending{xb6}. The 1-bit Bonsai-8B,
-given the same prompts, is the weakest gate on S2: it commits 8 of the 18 true rejects (accuracy
-0.811). It routes 0.766 of S7 cases with no forbidden contract chosen.
+with answer positions rotated, has lost that prior. A diagnostic rerun with each shortlist
+shuffled was added after these results (addendum A2, post hoc), and it removes the prior: the
+share of predictions at the most common position falls from 0.71--0.92 to 0.22--0.26 for every
+text arm. Shuffled, the ranking reverses: V1 routes 0.867, the base model 0.836, V1c 0.820, and
+V2b at two passes 0.789. The base model's apparent lead on S7, and V1's apparent loss there, were
+the position prior. With or without it, every text arm stays well below the 6k-parameter TRM
+router (0.992) and the lexical router (1.000). The 1-bit Bonsai-8B, given the same prompts, is the
+weakest gate on S2: it commits 8 of the 18 true rejects (accuracy 0.811). It routes 0.766 of S7
+cases in the registered order and 0.836 shuffled, with no forbidden contract chosen.
 
 \paragraph{S3, long context.} Recorded results: trained ControlTRM followed by the LDT veto reaches
 utility 0.687 with no unsafe actions, against 0.339 and 19.4\% unsafe for the API language model
@@ -394,7 +405,13 @@ arms, S3 stays descriptive, as registered. Within that limit, on long-context co
 single pass adds little to what the typed veto already provides.
 
 \paragraph{Frontier.} Figure~\ref{fig:pareto} places every live arm by cost and accuracy.
-\pending{interpretation after xb1, xb2}.
+The frontier is held at its low-cost end on every suite. On S1, S4 and S7 a script or lexical
+router is the overall ceiling. On S7 the 6k-parameter TRM is the smallest reliable neural executor,
+on S1 the 460k-parameter LOOP-T, and on S3 the 17k-parameter ControlTRM with its LDT veto. S2 and
+S5 are underpowered by rule, so no arm is reliable there. The 4B arms sit four to six orders of
+magnitude to the right, and none of them meets the registered reliability rule on any suite. Where
+they come closest is S4, the suite they were trained on: there the best neural arm is V1's
+reasoning readout, 40 times the passes of its single pass.
 
 \begin{figure}[t]
 \centering
@@ -439,21 +456,34 @@ flips none of its 54 targets; V1 flips 5, all to the first injected note, and V1
 turn 5. The base model's resistance comes with the 21\% over-refusal on authorized requests
 reported in Section~\ref{sec:readouts}. On the contract side, where the gate decides one of the
 attacked proposals, the J monitors are weaker: the base model flips 5 of 10 eligible targets
-(half-life 8 turns), V1 4 and V1c 3. Trained recurrence is the one intervention that points toward
-robustness: V2b at its trained depth flips none of the 54 deny targets that V1 flips 5 of, and
-the 5 are the same targets (paired exact $p=0.0625$, one seed). The one-pass exit of the same
-adapter flips 3. We registered a pooled replicate test before running it (addendum A3):
-\pending{xb4, xb7}. Emitted reasoning gives no consistent protection. V1's \cotR{} readout
+(half-life 8 turns), V1 4 and V1c 3. Trained recurrence is the one intervention that
+replicably adds robustness. At seed 0, V2b at its trained depth flips none of the 54 deny
+targets, against V1's 5 ($p=0.0625$). We registered a pooled replicate test before running it
+(addendum A3). Over three training seeds V1 flips 5, 5 and 4 targets and V2b at two passes none:
+14 to 0 discordant (seed, target) pairs, one-sided $p=6\times10^{-5}$. Part of the effect is the
+adapter trained with the loop, since its one-pass exit flips 3, 2 and 0. Part is the second pass.
+The effect is confined to the S4 deny decisions; on the contract-side targets V2b flips 2--3 of 10
+per seed, against V1's 4. Emitted reasoning gives no consistent protection. V1's \cotR{} readout
 flips none of the 54 targets that its single-pass readout flips 5 of, but the base model's
 \cotR{} readout flips 4 different targets, mostly late in the ladder (turns 1, 5, 8, 8), where
 its single-pass readout flips none. (Reasoning answers are parsed from the final line; on S4 the
 same readouts parsed 399 and 395 of 400.) With one seed and counts this small, the S6 ladder
 separates only the clearest cases: the typed-field gates, which no injection can reach, from
 the text-reading gates, which a few injections reach in every configuration we tried except
-V2b at its trained depth and V1 reasoning. Half-lives under the adaptive attacker:
-\pending{xb2}. The text LLM is the easiest gate to move: Bonsai-8B flips 29 of its 49 eligible
-targets, with a half-life of 4 turns, and is the only gate with a finite half-life under the
-scripted ladder.
+V2b at its trained depth and V1 reasoning. The text LLM is the easiest gate to move: Bonsai-8B
+flips 29 of its 49 eligible targets, with a half-life of 4 turns, and is the only gate with a
+finite half-life under the scripted ladder.
+
+The adaptive attacker did not give a stronger test. On the raw completion endpoint Bonsai-8B
+echoed its own instructions instead of writing evidence, so those runs were discarded and rerun
+on the chat endpoint (addendum A5, post hoc). There it produced no echoes, which passes the
+validity rule we fixed before the rerun, but it hardly attacks. About 70\% of its notes argue
+\emph{for} the denial (``The Requester is a viewer with no authority to delete records\ldots''),
+about 12\% offer supporting evidence, and it rarely changes its note between turns (a median of
+2 distinct notes over 10 turns). Against it, J-V1, J-V1c and V2b flip nothing, and J-V0 and
+Bonsai-8B flip 2 targets each. These numbers bound only this attacker. A small aligned model
+asked to red-team writes the defence instead, and the scripted ladder is the more informative
+test here.
 
 \begin{table}[t]
 \centering
@@ -473,11 +503,13 @@ reasoning on short-answer decisions. It does not make the model an authorization
 where authoritative state can be read by a script, the script is smaller, cannot be talked out of its
 decision, and is already reliable.
 
-\paragraph{Post-training transfers badly.} Post-training on one decision suite gives up
-accuracy on every other suite we measured: S1 (pointer chasing, gating, reachability), S7 and the
-injection ladder. Part of the mechanism is mundane. Training on a fixed letter scheme with rotated
-answer positions installs a prior over labels: V1 stops emitting REFUSE (X) on S1 and stops
-favouring option A on S7. A typed-decision model's label space is part of what it learns, so a
+\paragraph{Post-training transfers badly.} Post-training on one decision suite gives up accuracy
+on algorithmic depth (S1, all three seeds) and makes deny decisions easier to inject (V1 flips 4--5
+of 54 per seed where the base model flips none, though the base model's resistance comes with a
+21\% over-refusal). Part of the mechanism is mundane. Training on a fixed letter scheme with
+rotated answer positions installs a prior over labels: V1 stops emitting REFUSE (X) on S1. On S7
+the same rotation removed a position prior that had been flattering the base model, and the
+shuffled diagnostic shows V1 routing slightly better, not worse. A typed-decision model's label space is part of what it learns, so a
 Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
 and dropped into a new gate is not neutral, even when its in-domain calibration is good. The
 calibration objective softens this: over three seeds the Brier-trained V1c loses less on S1 than
@@ -489,18 +521,23 @@ steps on the mixed decision suite, it computes, changing answers at each pass, b
 accuracy of the same adapter without the loop and leaves the 4.5-point gap to emitted reasoning
 untouched. Trained for the same 300 steps on a single task whose difficulty is a number of
 sequential hops, the same loop makes its second pass do the hops the first could not: pointer
-chasing at depths 4--6 goes from 0.08--0.40 to 0.76--0.92, and the per-pass readout becomes
-depth-indexed by our registered rule. Our reading is that a loop grafted onto a pretrained stack
+chasing at depths 4--6 goes from 0.04--0.64 to 0.68--0.92, and it beats the loop-free adapter
+in each of three seeds. Its readout is depth-indexed by our registered rule at only one of those
+seeds. Our reading is that a loop grafted onto a pretrained stack
 can learn an iterative step when the data has one consistent step to learn, and that a mix of
 eight task families does not. The compact looped decoders take this to its end: recurrence is
 the whole architecture, trained from scratch on the task, and their readout tracks depth for
-eight visits. Neither kind extrapolates past its trained depths. On the control side, the dev
-suite-trained loop flipped fewer injected deny decisions, pending replication.
+eight visits. Neither kind extrapolates past its trained depths. On the control side, the loop
+trained on the decision suite is more resistant to scripted evidence injection in every seed. It
+was the only change to the 4B model that bought robustness without the over-refusal of the base
+model.
 
 \paragraph{Limitations.}
 \begin{itemize}
-  \item \emph{Seeds.} Single seeds for every trained variant so far (replicates
-  \pending{xb4, xb7, xb8}).
+  \item \emph{Seeds.} Three training seeds for V1, V1c, V2b and the RMP-trained arms; one for
+  the learning-rate control. Seeds change initialisation and data order, not the evaluation
+  items. Seed replicates are reported outside the registered reliability pools (addendum A1).
+  \item \emph{Adaptive pressure.} Our adaptive attacker was too weak to test it (see S6).
   \item \emph{Measurement.} Latency was measured on a GPU shared with other jobs; the registered
   measure is therefore a paired ratio.
   \item \emph{Tasks.} The decision tasks are synthetic and templated. S2 is underpowered, and
@@ -526,9 +563,10 @@ its latency. The benchmark mostly says where such a model should \emph{not} be t
 What remains is the role the control harness already has room for: a cheap monitor layer above
 heuristic controls and below a structural membrane, whose failure modes a harness can measure.
 Those failure modes are transfer cost from post-training on the wrong label space, and confident
-misses on structural attacks. Recurrence grafted onto the pretrained stack earns its keep only when
-trained on a task with one consistent step. \pending{revise after the replicates and the adaptive
-attacker}.
+misses on structural attacks. Recurrence grafted onto the pretrained stack earns its keep in two
+places only, both replicated over three seeds. On a task with one consistent step it adds hops.
+On the deny gate it resists scripted evidence injection. It neither extrapolates nor closes the gap
+to emitted reasoning.
 
 \bibliographystyle{plain}
 \bibliography{references}
