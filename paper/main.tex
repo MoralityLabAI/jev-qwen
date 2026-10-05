@@ -354,8 +354,10 @@ $p\le10^{-5}$). At seed 0 the second pass lifts pointer chasing at depths 4, 5 a
 0.24 and 0.08 to 0.92, 0.92 and 0.76; at seed 2, from 0.44, 0.08 and 0.04 to 0.68, 0.76 and 0.68.
 A third pass, beyond the trained depth, never helps. Depths 9--12 do not improve (0.367--0.430
 against 0.433--0.447 for J-V1-rmp). The per-pass readout meets the registered depth-indexed
-readiness rule at seed 0 only ($\rho=0.89$ on pointer chasing; in seeds 1 and 2 no depth past 2
-reaches 0.9), so the replicated claim is the accuracy gain, not readiness. The 4B model with a
+readiness rule at seed 0 only ($\rho=0.89$ on pointer chasing, and in only 44\% of item
+resamples within that seed; in seeds 1 and 2 no depth past 2 reaches 0.9). The replicated claim
+is therefore the accuracy gain, not readiness; LOOP-T and LOOP-T-ds meet the rule on pointer
+chasing in every resample. The 4B model with a
 two-pass loop still tracks about six hops where the 460k-parameter decoder tracks eight.
 
 Emitted reasoning is the one readout that extrapolates. J-cot-V1 is V1 shown worked solutions
