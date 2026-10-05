@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .arms import J_ARMS, derived_arm_ids
+from .arms import J_ARMS, U1_ARMS, derived_arm_ids
 from .records import RESULTS
 
 SUITES = ("s1", "s2", "s3", "s4", "s5", "s6", "s7")
@@ -22,7 +22,7 @@ CH_IDS = ("CH-q0-none", "CH-q1-action-gate", "CH-q2-trajectory-budget", "CH-q3-d
 
 # SPEC arm name -> record ids that can cover it (any one suffices).
 ARMS: dict[str, tuple[str, ...]] = {
-    **{a.arm_id: (a.arm_id, *derived_arm_ids(a)) for a in J_ARMS.values() if a.arm_id != "J-V1c-lr3"},
+    **{a.arm_id: (a.arm_id, *derived_arm_ids(a)) for a in J_ARMS.values() if a.arm_id != "J-V1c-lr3" and a.arm_id not in U1_ARMS},
     **{a: (a,) for a in RMP_ARMS},
     "ControlTRM": ("ControlTRM", "ControlTRM-LDT"),
     "SkillRouter-TRM": ("SkillRouter-TRM",),

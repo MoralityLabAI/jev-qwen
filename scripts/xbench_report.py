@@ -51,7 +51,8 @@ def split_addenda(all_records: dict[str, dict[str, dict]]) -> tuple[dict, dict]:
     addenda: dict[str, dict[str, dict]] = defaultdict(dict)
     for suite, records in all_records.items():
         for arm, record in records.items():
-            extra = REPLICATE.match(arm) or arm in ADDENDUM_ARMS or suite in ADDENDUM_SUITES
+            # SPEC-U1 arms (J-multi*) are a separate registration, never in the v1 pools.
+            extra = REPLICATE.match(arm) or arm in ADDENDUM_ARMS or suite in ADDENDUM_SUITES or arm.startswith("J-multi")
             (addenda if extra else registered)[suite][arm] = record
     return registered, addenda
 

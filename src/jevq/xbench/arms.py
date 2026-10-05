@@ -40,8 +40,15 @@ J_ARMS = {
         JArm("J-V1-rmp", "v1_rmp_s0/adapter", trained_on="2,400 RMP train-region rows", suites=("s1",)),
         JArm("J-V2b-rmp", "v2b_rmp_s0/adapter", loop_iters=3, trained_on="2,400 RMP train-region rows, loop 12-15 x2",
              suites=("s1",)),
+        # SPEC-U1 (docs/ubench/SPEC.md): one adapter on the utility suites' training splits.
+        # Not SPEC v1 arms: kept out of the v1 reliability pools and coverage matrix.
+        JArm("J-multi", "multi_lora_s0/adapter", trained_on="S4 + S1 + S2 + S7 training splits (SPEC-U1)",
+             suites=("s1", "s2", "s3", "s4", "s7")),
+        JArm("J-multi-loop", "multi_loop_s0/adapter", loop_iters=3,
+             trained_on="S4 + S1 + S2 + S7 training splits, loop 12-15 x2 (SPEC-U1)", suites=("s1", "s2", "s4", "s7")),
     )
 }
+U1_ARMS = ("J-multi", "J-multi-loop")
 
 
 def derived_arm_ids(arm: JArm) -> list[str]:

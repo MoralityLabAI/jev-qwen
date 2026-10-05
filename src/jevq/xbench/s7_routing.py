@@ -135,21 +135,57 @@ def shuffled(key: str, candidates: list[dict]) -> list[dict]:
     return out
 
 
+def _shot_rows() -> list[dict]:
+    train = _jsonl(REGISTERED / "train_rows.jsonl")  # registered training rows only
+    return [r for r in train if r["kind"] == "positive"][:2] + [r for r in train if r["kind"] == "negative"][:1]
+
+
+def _train_case(row: dict, primary: list[dict], key: str | None):
+    """(route query, candidates, target) for a registered training row; the target is injected
+    into the shortlist when lexical routing misses it. `key` shuffles the shortlist."""
+    by_name = {str(c["name"]): c for c in primary}
+    query, target = str(row["query"]), str(row["expected_contract_id"])  # "" for a negative: ABSTAIN
+    route_query, cands = shortlist(query, primary)
+    if target in by_name and target not in {str(c["name"]) for c in cands}:
+        cands = cands[:-1] + [by_name[target]]
+    if key is not None:
+        cands = shuffled(key, cands)
+    return route_query, cands, target
+
+
+def _prompt(shots, route_query: str, cands: list[dict]) -> str:
+    lines = [INSTRUCTION, ""]
+    for shot_query, shot_cands, target in shots:
+        shot_names = [str(c["name"]) for c in shot_cands]
+        answer = LETTERS[shot_names.index(target)] if target in shot_names else LETTERS[len(shot_names)]
+        lines += _block(shot_query, shot_cands) + [f"Answer: {answer}", ""]
+    return "\n".join(lines + _block(route_query, cands) + ["Answer:"])
+
+
+def train_choice_items(repeat: int = 0) -> list[ChoiceItem]:
+    """SPEC-U1 training rows: hermes-lite's registered train_rows (never held_cases), minus the
+    three few-shot rows, in the shuffled-shortlist (s7p) format. Each `repeat` uses a different
+    shuffle, so upsampled copies differ in option order. Negatives are trained to ABSTAIN."""
+    primary = contracts()
+    shots = [_train_case(r, primary, f"shot:{r['query']}") for r in _shot_rows()]
+    shot_ids = {r["row_id"] for r in _shot_rows()}
+    items = []
+    for row in _jsonl(REGISTERED / "train_rows.jsonl"):
+        if row["row_id"] in shot_ids:
+            continue
+        route_query, cands, target = _train_case(row, primary, f"train:{row['row_id']}:{repeat}")
+        options = [str(c["name"]) for c in cands] + [ABSTAIN]
+        labels = [" " + LETTERS[i] for i in range(len(options))]
+        gold = target if target in options else ABSTAIN
+        items.append(ChoiceItem(f"{row['row_id']}#{repeat}", _prompt(shots, route_query, cands), labels, options, gold,
+                                {"family": "s7-train", "depth": None, "kind": row["kind"]}))
+    return items
+
+
 def choice_items(permute: bool = False) -> list[ChoiceItem]:
     """Registered S7 items; `permute` gives the addendum-A2 diagnostic (suite id s7p)."""
     primary = contracts()
-    by_name = {str(c["name"]): c for c in primary}
-    shots = []
-    train = _jsonl(REGISTERED / "train_rows.jsonl")  # registered training rows only
-    picked = [r for r in train if r["kind"] == "positive"][:2] + [r for r in train if r["kind"] == "negative"][:1]
-    for row in picked:
-        query, target = str(row["query"]), str(row["expected_contract_id"])  # "" for a negative: ABSTAIN
-        route_query, cands = shortlist(query, primary)
-        if target in by_name and target not in {str(c["name"]) for c in cands}:
-            cands = cands[:-1] + [by_name[target]]
-        if permute:
-            cands = shuffled(f"shot:{row['query']}", cands)
-        shots.append((route_query, cands, target))
+    shots = [_train_case(r, primary, f"shot:{r['query']}" if permute else None) for r in _shot_rows()]
     items = []
     for case in _jsonl(REGISTERED / "held_cases.jsonl"):
         route_query, cands = shortlist(str(case["query"]), primary)

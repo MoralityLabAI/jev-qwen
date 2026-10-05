@@ -278,6 +278,10 @@ def train(cfg: dict, bundle: ModelBundle | None = None, out_dir: Path | None = N
         from .xbench.rmp_train import build_rmp_encoded
 
         train_enc, val_enc, data_info = build_rmp_encoded(bundle.tokenizer, cfg["data"], seed)
+    elif cfg["data"].get("source") == "multi":
+        from .xbench.multi_train import build_multi_encoded
+
+        train_enc, val_enc, data_info = build_multi_encoded(bundle.tokenizer, cfg["data"], seed, run_cfg["readout"]["n_shots"], label_ids)
     else:
         train_items, val_items, data_info = build_items(cfg["data"], seed, run_cfg["readout"]["n_shots"])
         train_enc = [encode(bundle.tokenizer, item, label_ids) for item in train_items]

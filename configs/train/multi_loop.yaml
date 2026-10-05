@@ -1,0 +1,4 @@
+# J-multi-loop (docs/ubench/SPEC.md): J-multi with the loop active (layers 12-15, two passes). One difference.
+inherit: configs/train/multi_lora.yaml
+name: multi_loop
+variant: configs/variants/v2_loop_mid_r2.yaml

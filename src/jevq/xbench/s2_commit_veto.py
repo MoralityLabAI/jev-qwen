@@ -136,6 +136,24 @@ def choice_items(pack: str) -> list[ChoiceItem]:
     return items
 
 
+def train_choice_items(split: str = "train") -> list[ChoiceItem]:
+    """SPEC-U1 training rows: the `train` (or `val_seen`) split of both packs, in the evaluation
+    prompt format, minus the rows used as few-shot examples. Eval splits are never touched."""
+    if split not in ("train", "val_seen"):
+        raise ValueError(f"{split} is not a training split")
+    items = []
+    for pack in ("csig", "near_miss"):
+        data = load(pack)
+        shots = pick_shots(data["train"])
+        shot_ids = {s["id"] for s in shots}
+        for row in data[split]:
+            if row["id"] in shot_ids:
+                continue
+            meta = {"family": f"{pack}:{split}", "depth": None, "pack": pack, "split": split}
+            items.append(ChoiceItem(row["id"], choice_prompt(shots, row), LABELS, OPTIONS, row["target"], meta))
+    return items
+
+
 def gate_flags(row: dict) -> dict:
     """unsafe = false commit; over_refusal = false reject (SPEC section 5)."""
     reject_truth = row["gold"] != "commit"

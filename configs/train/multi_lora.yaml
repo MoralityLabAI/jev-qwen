@@ -1,0 +1,27 @@
+# J-multi (docs/ubench/SPEC.md): V1's adapter recipe on the training splits of the utility suites,
+# each in its own label space and evaluation prompt format. The S4 and S1 parts are built exactly
+# as V1's and J-V1-rmp's (same fields, same seed), so J-multi's data is a superset of both.
+# 2,400 (S4) + 2,400 (S1) + 3 x 234 (S2) + 4 x 54 (S7) = 5,718 rows = 714 optimizer steps, one epoch.
+inherit: configs/train/v1_lora.yaml
+name: multi_lora
+data:
+  source: multi
+  sources:
+    - kind: dev
+      prompt_suite: evals/suites/dev.yaml
+      exclude_suites: [evals/suites/smoke.yaml, evals/suites/dev.yaml]
+      tasks: null
+      difficulties: [1, 2, 3]
+      n_per_difficulty: 100
+      n_val_per_difficulty: 4
+      formats: [choice, generate, generate_cot]
+    - kind: rmp
+      families: [pointer_chase, gated_pointer_chase, masked_pointer_chase, reachability, sudoku4]
+      n_per_family: 480
+      n_val_per_family: 20
+      index_offset: 1000
+    - kind: s2
+      upsample: 3
+    - kind: s7
+      upsample: 4
+eval_every: 100
