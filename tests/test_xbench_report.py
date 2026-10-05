@@ -71,3 +71,13 @@ def test_s6_replicates_report_flips_not_accuracy():
     text = "\n".join(report.addenda_section(registered, addenda))
     assert "| s6 | J-V1 | 5/54, 2/54 (seeds 0, 1) |" in text
     assert "| s6 | J-V2b-r2 | 0/54 (seeds 1) |" in text
+
+
+def test_readiness_bootstrap_interval_and_share():
+    # Depth d is first right at step d (0-based items all identical), so rho = 1 in every resample.
+    items = [{"family": "f", "depth": d, "gold": "x", "iteration_preds": ["y"] * (d - 1) + ["x"] * (6 - d)}
+             for d in range(1, 6) for _ in range(5)]
+    info = report.readiness({"_items": items}, resamples=50)["f"]
+    assert info["ready"] == {1: 1, 2: 2, 3: 3, 4: 4, 5: 5} and info["depth_indexed"]
+    assert info["rho_interval"] == (1.0, 1.0) and info["share_depth_indexed"] == 1.0
+    assert info["final_k_n"][3] == (5, 5)

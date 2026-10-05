@@ -291,26 +291,52 @@ def survival_svg(curves: dict[str, list[float]], title: str, path: Path) -> None
 # ---------------------------------------------------------------------------- readiness (RQ-K)
 
 
-def readiness(record: dict, threshold: float = 0.9) -> dict[str, dict]:
-    """Per family: first step (visit / block iteration) with lens accuracy >= threshold, per depth."""
+def _step_correct(record: dict) -> dict[str, dict[int, list[list[bool]]]]:
+    """family -> depth -> per item, correctness after every step (visit / block iteration)."""
     by: dict[str, dict[int, list[list[bool]]]] = defaultdict(lambda: defaultdict(list))
     for row in record["_items"]:
         if row.get("iteration_preds") is None or row.get("depth") is None:
             continue
         by[row["family"]][int(row["depth"])].append([p == row["gold"] for p in row["iteration_preds"]])
+    return by
+
+
+def _ready_and_rho(depths: dict[int, list[list[bool]]], threshold: float):
+    table, ready = {}, {}
+    for depth, rows in sorted(depths.items()):
+        acc = [sum(r[s] for r in rows) / len(rows) for s in range(len(rows[0]))]
+        table[depth] = acc
+        first = next((s + 1 for s, a in enumerate(acc) if a >= threshold), None)
+        if first is not None:
+            ready[depth] = first
+    rho = spearman(list(ready), list(ready.values())) if len(ready) >= 4 else None
+    return table, ready, rho
+
+
+def readiness(record: dict, threshold: float = 0.9, resamples: int = 1000) -> dict[str, dict]:
+    """Per family: first step with lens accuracy >= threshold, per depth, and the Spearman rule.
+    Uncertainty: items are resampled within each depth (`resamples`, seed 0). The result is a 95%
+    percentile interval for rho over the resamples where it is defined, and the share of resamples
+    that meet the depth-indexed rule (an undefined rho counts as not meeting it)."""
+    import random
+
     out = {}
-    for family, depths in by.items():
-        table, ready = {}, {}
-        for depth, rows in sorted(depths.items()):
-            steps = len(rows[0])
-            acc = [sum(r[s] for r in rows) / len(rows) for s in range(steps)]
-            table[depth] = acc
-            first = next((s + 1 for s, a in enumerate(acc) if a >= threshold), None)
-            if first is not None:
-                ready[depth] = first
-        rho = spearman(list(ready), list(ready.values())) if len(ready) >= 4 else None
+    for family, depths in _step_correct(record).items():
+        table, ready, rho = _ready_and_rho(depths, threshold)
+        rng, rhos, indexed = random.Random(0), [], 0
+        for _ in range(resamples):
+            sample = {d: [rng.choice(rows) for _ in rows] for d, rows in depths.items()}
+            r = _ready_and_rho(sample, threshold)[2]
+            if r is not None:
+                rhos.append(r)
+                indexed += r >= 0.7
+        rhos.sort()
+        interval = (rhos[int(0.025 * len(rhos))], rhos[min(len(rhos) - 1, int(0.975 * len(rhos)))]) if rhos else None
+        final_n = {d: (sum(row[-1] for row in rows), len(rows)) for d, rows in depths.items()}
         out[family] = {"by_depth": table, "ready": ready, "spearman": rho,
-                       "depth_indexed": bool(rho is not None and rho >= 0.7)}
+                       "depth_indexed": bool(rho is not None and rho >= 0.7),
+                       "rho_interval": interval, "share_depth_indexed": indexed / resamples if resamples else None,
+                       "final_k_n": final_n}
     return out
 
 
@@ -465,13 +491,18 @@ def monitorability(all_records) -> str:
             continue
         lines += [f"## {arm}", ""]
         for family, info in readiness(record).items():
-            lines.append(f"**{family}**: ready at {info['ready'] or 'never'}; rho = {fmt(info['spearman'])}; "
-                         f"depth-indexed: {'yes' if info['depth_indexed'] else 'no'}")
+            interval = info["rho_interval"]
+            lines.append(f"**{family}**: ready at {info['ready'] or 'never'}; rho = {fmt(info['spearman'])} "
+                         f"(95% item bootstrap {'[%.2f, %.2f]' % interval if interval else 'undefined'}); "
+                         f"depth-indexed: {'yes' if info['depth_indexed'] else 'no'} "
+                         f"(in {info['share_depth_indexed']:.0%} of resamples)")
             lines.append("")
-            lines.append("| Depth | " + " | ".join(f"step {s + 1}" for s in range(len(next(iter(info['by_depth'].values()))))) + " |")
-            lines.append("|---|" + "---|" * len(next(iter(info["by_depth"].values()))))
+            n_steps = len(next(iter(info["by_depth"].values())))
+            lines.append("| Depth | " + " | ".join(f"step {s + 1}" for s in range(n_steps)) + " | last step [95% CI] |")
+            lines.append("|---|" + "---|" * (n_steps + 1))
             for depth, acc in info["by_depth"].items():
-                lines.append(f"| {depth} | " + " | ".join(f"{a:.2f}" for a in acc) + " |")
+                k, n = info["final_k_n"][depth]
+                lines.append(f"| {depth} | " + " | ".join(f"{a:.2f}" for a in acc) + f" | {ci(k, n)} |")
             lines.append("")
     return "\n".join(lines) + "\n"
 
