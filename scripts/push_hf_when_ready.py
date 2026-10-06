@@ -19,6 +19,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--hours", type=float, default=36)
+    parser.add_argument("--attempts", type=int, default=3, help="upload attempts; push_hf.py skips adapters already on the Hub")
+    parser.add_argument("--wait", type=float, default=300, help="seconds between attempts")
     args = parser.parse_args()
     from huggingface_hub import get_token
 
@@ -30,12 +32,12 @@ def main() -> None:
             return
         time.sleep(30)
     print(f"[{datetime.now():%Y-%m-%d %H:%M}] login found; uploading", flush=True)
-    for attempt in range(1, 4):
+    for attempt in range(1, args.attempts + 1):
         code = subprocess.run([sys.executable, "-u", str(ROOT / "scripts" / "push_hf.py"), "--repo", args.repo], cwd=ROOT).returncode
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] attempt {attempt}: exit {code}", flush=True)
         if code == 0:
             return
-        time.sleep(300)
+        time.sleep(args.wait)
 
 
 if __name__ == "__main__":
