@@ -1,6 +1,6 @@
 # SPEC-U1 (docs/ubench/SPEC.md): comparator runs, then seeds 0, 1, 2 of J-multi and J-multi-loop.
 name: u1
-min_free_mib: 10000
+min_free_mib: 15000   # wait for an idle GPU: it is shared with other sessions and apps (UI3)
 min_free_commit_gb: 4
 stable_seconds: 60
 timeout_minutes: 900
