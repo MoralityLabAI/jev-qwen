@@ -63,9 +63,20 @@ def main() -> None:
     api = HfApi()
     print(f"logged in as {api.whoami()['name']}")
     api.create_repo(args.repo, repo_type="model", private=args.private, exist_ok=True)
-    operations = [CommitOperationAdd(path_in_repo=remote, path_or_fileobj=str(local)) for local, remote in files]
-    commit = api.create_commit(args.repo, operations=operations, commit_message="Publish jev-qwen adapters, aggregate xbench records and paper")
-    print(f"pushed: {commit.commit_url}")
+    # One commit per adapter folder, then one for records, paper and card: on a slow or flaky
+    # connection a failure loses one batch, and a rerun skips adapters already on the Hub.
+    present = set(api.list_repo_files(args.repo))
+    batches: dict[str, list[tuple[Path, str]]] = {}
+    for local, remote in files:
+        key = "/".join(remote.split("/")[:2]) if remote.startswith("adapters/") else "records, paper, card"
+        batches.setdefault(key, []).append((local, remote))
+    for key, batch in batches.items():
+        if key.startswith("adapters/") and all(remote in present for _, remote in batch):
+            print(f"skip {key}: already on the Hub", flush=True)
+            continue
+        operations = [CommitOperationAdd(path_in_repo=remote, path_or_fileobj=str(local)) for local, remote in batch]
+        commit = api.create_commit(args.repo, operations=operations, commit_message=f"Publish {key}")
+        print(f"pushed {key}: {commit.commit_url}", flush=True)
 
 
 if __name__ == "__main__":
