@@ -1,0 +1,100 @@
+diff --git a/research/scripts/run_intellect3_logic_flow_policy_sweep.py b/research/scripts/run_intellect3_logic_flow_policy_sweep.py
+index dde931d..f406047 100644
+--- a/research/scripts/run_intellect3_logic_flow_policy_sweep.py
++++ b/research/scripts/run_intellect3_logic_flow_policy_sweep.py
+@@ -76,6 +76,46 @@ def grid_text(grid: list[list[str]] | None) -> str:
+     return "\n".join("".join(row) for row in grid)
+ 
+ 
++
++def _neighbors(r: int, c: int, height: int, width: int, diagonal: bool) -> list[tuple[int, int]]:
++    steps = [(-1, 0), (1, 0), (0, -1), (0, 1)]
++    if diagonal:
++        steps += [(-1, -1), (-1, 1), (1, -1), (1, 1)]
++    return [(r + dr, c + dc) for dr, dc in steps if 0 <= r + dr < height and 0 <= c + dc < width]
++
++
++def campsite_verifier_pass(grid: list[list[str]] | None, expected: list[list[str]] | None) -> bool:
++    """Official Campsite rules, reading only what the puzzle shows (taken from `expected` exactly as the
++    projections do: its shape, tree cells and tent row/column counts): trees unchanged, tent counts per
++    row and column, no two tents touching (8-neighbourhood), and a perfect tent-tree matching."""
++    if grid is None or expected is None or grid_shape(grid) != grid_shape(expected):
++        return False
++    height, width = grid_shape(expected)
++    if any(len(row) != width or any(cell not in ("T", "C", "X") for cell in row) for row in grid):
++        return False
++    if any((grid[r][c] == "T") != (expected[r][c] == "T") for r in range(height) for c in range(width)):
++        return False
++    if not signature_pass(grid, expected, "C"):
++        return False
++    tents = [(r, c) for r in range(height) for c in range(width) if grid[r][c] == "C"]
++    if any(grid[rr][cc] == "C" for r, c in tents for rr, cc in _neighbors(r, c, height, width, True)):
++        return False
++    match: dict[tuple[int, int], tuple[int, int]] = {}
++
++    def assign(tent: tuple[int, int], seen: set[tuple[int, int]]) -> bool:
++        for tree in _neighbors(*tent, height, width, False):
++            if grid[tree[0]][tree[1]] != "T" or tree in seen:
++                continue
++            seen.add(tree)
++            if tree not in match or assign(match[tree], seen):
++                match[tree] = tent
++                return True
++        return False
++
++    trees = sum(cell == "T" for row in grid for cell in row)
++    return len(tents) == trees and all(assign(tent, set()) for tent in tents)
++
++
+ def build_candidates(record: dict[str, Any]) -> list[dict[str, Any]]:
+     expected = parse_grid(record.get("expected_action"))
+     final = record.get("final") or {}
+@@ -103,6 +143,7 @@ def build_candidates(record: dict[str, Any]) -> list[dict[str, Any]]:
+                 "cell_accuracy": round(cell_accuracy(grid, expected), 6),
+                 "t_signature_pass": bool(expected is not None and signature_pass(grid, expected, "T")),
+                 "c_signature_pass": bool(expected is not None and signature_pass(grid, expected, "C")),
++                "verifier_pass": campsite_verifier_pass(grid, expected),
+             }
+         )
+     return candidates
+@@ -157,6 +198,20 @@ def select_policy(policy: str, candidates: list[dict[str, Any]]) -> dict[str, An
+     if policy == "signature_first_then_dual":
+         signature = select_policy("multi_arm_original_signature_pass", candidates)
+         return signature or select_policy("multi_arm_min_edit_dual_repair", candidates)
++    # Reject paths (jev-qwen SPEC-U4/U5): the flow policies above never abstain, so a candidate their
++    # projection cannot fix is committed broken. A None selection is an abstain.
++    for base in ("logic_trm_c_repair_if_c_fail", "logic_trm_dual_repair_if_any_sig_fail"):
++        if policy == f"{base}_noop_reject":
++            # No verifier call after the repair: abstain when the grid to commit is the unchanged
++            # original (edit distance 0) and the original already fails the verifier.
++            selected = select_policy(base, candidates)
++            if selected and selected["edit_distance"] == 0 and not selected["verifier_pass"]:
++                return None
++            return selected
++        if policy == f"{base}_verify_reject":
++            # One verifier call after the repair: commit only a grid that passes.
++            selected = select_policy(base, candidates)
++            return selected if selected and selected["verifier_pass"] else None
+     raise ValueError(f"unknown policy {policy}")
+ 
+ 
+@@ -179,6 +234,10 @@ def run_policy_sweep(records: list[dict[str, Any]]) -> dict[str, Any]:
+         "multi_arm_min_edit_c_repair",
+         "multi_arm_min_edit_dual_repair",
+         "signature_first_then_dual",
++        "logic_trm_c_repair_if_c_fail_noop_reject",
++        "logic_trm_c_repair_if_c_fail_verify_reject",
++        "logic_trm_dual_repair_if_any_sig_fail_noop_reject",
++        "logic_trm_dual_repair_if_any_sig_fail_verify_reject",
+     ]
+     rows: list[dict[str, Any]] = []
+     training_rows: list[dict[str, Any]] = []
+@@ -199,6 +258,8 @@ def run_policy_sweep(records: list[dict[str, Any]]) -> dict[str, Any]:
+                 "cell_accuracy": float(selected["cell_accuracy"]) if selected else 0.0,
+                 "t_signature_pass": bool(selected and selected["t_signature_pass"]),
+                 "c_signature_pass": bool(selected and selected["c_signature_pass"]),
++                "verifier_pass": bool(selected and selected["verifier_pass"]),
++                "committed_failing": bool(selected and not selected["verifier_pass"]),
+             }
+             rows.append(result)
+             training_rows.append(make_training_row(result))
