@@ -214,7 +214,19 @@ def attach_lora(bundle: ModelBundle, lora_cfg: dict, seed: int) -> ModelBundle:
         layers_to_transform=lora_cfg.get("layers_to_transform"),
         bias="none",
     )
-    model = get_peft_model(bundle.model, config)
+    if lora_cfg.get("init_adapter"):
+        # Continue training an existing adapter (SPEC-U5 J-u4); "{seed}" picks the same seed's adapter.
+        from peft import PeftModel
+
+        from .xbench.jrunner import resolve_adapter
+
+        path = resolve_adapter(lora_cfg["init_adapter"].format(seed=seed))
+        model = PeftModel.from_pretrained(bundle.model, str(path), is_trainable=True)
+        loaded = model.peft_config["default"]
+        if (loaded.r, loaded.lora_alpha, sorted(loaded.target_modules)) != (config.r, config.lora_alpha, sorted(config.target_modules)):
+            raise RuntimeError(f"{path}: adapter shape differs from the configured LoRA")
+    else:
+        model = get_peft_model(bundle.model, config)
     info = dict(bundle.info)
     info["trainable_params"] = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return make_bundle(model, bundle.tokenizer, info)

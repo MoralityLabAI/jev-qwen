@@ -20,7 +20,10 @@ from .foreign import HERMES_LITE, HERMES_SKILLS, git_show, import_from
 from .jrunner import ChoiceItem, CotItem
 
 OUT = ROOT / "results" / "u4"
-POOLS = {"test": (90, 18, 20261008), "train": (400, 80, 20261009), "val": (80, 16, 20261010)}  # puzzles, 6x6, seed
+POOLS = {"test": (90, 18, 20261008), "train": (400, 80, 20261009), "val": (80, 16, 20261010),  # puzzles, 6x6, seed
+         # SPEC-U5 pools: a fresh synthetic test set and the standard-size puzzles for model proposals.
+         "u5test": (110, 22, 20261011), "u5std": (120, 24, 20261012)}
+TEST_POOLS = ("test", "u5test")  # 60 items per type, seeded order
 TEST_PER_TYPE = 60
 TYPES = ("correct", "drop_tent", "extra_tent", "move_in_row", "move_any", "swap_rect", "tree_mutation", "bad_shape")
 ACTIONS = ("commit", "c_repair", "dual_repair", "reject")
@@ -126,7 +129,7 @@ def puzzles(pool: str):
     """The pool's puzzles with their CSP gold grids. Train and val drop any puzzle that is also in an
     earlier pool (test, then train), so the three pools are disjoint by puzzle hash."""
     count, shift, seed = POOLS[pool]
-    earlier = {"test": (), "train": ("test",), "val": ("test", "train")}[pool]
+    earlier = list(POOLS)[: list(POOLS).index(pool)]
     taken = {task.hash for p in earlier for task, _ in puzzles(p)}
     out = []
     for task in camp().generate_unseen_tasks(count, seed=seed, include_size_shift=shift):
@@ -142,14 +145,15 @@ def puzzles(pool: str):
 def build_items(pool: str) -> tuple:
     """Items as dicts (tuple for caching). Test: the first 60 eligible puzzles per type in a seeded order."""
     tasks = list(puzzles(pool))
-    if pool == "test":
-        random.Random("u4-test-order").shuffle(tasks)
+    test_pool = pool in TEST_POOLS
+    if test_pool:
+        random.Random("u4-test-order" if pool == "test" else f"{pool}-order").shuffle(tasks)
     verify = camp().verify_candidate
     items = []
     for kind in TYPES:
         taken = 0
         for task, gold in tasks:
-            if pool == "test" and taken >= TEST_PER_TYPE:
+            if test_pool and taken >= TEST_PER_TYPE:
                 break
             cand = make_candidate(task, gold, kind, random.Random(f"u4-items:{pool}:{task.task_id}:{kind}"))
             if cand is None:
@@ -160,7 +164,7 @@ def build_items(pool: str) -> tuple:
             items.append({"item_id": f"u4.{pool}.{kind}.{taken:03d}", "pool": pool, "kind": kind, "task": task.runtime_payload(),
                           "candidate": cand, "gold": gold})
             taken += 1
-        if pool == "test" and taken < TEST_PER_TYPE:
+        if test_pool and taken < TEST_PER_TYPE:
             raise RuntimeError(f"only {taken} test items of type {kind}")
     return tuple(items)
 

@@ -49,6 +49,11 @@ def main() -> None:
     u4.add_argument("--arm", default="J-multi")
     u4.add_argument("--seed", type=int, default=0)
     u4.add_argument("--iterations", type=int, help="loop passes for looped arms (2 = trained depth); Part D only")
+    u5 = sub.add_parser("u5", help="SPEC-U5 runs: propose (a proposer), cpu (projections, reject paths, TRM, CSP), j (a Jev arm)")
+    u5.add_argument("what", choices=["propose", "cpu", "j"])
+    u5.add_argument("--proposer", choices=["J-V0", "Bonsai-8B"])
+    u5.add_argument("--arm", default="J-u4")
+    u5.add_argument("--seed", type=int, default=0)
     cov = sub.add_parser("coverage")
     cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
@@ -116,6 +121,15 @@ def main() -> None:
             u4_campsite.run_cpu()
         else:
             u4_campsite.run_j(args.arm, args.seed, args.iterations)
+    elif args.command == "u5":
+        from jevq.xbench import u5_campsite
+
+        if args.what == "propose":
+            u5_campsite.run_proposer(args.proposer)
+        elif args.what == "cpu":
+            u5_campsite.run_cpu()
+        else:
+            u5_campsite.run_j(args.arm, args.seed)
     elif args.command == "coverage":
         from jevq.xbench import coverage
 

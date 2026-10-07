@@ -56,6 +56,20 @@ def build_multi_encoded(tokenizer, data_cfg: dict, seed: int, n_shots: int, labe
             items = [item for repeat in range(upsample) for item in s7.train_choice_items(repeat)]
             tr, va = [encode_choice(tokenizer, item) for item in items], []
             info = {"n_rows": len(items) // upsample, "rows_sha256": sha256_of(sorted({i.item_id.split("#")[0] for i in items}))}
+        elif kind in ("u4_decide", "u4_repair"):
+            # SPEC-U5 J-u4: the U4 train items (the Decision-TRM's training data), zero-shot prompts;
+            # validation is a fixed 100-item subset of the U4 val pool. U4/U5 test items are never used.
+            from . import u5_campsite as u5
+
+            decide, repair = u5.training_rows("train")
+            vdecide, vrepair = u5.training_rows("val", limit=100)
+            if kind == "u4_decide":
+                tr = [encode_choice(tokenizer, item) for item in decide]
+                va = [encode_choice(tokenizer, item) for item in vdecide]
+            else:
+                tr = [u5.encode_generate(tokenizer, p, t) for p, t in repair]
+                va = [u5.encode_generate(tokenizer, p, t) for p, t in vrepair]
+            info = {"n_rows": len(decide), "rows_sha256": sha256_of(sorted(item.item_id for item in decide))}
         else:
             raise ValueError(f"unknown source kind {kind!r}")
         if kind != "s7":

@@ -147,6 +147,23 @@ def test_training_lowers_the_loss_and_writes_an_adapter(tiny_model, tokenizer, t
     assert record["data"]["n_train"] == 8 and record["config"]["loss"]["choice"] == choice_loss
 
 
+def test_init_adapter_continues_from_saved_weights(tiny_model, tokenizer, tmp_path):
+    """SPEC-U5 J-u4: `lora.init_adapter` loads an existing adapter instead of a fresh LoRA. With lr 0 the
+    continued run must save exactly the weights it started from."""
+    first = tiny_train_cfg()
+    train(first, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=tmp_path / "first")
+    cont = tiny_train_cfg()
+    cont["lora"]["init_adapter"] = str(tmp_path / "first" / "adapter")
+    cont["optim"].update({"lr": 0.0, "epochs": 1})
+    train(cont, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=tmp_path / "cont")
+    a, b = adapter_tensors(tmp_path / "first"), adapter_tensors(tmp_path / "cont")
+    assert a.keys() == b.keys() and all(torch.equal(a[k], b[k]) for k in a)
+    bad = tiny_train_cfg()
+    bad["lora"].update({"init_adapter": str(tmp_path / "first" / "adapter"), "r": 8})
+    with pytest.raises(RuntimeError, match="adapter shape"):
+        train(bad, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=tmp_path / "bad")
+
+
 def test_resume_reproduces_an_uninterrupted_run(tiny_model, tokenizer, tmp_path):
     cfg = tiny_train_cfg()
     train(cfg, bundle=fresh_bundle(tiny_model, tokenizer), out_dir=tmp_path / "straight")

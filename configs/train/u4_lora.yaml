@@ -1,0 +1,14 @@
+# J-u4 (docs/ubench/SPEC-U5.md part J): each seed's J-multi adapter, trained further on the SPEC-U4
+# train items -- the same 3,009 items the Decision-TRM was trained on -- as a decision (choice over
+# commit / c_repair / dual_repair / reject, labelled like the TRM) and as a repair (write the gold grid),
+# both in the zero-shot prompt format used at evaluation. 6,018 rows / 8 = 752 optimizer steps.
+inherit: configs/train/multi_lora.yaml
+name: u4_lora
+data:
+  source: multi
+  sources:
+    - kind: u4_decide
+    - kind: u4_repair
+lora:
+  init_adapter: multi_lora_s{seed}/adapter
+eval_every: 100
