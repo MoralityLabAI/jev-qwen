@@ -179,3 +179,44 @@ examples and no Campsite training.
 2. Train the Jev on the U4 train items, the same data the TRM saw, to make D1 a like-for-like test.
 3. Test on real model-proposed candidates instead of synthetic perturbations, and on puzzles large
    enough that re-solving is not free.
+
+## U5: reject paths, the Jev trained on the U4 items, real proposals (SPEC-U5, decided 2026-10-08)
+
+Details are in `notes/013-u5-log.md` and `reports/ubench/u5.md`; the patch is in `patches/hermes-skills/`.
+
+**1. Reject path for the skill's flow policy**
+- Synthetic defects: the verifier-free noop-reject cuts broken commits from 26.7% to 1.7% at
+  unchanged success (0.733).
+- Real model proposals: only verify-reject, one verifier call after the repair, removes them
+  (74% to 0%).
+- A patch adding both, with a Campsite verifier that matches hermes-lite's on 9,879/9,879 grids, is
+  ready but not applied.
+
+**2. The Jev trained on the same 3,009 items as the TRM**
+- **J3:** training transforms it, from 0.569 to 0.731 as decider.
+- **J1:** it matches the Decision-TRM as decider (0.731 vs 0.727, near the 0.733 ceiling).
+- **J2:** as repairer it beats dual_repair (0.872 vs 0.731). It fixes swapped tents and wrong-shape
+  grids, which the projections cannot fix; on the types they can fix it is a little weaker.
+
+**3. Real proposals and larger puzzles**
+- **Proposals:** J-V0 and Bonsai-8B solved 2 of 474 puzzles as written.
+- **Repairs:** the projections fix 33-52% of the standard-size failures and none at 8x8 or 10x10.
+  The trained Jev fixes less (8.4% vs c_repair's 16.0%, P2).
+- **Deciding:** the trained Jev beats the Decision-TRM (0.240 vs 0.191, P1), but almost never
+  rejects (74% broken commits).
+- **Re-solving:** the CSP solver fixes everything in milliseconds at every size these tools can
+  generate. Planting stalls at 14x14 and the projections slow down from 10x10, so a puzzle where
+  re-solving is the expensive step could not be built.
+
+**Reading.**
+- **Same defects:** trained on the same defect distribution, the 4B Jev is as good a decider as a
+  10k-parameter TRM and a better repairer than the hand-written projections.
+- **Real failures:** neither learned model transfers from synthetic defects to real model failures.
+  Safety there comes from the verifier gate, not from either learner.
+
+**Possible next steps (yours to choose)**
+1. Apply the reject-path patch in Hermes-Skills once its working tree is back in sync with HEAD.
+2. Train on real proposals instead of synthetic perturbations (we now have 474, half fixable), and
+   check whether the Jev's repair gain transfers.
+3. Check what J-u4's Campsite training cost on the other suites (S1, S2, S4, S7 and U2), since it
+   started from J-multi.
