@@ -39,6 +39,11 @@ def main() -> None:
     u2.add_argument("--arm", default="J-multi")
     u2.add_argument("--seed", type=int, default=0)
     u2.add_argument("--iterations", type=int, help="loop passes for looped arms (2 = trained depth)")
+    u3 = sub.add_parser("u3", help="SPEC-U3 runs: cpu (rudder TRM/kNN/lookup, receipts, router abstain path), j (a Jev arm)")
+    u3.add_argument("what", choices=["cpu", "j"])
+    u3.add_argument("--arm", default="J-multi")
+    u3.add_argument("--seed", type=int, default=0)
+    u3.add_argument("--iterations", type=int, help="loop passes for looped arms (2 = trained depth)")
     cov = sub.add_parser("coverage")
     cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
@@ -89,6 +94,16 @@ def main() -> None:
             u2_run.run_j(args.arm, args.seed, args.iterations)
         else:
             u2_run.run_bonsai()
+    elif args.command == "u3":
+        from jevq.xbench import u3_rudder
+
+        if args.what == "cpu":
+            from jevq.xbench import u3_abstain
+
+            u3_rudder.run_cpu()
+            u3_abstain.run()
+        else:
+            u3_rudder.run_j(args.arm, args.seed, args.iterations)
     elif args.command == "coverage":
         from jevq.xbench import coverage
 

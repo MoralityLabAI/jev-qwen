@@ -40,3 +40,17 @@ def import_from(root: Path, module: str, *, subdir: str | None = None):
 
 def available(path: Path) -> bool:
     return path.exists()
+
+
+def git_show(root: Path, path: str) -> str:
+    """A file's committed content (`git show HEAD:<path>`), for a tree whose working copy differs from
+    HEAD. Read-only: no checkout, and `safe.directory` is passed per call, never written to config."""
+    import subprocess
+
+    from ..records import _git_executable
+
+    git = _git_executable()
+    if git is None:
+        raise FileNotFoundError("git executable not found")
+    out = subprocess.run([git, "-c", "safe.directory=*", "show", f"HEAD:{path}"], cwd=root, capture_output=True, check=True)
+    return out.stdout.decode("utf-8-sig")
