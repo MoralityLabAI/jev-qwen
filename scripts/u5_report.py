@@ -153,18 +153,19 @@ def render() -> str:
     lines += ["", "## Part P: real proposals", ""]
     props = [json.loads(x) for p in u5.PROPOSERS if (U5_RUNS / "proposals" / f"{p}.jsonl").exists()
              for x in (U5_RUNS / "proposals" / f"{p}.jsonl").read_text(encoding="utf-8").splitlines()]
-    inst = instances("repair", "proposals", "identity")
-    if inst:
-        rows = list(inst[0][1].values())
+    if props:
+        from jevq.xbench import u4_campsite as u4
+
+        items = list(u5.proposal_items())
         lines += ["Raw proposal quality (the proposal passes the verifier as written):", "",
-                  "| Proposer | " + " | ".join(BANDS) + " | Parsed as a full grid |", "|---|" + "---|" * len(BANDS) + "---|"]
+                  "| Proposer | " + " | ".join(BANDS) + " | Parsed as a full grid of the right shape |", "|---|" + "---|" * len(BANDS) + "---|"]
         for proposer in u5.PROPOSERS:
             cells = []
             for b in BANDS:
-                sub = [r for r in rows if r["proposer"] == proposer and r["kind"] == b]
-                cells.append(fmt(sum(r["success"] for r in sub), len(sub)))
-            sub = [r for r in rows if r["proposer"] == proposer]
-            cells.append(fmt(sum(r["edits_to_candidate"] is not None for r in sub), len(sub)))
+                sub = [i for i in items if i["proposer"] == proposer and i["kind"] == b]
+                cells.append(fmt(sum(i["proposal_pass"] for i in sub), len(sub)))
+            sub = [i for i in items if i["proposer"] == proposer]
+            cells.append(fmt(sum(u4.rectangular(i, i["candidate"]) for i in sub), len(sub)))
             lines.append(f"| {proposer} | " + " | ".join(cells) + " |")
     lines += ["", "Repairers on the proposals:", ""]
     lines += repair_table("proposals", ["identity", "c_repair", "dual_repair", "J-u4", "CSP-resolve"], by_band)
