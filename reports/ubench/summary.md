@@ -147,3 +147,35 @@ replicate Hermes-Skills' 88-row repair-rudder benchmark. Details are in `notes/0
    head-to-head offered earlier, rather than the 88 post-hoc rows.
 2. For the TRM router, retrain with the abstain loss or an explicit negation feature (post hoc).
    Alternatively keep the Jev as the router; it already handles negatives (0.915).
+
+## U4: Campsite repair head-to-head (SPEC-U4, decided 2026-10-07)
+
+**Setup.** 480 fresh broken Campsite candidates on hermes-lite puzzles, 8 defect types x 60, scored by
+the official verifier. The repair modules are Hermes-Skills' intellect3-logic projections, run from
+the committed source. Details are in `notes/012-u4-log.md` and `reports/ubench/u4.md`.
+
+**Registered tests**
+- **D1, deciding:** choose commit, c_repair, dual_repair or reject. A 9.7k-parameter recursive TRM
+  policy trained on synthetic items reaches 0.727 (ceiling 0.733) with 1.9% unsafe. The Jev reaches
+  0.569 with 18.7% unsafe. The TRM is far better.
+- **D2:** the Jev does not beat the generic small Qwen as a decider (0.569 vs 0.590). Not supported.
+- **G1, repairing:** dual_repair fixes 0.731 of candidates. A Jev writing the repaired grid fixes
+  0.184, mostly by copying the candidate. The projection is far better.
+
+**Descriptive**
+- The looped Jev is the best Jev decider (0.643) but still unsafe on 22% of items.
+- The skill's own flow policies never reject, so every unfixable candidate becomes a broken commit
+  (27% unsafe for the dual policy).
+- Re-solving with the CSP solver fixes everything on puzzles this small.
+
+**Reading.** In the infused intellect3-logic skill, the deterministic repair code plus a tiny trained
+decision policy beat the 4B Jev in both roles. The main safety gap is the skill's missing reject
+path, not its repair code. Caveat: the TRM was trained on the same defect types; the Jev saw four
+examples and no Campsite training.
+
+**Possible next steps (yours to choose)**
+1. Add the Decision-TRM's reject path to the skill's flow policy. On this set it removes almost all
+   unsafe commits at no cost in success.
+2. Train the Jev on the U4 train items, the same data the TRM saw, to make D1 a like-for-like test.
+3. Test on real model-proposed candidates instead of synthetic perturbations, and on puzzles large
+   enough that re-solving is not free.
