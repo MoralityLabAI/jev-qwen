@@ -501,6 +501,64 @@ turn at which half the remaining targets have flipped, censored at turn 10.}
 \label{tab:halflife}
 \end{table}
 
+\section{Follow-up: training on the target label spaces}
+\label{sec:u1}
+
+The transfer cost in Section~\ref{sec:compact} suggests a direct fix: train the adapter on the
+utility suites' own training splits, in their own label spaces and prompt formats. We registered
+this follow-up (SPEC-U1) before any of its runs. J-multi uses V1's recipe on a mix:
+\begin{itemize}
+  \item V1's 2,400 decision-suite questions;
+  \item J-V1-rmp's 2,400 RMP rows, identical by hash;
+  \item the S2 commit/veto training split (234 rows, $\times$3);
+  \item hermes-lite's registered S7 training rows (54, $\times$4, each copy with a fresh shuffle of
+  the shortlist).
+\end{itemize}
+That is 714 optimizer steps. J-multi-loop adds the two-pass loop. S3 stays zero-shot, and no
+evaluation split is used for training. Each arm has three training seeds. Six tests were fixed in
+advance:
+\begin{itemize}
+  \item T1--T3: transfer gains over V1 on S1 and S7p, and over V0 on S2. These are pooled
+  one-sided exact tests over seeds, Holm-adjusted.
+  \item H and S: non-inferiority to V1 on S4 and to J-V1-rmp on S1, judged by an item-bootstrap
+  interval of the mean paired difference against a $-2$-point margin.
+  \item L: the loop's gain on S1.
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/u1_table}
+\caption{SPEC-U1: accuracy averaged over training seeds (number of seeds in brackets). S1 on the
+shared families; S7 with the shortlist shuffled (S7p), the only S7 order that does not reward a
+position prior. Generated from the run records.}
+\label{tab:u1}
+\end{table}
+
+Training on the target label spaces removes most of the transfer cost (Table~\ref{tab:u1}).
+\begin{itemize}
+  \item \emph{S1.} J-multi reaches 0.632 on S1 depths 1--8, against V1's 0.351 (T1: 755 to 185
+  discordant pairs, Holm $p=4\times10^{-82}$). It is about two points short of the single-task
+  specialist (S: $-0.023$, interval $[-0.043,-0.003]$, so non-inferiority is not shown).
+  \item \emph{S2.} It is correct on every S2 item in every seed (T3: Holm $p=0.004$).
+  \item \emph{S4.} It loses nothing on the decision suite (H: $-0.002$, interval
+  $[-0.013,+0.009]$).
+  \item \emph{Calibration.} It is better calibrated there than V1 in every seed (ECE 0.055--0.059
+  against 0.069--0.078).
+  \item \emph{S7p.} It does not route better (T2: 26 to 22, $p=0.33$). More than half of the held
+  S7 positives target contracts that never appear in the 57 registered training rows, so the
+  training split cannot teach those routes. The 6k-parameter TRM router, which scores contract
+  text directly, reaches 0.992.
+\end{itemize}
+
+The loop still adds hops when it is trained on the mixture. J-multi-loop at two passes reaches
+0.691 on S1 depths 1--8 (L: 300 to 180, $p=2\times10^{-8}$). The gain is uneven: 9 and 8 points
+at two seeds, none at the third. As before, the loop does not make the per-pass readout
+depth-indexed (0 of 3 seeds) and does not help past depth 8 (0.393, against 0.424 without it).
+Under the v1 reliability rule no Jev-style arm, old or new, is reliable on any utility suite. The
+smallest reliable executors are unchanged: a script or router, a 6k--17k-parameter TRM, or the
+460k-parameter looped decoder.
+
 \section{Discussion}
 
 \paragraph{What a small Jev-style model is for.} The evidence so far favours a narrow role: a
@@ -519,7 +577,8 @@ shuffled diagnostic shows V1 routing slightly better, not worse. A typed-decisio
 Jev-style model needs training on the label spaces it will serve. One trained on a generic suite
 and dropped into a new gate is not neutral, even when its in-domain calibration is good. The
 calibration objective softens this: over three seeds the Brier-trained V1c loses less on S1 than
-V1 does (0.358 against 0.311 on average, pooled paired $p=3\times10^{-14}$).
+V1 does (0.358 against 0.311 on average, pooled paired $p=3\times10^{-14}$). Training on the target
+suites' own label spaces largely removes it (Section~\ref{sec:u1}).
 
 \paragraph{Recurrence.} Hidden depth is not free capability at this scale and budget, but it is
 not useless either; what decides is the training data. Untrained, a loop drifts. Trained for 300
@@ -569,7 +628,9 @@ its latency. The benchmark mostly says where such a model should \emph{not} be t
 What remains is the role the control harness already has room for: a cheap monitor layer above
 heuristic controls and below a structural membrane, whose failure modes a harness can measure.
 Those failure modes are transfer cost from post-training on the wrong label space, and confident
-misses on structural attacks. Recurrence grafted onto the pretrained stack earns its keep in two
+misses on structural attacks. The first can be trained away: one adapter trained on the target
+gates' own label spaces keeps its home-suite accuracy and recovers most of the transfer loss. It
+still does not reach the smallest reliable executor on any suite. Recurrence grafted onto the pretrained stack earns its keep in two
 places only, both replicated over three seeds. On a task with one consistent step it adds hops.
 On the deny gate it resists scripted evidence injection. It neither extrapolates nor closes the gap
 to emitted reasoning.

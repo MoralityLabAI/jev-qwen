@@ -40,6 +40,8 @@ pre-registered arm.
 | `adapters/v2b_lora_s{0,1,2}` | J-V2b | as V1, with layers 12-15 run twice in every training forward |
 | `adapters/v1_rmp_s{0,1,2}` | J-V1-rmp | V1 recipe on 2,400 RMP train-region rows (pointer chasing, gating, reachability, sudoku4) |
 | `adapters/v2b_rmp_s{0,1,2}` | J-V2b-rmp | V2b recipe on the same RMP rows |
+| `adapters/multi_lora_s{0,1,2}` | J-multi (SPEC-U1) | V1's recipe on the training splits of the utility suites in their own label spaces: V1's 2,400 decision questions, J-V1-rmp's 2,400 RMP rows, the S2 commit/veto train split (x3), hermes-lite's registered S7 train rows (x4, shuffled shortlists); 714 steps |
+| `adapters/multi_loop_s{0,1,2}` | J-multi-loop (SPEC-U1) | J-multi with layers 12-15 run twice in training (use the loop at inference) |
 
 The V2b adapters expect the loop at inference: layers 12-15 run twice. The repo's external
 layer-schedule driver does this (`src/jevq/looped.py`, `LoopSpec(12, 16, 2)`). With the stock
@@ -77,6 +79,21 @@ no emitted tokens. See `src/jevq/xbench/jrunner.py`.
 - **Reliability.** No Jev-style adapter meets the pre-registered reliability rule on any suite.
   Where the decision state is typed, scripts and 6k-17k-parameter TRMs are smaller and already
   reliable.
+
+## Follow-up U1: training on the target label spaces (three seeds, pre-registered)
+
+| Arm (mean over seeds) | S1 depths 1-8 | S2 | S4 | S7, shuffled |
+|---|---|---|---|---|
+| V1 | 0.351 | 0.968 | 0.868 | 0.870 |
+| J-multi | 0.632 | 1.000 | 0.867 | 0.880 |
+| J-multi-loop, 2 passes | 0.691 | 1.000 | 0.864 | 0.898 |
+
+- **Transfer:** J-multi removes most of V1's transfer cost on S1 (Holm p = 4e-82) with no loss on S4 (non-inferior).
+- **Calibration:** better than V1 on S4 in every seed.
+- **Routing:** it does not route better on shuffled S7.
+- **Specialist:** it stays about 2 points below the single-task J-V1-rmp on S1.
+- **Loop:** adds S1 accuracy within trained depths (p = 2e-8), unevenly across seeds.
+- **Reliability:** no Jev-style adapter meets the pre-registered rule on any utility suite. See `reports/ubench/` on GitHub.
 
 ## Limitations
 
