@@ -34,6 +34,11 @@ def main() -> None:
     probe.add_argument("--arm", default="J-V0")
     imp = sub.add_parser("import-s4")
     imp.add_argument("--map", nargs="+", required=True, metavar="ARM=RUN_DIR")
+    u2 = sub.add_parser("u2", help="SPEC-U2 runs: cpu (routers and gates), j (a Jev arm), bonsai")
+    u2.add_argument("what", choices=["cpu", "j", "bonsai"])
+    u2.add_argument("--arm", default="J-multi")
+    u2.add_argument("--seed", type=int, default=0)
+    u2.add_argument("--iterations", type=int, help="loop passes for looped arms (2 = trained depth)")
     cov = sub.add_parser("coverage")
     cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
@@ -75,6 +80,15 @@ def main() -> None:
     elif args.command == "import-s4":
         mapping = dict(item.split("=", 1) for item in args.map)
         run.run_s4_recorded({k: Path(v) for k, v in mapping.items()})
+    elif args.command == "u2":
+        from jevq.xbench import u2_run
+
+        if args.what == "cpu":
+            u2_run.run_cpu()
+        elif args.what == "j":
+            u2_run.run_j(args.arm, args.seed, args.iterations)
+        else:
+            u2_run.run_bonsai()
     elif args.command == "coverage":
         from jevq.xbench import coverage
 

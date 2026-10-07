@@ -1,0 +1,27 @@
+# SPEC-U2 (docs/ubench/SPEC-U2.md): routers and gates on the synthetic joint set. No training.
+name: u2
+min_free_mib: 15000   # wait for an idle GPU (shared with other sessions and apps)
+min_free_commit_gb: 4
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: cpu_routers_gates
+    args: [scripts/xbench.py, u2, cpu]
+  - name: j_v0
+    args: [scripts/xbench.py, u2, j, --arm, J-V0]
+  - name: j_multi_s0
+    args: [scripts/xbench.py, u2, j, --arm, J-multi]
+  - name: j_multi_s1
+    args: [scripts/xbench.py, u2, j, --arm, J-multi, --seed, "1"]
+  - name: j_multi_s2
+    args: [scripts/xbench.py, u2, j, --arm, J-multi, --seed, "2"]
+  - name: j_multi_loop_s0
+    args: [scripts/xbench.py, u2, j, --arm, J-multi-loop, --iterations, "2"]
+  - name: j_multi_loop_s1
+    args: [scripts/xbench.py, u2, j, --arm, J-multi-loop, --seed, "1", --iterations, "2"]
+  - name: j_multi_loop_s2
+    args: [scripts/xbench.py, u2, j, --arm, J-multi-loop, --seed, "2", --iterations, "2"]
+  - name: bonsai
+    args: [scripts/xbench.py, u2, bonsai]
