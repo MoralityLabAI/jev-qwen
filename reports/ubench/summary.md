@@ -69,3 +69,11 @@ Where the Jev clearly wins is against a generic small Qwen used directly: S1 0.6
 3. **Control (S5/S6).** Still deferred until there is specialised blue-team synthetic data, as you decided.
 4. **GPU stability.** One VIDEO_TDR_FAILURE bugcheck occurred during looped training. Driver and TDR settings are yours to change; I left them alone.
 5. **Paper.** The U1 section is in `paper/main.pdf`. Authorship, venue and whether U1 stays in this paper or becomes its own short note are your call.
+
+## Your decisions (2026-10-07)
+
+1. S7 routing: the TRM router stays the routing executor for now.
+2. End-to-end test: approved. It will be pre-registered as SPEC-U2 before any run.
+3. Control (S5/S6): deferred.
+4. GPU: steady power and internet now; driver and TDR settings unchanged.
+5. Paper author: Patrick Dugan, Red Team Gladiatorics.

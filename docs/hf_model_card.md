@@ -12,7 +12,7 @@ tags:
 
 # jev-qwen: Jev-style typed-decision adapters for Qwen3.5-4B-Base
 
-LoRA adapters from the *Small Jev* experiments by Morality Lab. TypeSafe's Jev is described as a
+LoRA adapters from the *Small Jev* experiments (Patrick Dugan, Red Team Gladiatorics). TypeSafe's Jev is described as a
 "System One" model: it returns a typed, calibrated decision over a pre-enumerated output space from
 a single query. These adapters give an open 4B base model a single-pass, option-scored readout
 of that kind. They are benchmarked against compact looped decoders, TRM skill gates,
