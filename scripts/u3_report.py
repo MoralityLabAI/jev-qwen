@@ -140,6 +140,13 @@ def render_rudder() -> list[str]:
     if checks.exists():
         lines += ["", "### Port checks", "", "Share of published rows reproduced by this repo's ports:", ""]
         lines += [f"- {name}: {value:.3f}" for name, value in json.loads(checks.read_text(encoding="utf-8")).items()]
+    model_rows = [sum(not v.get("static_rule", True) for v in rows.values())
+                  for arm in ("J-V0", "J-multi", "J-multi-loop") for _, rows in rudder_instances(arm, "static-gate")]
+    if model_rows:
+        lines += ["", "Static-gate rows left to the arm (the MeTTa static rule silent), per Jev-family instance: "
+                  + ", ".join(str(n) for n in model_rows) + " of 88. Addendum U3-A1: the rule at Hermes-Skills HEAD "
+                  "(c39ab34e, 2026-05-02) fires on every row, so the Jev static-gate numbers are the rule alone; the published "
+                  "static-gate rows used the earlier rule."]
     return lines
 
 

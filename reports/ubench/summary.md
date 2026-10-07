@@ -111,3 +111,39 @@ gate misses the zero-delta boundary that the TRM learned.
    already exists), or simply keep the TRM gate.
 2. Give the TRM router an abstain path before relying on it for negatives.
 3. Validate U2 on real request traffic if any exists. The requests here are templated.
+
+## U3: repair rudder and the TRM router's abstain path (SPEC-U3, decided 2026-10-07)
+
+You asked to compare the TRM repair modules of the infused skills. No trained repair TRM exists:
+the skills repair with deterministic code (for example `c_repair` / `dual_repair`). The learned or
+prompted piece is the rudder, which picks the repair action and whether to commit it. You chose to
+replicate Hermes-Skills' 88-row repair-rudder benchmark. Details are in `notes/011-u3-log.md` and
+`reports/ubench/u3.md`.
+
+**Part R, repair rudder (54 holdout rows for the tests)**
+- **R1 not supported.** The Jev does not beat the generic small Qwen with leak-free retrieval
+  (0.580 vs 0.630 joint).
+- **R2 no difference shown.** The repair TRM, trained here for the first time as Hermes-Skills had
+  planned, scores 0.630 (Holm p = 0.35).
+- **R3 identical.** With the published retrieval, the Jev equals the published Qwen3.5-27B (both
+  0.667, the ceiling).
+- **The published retrieval leaks the answer.** It matches on the eval row's own labels, and 98.6%
+  of its examples share the row's commit action. With it, a 4B base model, the Jev, 9B and 27B all
+  reach the same 0.795 on 88 rows. The scale "lift" in the published table is retrieval.
+- **Without the leak,** the generic Qwen, the repair TRM and a lookup table tie (34/54). The Jev is
+  the only arm that vetoes all four bad repairs whose outcome is not visible beforehand. It also
+  rejects some good ones, so it has the lowest unsafe rate but lower joint accuracy.
+
+**Part A, abstain path**
+- **A1 not supported.** Fitting the router's unused abstain head on the frozen trunk changes nothing:
+  it never fires.
+- **The router is most confident where it should refuse.** On U2 negatives it picks the named,
+  forbidden skill with mean top probability 0.55, against 0.20 on real requests. So a confidence
+  threshold cannot fix it either.
+- **A2.** The Jev router with the TRM gate stays far ahead (0.787 vs 0.517).
+
+**Possible next steps (yours to choose)**
+1. A real repair test needs repaired artifacts scored by a verifier, for example the Campsite
+   head-to-head offered earlier, rather than the 88 post-hoc rows.
+2. For the TRM router, retrain with the abstain loss or an explicit negation feature (post hoc).
+   Alternatively keep the Jev as the router; it already handles negatives (0.915).

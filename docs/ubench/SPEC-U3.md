@@ -190,4 +190,14 @@ Descriptive:
 
 ## Addenda
 
-(none)
+**U3-A1 (2026-10-07, after the runs; changes no test).**
+- **The finding.** The MeTTa static rule ported from Hermes-Skills `HEAD` fires on all 88 rows. It
+  was "saturated" in c39ab34e (2026-05-02), after the failure analysis of the 9B/27B runs. So the
+  static-gate protocol leaves no row to the arm.
+- **Consequences.**
+  - The Jev-family static-gate results (1.000) are the rule alone, and that rule reads the outcome
+    bucket.
+  - The published 3B/9B/27B static-gate rows (0.94-0.955) used the earlier rule. Their misses are
+    the four c_signature_fail reject rows, plus battery_storage for 27B.
+- **Status.** The protocol stays in the report as descriptive and is marked uninformative about the
+  arms. R1-R3 do not use it.
