@@ -175,7 +175,7 @@ examples and no Campsite training.
 
 **Possible next steps (yours to choose)**
 1. Add the Decision-TRM's reject path to the skill's flow policy. On this set it removes almost all
-   unsafe commits at no cost in success.
+   unsafe commits (26.9% to 1.9%) for a 0.4-point drop in success (0.731 to 0.727).
 2. Train the Jev on the U4 train items, the same data the TRM saw, to make D1 a like-for-like test.
 3. Test on real model-proposed candidates instead of synthetic perturbations, and on puzzles large
    enough that re-solving is not free.
