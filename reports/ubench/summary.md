@@ -77,3 +77,37 @@ Where the Jev clearly wins is against a generic small Qwen used directly: S1 0.6
 3. Control (S5/S6): deferred.
 4. GPU: steady power and internet now; driver and TDR settings unchanged.
 5. Paper author: Patrick Dugan, Red Team Gladiatorics.
+
+## U2: end-to-end pipelines (SPEC-U2, decided 2026-10-07)
+
+This is the test of your question: does a small Jev beat a TRM-infused skill picked by a
+generic small Qwen? It runs on a synthetic joint set of 600 items: requests for the Campsite logic
+skill, each paired with a commit/veto state, plus confusable and negative requests. Details are in
+`notes/010-u2-log.md` and `reports/ubench/u2.md`.
+
+**Registered tests**
+- **T1:** the Jev picking and deciding (0.762) does not beat the generic Qwen picking with the TRM
+  gate deciding (0.773). Holm p = 0.92: **not supported**.
+- **T3:** the Jev pipeline beats the generic Qwen doing both steps (0.762 vs 0.740, Holm p = 0.009).
+- **T2:** the TRM-router pipeline is far worse here (0.517). It has no abstain path, and it routes
+  the new request phrasing poorly.
+
+**Descriptive**
+- **Gates:** the TRM gate is perfect on the commit/veto rule. The Jev gate is about 95% right, and
+  every miss is a zero-delta, non-exact repair, which the rule rejects and the Jev commits.
+- **Routing:** the Jev is the better router on confusable and negative requests.
+- **Best combinations:**
+  - looped Jev doing both steps, 0.793;
+  - Jev routing with the TRM gate, 0.787, with the lowest unsafe rate among the strong pipelines
+    (1.3%).
+- **Post hoc:** looped Jev vs generic Qwen + TRM gate, two-sided p = 0.036, exploratory.
+
+**Reading.** On this test, put the Jev (or looped Jev) at the routing step and keep the TRM gate
+for commit/veto. A Jev alone is not better than the generic-Qwen + TRM-skill pipeline, because its
+gate misses the zero-delta boundary that the TRM learned.
+
+**Possible next steps (yours to choose)**
+1. Train the Jev's gate format with more zero-delta rows from the S2 training split (the data
+   already exists), or simply keep the TRM gate.
+2. Give the TRM router an abstain path before relying on it for negatives.
+3. Validate U2 on real request traffic if any exists. The requests here are templated.
