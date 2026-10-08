@@ -61,8 +61,9 @@ for _split in ("realtrain", "realval"):
     u5.EXTRA_SETS[_split] = ((lambda s=_split: items(s)), OUT)
 
 
-def label(split: str):
-    return lambda item: u5.best_action(split, item)
+def label(split: str | None = None):
+    """Menu-ceiling label from the cached projections of the item's own split (its `pool`)."""
+    return lambda item: u5.best_action(split or item["pool"], item)
 
 
 def training_rows(split: str, limit: int | None = None):
@@ -82,15 +83,23 @@ def _write(part: str, set_name: str, record: str, rows: list[dict], info: dict) 
     (out / f"{record}.json").write_text(json.dumps({"record": record, "set": set_name, **info}, indent=2), encoding="utf-8")
 
 
+def _projections_complete(split: str) -> bool:
+    path = u5.projection_path(split)
+    if not path.exists():
+        return False
+    return {r["item_id"] for r in map(json.loads, path.read_text(encoding="utf-8").splitlines())} == {i["item_id"] for i in items(split)}
+
+
 def run_cpu() -> None:
     for split in ("realtrain", "realval"):
-        u5.compute_projections(split)
+        if not _projections_complete(split):  # deterministic, so a complete cache from an earlier attempt is reused
+            u5.compute_projections(split)
     train, val = list(items("realtrain")), list(items("realval"))
     test = u5.items_for("proposals")
     summary = {"train_items": len(train), "val_items": len(val),
-               "train_labels": {a: sum(label("realtrain")(i) == a for i in train) for a in u4.ACTIONS}}
+               "train_labels": {a: sum(label()(i) == a for i in train) for a in u4.ACTIONS}}
     for seed in (0, 1, 2):
-        predict, info = u4.train_decision_trm(train, val, seed=seed, label=label("realtrain"))
+        predict, info = u4.train_decision_trm(train, val, seed=seed, label=label())
         rows = []
         for item in test:
             action, probs = predict(item)
