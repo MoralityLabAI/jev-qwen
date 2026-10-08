@@ -220,3 +220,39 @@ Details are in `notes/013-u5-log.md` and `reports/ubench/u5.md`; the patch is in
    check whether the Jev's repair gain transfers.
 3. Check what J-u4's Campsite training cost on the other suites (S1, S2, S4, S7 and U2), since it
    started from J-multi.
+
+## U6: training on real proposals, and the cost of the Campsite training (SPEC-U6, decided 2026-10-09)
+
+Details are in `notes/014-u6-log.md` and `reports/ubench/u6.md`.
+
+**Training on real failures** (474 held-out J-V0/Bonsai proposals)
+- **T1:** J-real, the Jev trained further on 1,196 real proposals for training puzzles, fixes 0.363
+  of the held-out proposals by writing the grid. That beats c_repair (0.160) and dual_repair (0.257),
+  and J-u4's 0.084 (**T2**).
+  - On standard sizes it fixes 68%.
+  - At 8x8 it fixes 11%, where the projections fix none.
+- **T3:** as a decider it learned to refuse. It scores 0.207 success with 11% broken commits,
+  against the real-trained TRM's 0.172 / 9% and J-u4's 0.240 / 74%.
+- **Cost:** the real-failure training cost 12-19 points on the synthetic U4 defects.
+
+**What the Campsite training cost the Jev** (J-u4 vs J-multi, 99% non-inferiority at -0.02)
+- **S4:** a real loss, -2.4 points.
+- **S1:** -1.9, inconclusive.
+- **S7p:** unchanged, but the interval is too wide to show it unharmed.
+- **S2 and U2:** unharmed.
+
+**Reading.**
+- **Repair transfers when trained on the target failures.** The Jev's repair advantage carries over
+  to real model failures once it is trained on them; trained on synthetic perturbations alone it did
+  not.
+- **Specialising costs something.** Each specialisation costs a few points elsewhere, and the
+  verifier gate is still what makes commits safe.
+- **Re-solving is still free here.** The CSP solver still fixes every Campsite proposal in
+  milliseconds.
+
+**Possible next steps (yours to choose)**
+1. Train on a mixture (J-multi's suites + U4 synthetic + real proposals) to see whether the losses
+   on S4/S1 and on synthetic defects disappear.
+2. Move the repair study to a domain without a cheap exact solver, where a learned repairer could
+   actually be needed.
+3. Publish the U2-U6 results to Hugging Face and add them to the paper.
