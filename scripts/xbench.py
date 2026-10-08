@@ -54,6 +54,11 @@ def main() -> None:
     u5.add_argument("--proposer", choices=["J-V0", "Bonsai-8B"])
     u5.add_argument("--arm", default="J-u4")
     u5.add_argument("--seed", type=int, default=0)
+    u6 = sub.add_parser("u6", help="SPEC-U6 runs: propose (real proposals on training puzzles), cpu (projections, Decision-TRM-real), j (J-real)")
+    u6.add_argument("what", choices=["propose", "cpu", "j"])
+    u6.add_argument("--proposer", choices=["J-V0", "Bonsai-8B"])
+    u6.add_argument("--arm", default="J-real")
+    u6.add_argument("--seed", type=int, default=0)
     cov = sub.add_parser("coverage")
     cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
@@ -130,6 +135,15 @@ def main() -> None:
             u5_campsite.run_cpu()
         else:
             u5_campsite.run_j(args.arm, args.seed)
+    elif args.command == "u6":
+        from jevq.xbench import u6_campsite
+
+        if args.what == "propose":
+            u6_campsite.run_proposer(args.proposer)
+        elif args.what == "cpu":
+            u6_campsite.run_cpu()
+        else:
+            u6_campsite.run_j(args.arm, args.seed)
     elif args.command == "coverage":
         from jevq.xbench import coverage
 

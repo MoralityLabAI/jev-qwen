@@ -1,0 +1,39 @@
+# SPEC-U6 (docs/ubench/SPEC-U6.md): J-u4 on J-multi's suites (part F), then real-proposal training (part T).
+name: u6
+min_free_mib: 15000   # wait for an idle GPU (shared with other sessions and apps)
+min_free_commit_gb: 4
+stable_seconds: 60
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+  - name: forget_u4_s0
+    args: [scripts/xbench.py, j, --arm, J-u4, --suites, "s1,s2,s4,s7,s7p"]
+  - name: forget_u4_s0_u2
+    args: [scripts/xbench.py, u2, j, --arm, J-u4]
+  - name: forget_u4_s1
+    args: [scripts/xbench.py, j, --arm, J-u4, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: forget_u4_s1_u2
+    args: [scripts/xbench.py, u2, j, --arm, J-u4, --seed, "1"]
+  - name: forget_u4_s2
+    args: [scripts/xbench.py, j, --arm, J-u4, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]
+  - name: forget_u4_s2_u2
+    args: [scripts/xbench.py, u2, j, --arm, J-u4, --seed, "2"]
+  - name: propose_real_j_v0
+    args: [scripts/xbench.py, u6, propose, --proposer, J-V0]
+  - name: propose_real_bonsai
+    args: [scripts/xbench.py, u6, propose, --proposer, Bonsai-8B]
+  - name: cpu_u6
+    args: [scripts/xbench.py, u6, cpu]
+  - name: train_real_s0
+    args: [scripts/train_adapter.py, --config, configs/train/real_lora.yaml]
+  - name: eval_real_s0
+    args: [scripts/xbench.py, u6, j, --arm, J-real]
+  - name: train_real_s1
+    args: [scripts/train_adapter.py, --config, configs/train/real_lora.yaml, --set, seed=1]
+  - name: eval_real_s1
+    args: [scripts/xbench.py, u6, j, --arm, J-real, --seed, "1"]
+  - name: train_real_s2
+    args: [scripts/train_adapter.py, --config, configs/train/real_lora.yaml, --set, seed=2]
+  - name: eval_real_s2
+    args: [scripts/xbench.py, u6, j, --arm, J-real, --seed, "2"]

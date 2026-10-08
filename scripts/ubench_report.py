@@ -124,7 +124,7 @@ def reliability_pools(records) -> dict[str, dict]:
     pools = {}
     for suite in ("s1", "s2", "s3", "s4"):
         pools[suite] = {a: r for a, r in records.get(suite, {}).items()
-                        if (a in u1) or not (REPLICATE.match(a) or a in ADDENDUM_ARMS or a.startswith("J-multi"))}
+                        if (a in u1) or not (REPLICATE.match(a) or a in ADDENDUM_ARMS or a.startswith(("J-multi", "J-u4", "J-real")))}
     pools["s7"] = {a: r for a, r in s7_pool(records).items()}
     return pools
 

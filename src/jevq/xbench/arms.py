@@ -47,10 +47,12 @@ J_ARMS = {
         JArm("J-multi-loop", "multi_loop_s0/adapter", loop_iters=3,
              trained_on="S4 + S1 + S2 + S7 training splits, loop 12-15 x2 (SPEC-U1)", suites=("s1", "s2", "s4", "s7")),
         # SPEC-U5 part J: J-multi continued on the SPEC-U4 train items (Campsite decide + repair).
-        JArm("J-u4", "u4_lora_s0/adapter", trained_on="J-multi + SPEC-U4 train items (SPEC-U5)", suites=()),
+        JArm("J-u4", "u4_lora_s0/adapter", trained_on="J-multi + SPEC-U4 train items (SPEC-U5)", suites=("s1", "s2", "s4", "s7")),
+        # SPEC-U6 part T: J-u4 continued on real model proposals for the U4 train/val puzzles.
+        JArm("J-real", "real_lora_s0/adapter", trained_on="J-u4 + real J-V0/Bonsai proposals on train puzzles (SPEC-U6)", suites=()),
     )
 }
-U1_ARMS = ("J-multi", "J-multi-loop", "J-u4")  # outside the v1 pools and coverage matrix
+U1_ARMS = ("J-multi", "J-multi-loop", "J-u4", "J-real")  # outside the v1 pools and coverage matrix
 
 
 def derived_arm_ids(arm: JArm) -> list[str]:

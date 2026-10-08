@@ -35,10 +35,15 @@ REJECT_MODES = ("plain", "noop-reject", "verify-reject")
 @lru_cache(maxsize=None)
 def large_puzzles() -> tuple:
     """8x8 and 10x10 puzzles from hermes-lite's own planting and CSP routines (its generator stops at 6x6)."""
+    return plant_large(LARGE_SEED, LARGE, "large")
+
+
+def plant_large(seed: int, sizes, prefix: str, exclude: frozenset = frozenset()) -> tuple:
+    """Square puzzles planted with hermes-lite's routines (20% trees), skipping any hash in `exclude`."""
     camp = u4.camp()
-    rng = random.Random(LARGE_SEED)
-    out, seen = [], set()
-    for n, count in LARGE:
+    rng = random.Random(seed)
+    out, seen = [], set(exclude)
+    for n, count in sizes:
         made = 0
         while made < count:
             base = [["X"] * n for _ in range(n)]
@@ -51,7 +56,7 @@ def large_puzzles() -> tuple:
                 continue
             rows = [sum(x == "C" for x in row) for row in planted]
             cols = [sum(planted[r][c] == "C" for r in range(n)) for c in range(n)]
-            task = camp.CampsiteTask.from_payload({"task_id": f"large_{n}x{n}_{made:03d}", "grid": base, "row_constraints": rows,
+            task = camp.CampsiteTask.from_payload({"task_id": f"{prefix}_{n}x{n}_{made:03d}", "grid": base, "row_constraints": rows,
                                                    "col_constraints": cols})
             if task.hash in seen:
                 continue
@@ -104,8 +109,9 @@ def proposal_budget(task) -> int:
     return 2 * len(task.grid) * len(task.grid[0]) + 16
 
 
-def run_proposer(proposer: str) -> None:
-    puzzles = proposal_puzzles()
+def run_proposer(proposer: str, puzzles=None, out_path=None) -> None:
+    """One greedy proposal per puzzle (default: the U5 proposal puzzles, written to results/u5/proposals)."""
+    puzzles = puzzles if puzzles is not None else proposal_puzzles()
     rows = []
     if proposer == "J-V0":
         from .jrunner import load_j_bundle, run_cot
@@ -129,9 +135,9 @@ def run_proposer(proposer: str) -> None:
                              "emitted_tokens": out.get("tokens_predicted"), "latency_s": time.perf_counter() - t0})
     else:
         raise ValueError(proposer)
-    path = OUT / "proposals"
-    path.mkdir(parents=True, exist_ok=True)
-    (path / f"{proposer}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    out_path = out_path or OUT / "proposals" / f"{proposer}.jsonl"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
 
 
 @lru_cache(maxsize=None)
@@ -151,9 +157,20 @@ def proposal_items() -> tuple:
     return tuple(items)
 
 
+# Item sets registered by later specs: name -> (items function, results directory for their projections).
+EXTRA_SETS: dict = {}
+
+
 def items_for(set_name: str) -> list[dict]:
+    if set_name in EXTRA_SETS:
+        return list(EXTRA_SETS[set_name][0]())
     return {"u4test": lambda: list(u4.build_items("test")), "u5test": lambda: list(u4.build_items("u5test")),
             "proposals": lambda: list(proposal_items())}[set_name]()
+
+
+def projection_path(set_name: str):
+    base = EXTRA_SETS[set_name][1] if set_name in EXTRA_SETS else OUT
+    return base / "projections" / f"{set_name}.jsonl"
 
 
 # ---------------------------------------------------------------------------- projections (cached, capped)
@@ -227,15 +244,16 @@ def compute_projections(set_name: str) -> dict:
         for module in ("c_repair", "dual_repair"):
             if module not in row:
                 row[module] = done[(row["item_id"], module)]
-    path = OUT / "projections"
-    path.mkdir(parents=True, exist_ok=True)
-    (path / f"{set_name}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    path = projection_path(set_name)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    projections.cache_clear()
     return {r["item_id"]: r for r in rows}
 
 
 @lru_cache(maxsize=None)
 def projections(set_name: str) -> dict:
-    path = OUT / "projections" / f"{set_name}.jsonl"
+    path = projection_path(set_name)
     return {r["item_id"]: r for r in map(json.loads, path.read_text(encoding="utf-8").splitlines())}
 
 

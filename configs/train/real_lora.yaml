@@ -1,0 +1,14 @@
+# J-real (docs/ubench/SPEC-U6.md part T): each seed's J-u4 adapter, trained further on real J-V0 and
+# Bonsai-8B proposals for the training puzzles (U4 train pool + 100 8x8 + 100 10x10), as a decision
+# (labelled in the menu-ceiling order with the cached projections) and as a repair (write the gold
+# grid), in the zero-shot prompt format used at evaluation. 1,196 proposals x 2 rows / 8 = 299 steps.
+inherit: configs/train/multi_lora.yaml
+name: real_lora
+data:
+  source: multi
+  sources:
+    - kind: real_decide
+    - kind: real_repair
+lora:
+  init_adapter: u4_lora_s{seed}/adapter
+eval_every: 50

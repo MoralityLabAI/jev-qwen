@@ -70,6 +70,22 @@ def build_multi_encoded(tokenizer, data_cfg: dict, seed: int, n_shots: int, labe
                 tr = [u5.encode_generate(tokenizer, p, t) for p, t in repair]
                 va = [u5.encode_generate(tokenizer, p, t) for p, t in vrepair]
             info = {"n_rows": len(decide), "rows_sha256": sha256_of(sorted(item.item_id for item in decide))}
+        elif kind in ("real_decide", "real_repair"):
+            # SPEC-U6 J-real: real J-V0 / Bonsai-8B proposals on the training puzzles; the U5 proposal
+            # set (the test) is never used. Validation: a fixed 100-item subset of the real val proposals.
+            from . import u6_campsite as u6
+
+            decide, repair = u6.training_rows("realtrain")
+            vdecide, vrepair = u6.training_rows("realval", limit=u6.VAL_LIMIT)
+            if kind == "real_decide":
+                tr = [encode_choice(tokenizer, item) for item in decide]
+                va = [encode_choice(tokenizer, item) for item in vdecide]
+            else:
+                from . import u5_campsite as u5
+
+                tr = [u5.encode_generate(tokenizer, p, t) for p, t in repair]
+                va = [u5.encode_generate(tokenizer, p, t) for p, t in vrepair]
+            info = {"n_rows": len(decide), "rows_sha256": sha256_of(sorted(item.item_id for item in decide))}
         else:
             raise ValueError(f"unknown source kind {kind!r}")
         if kind != "s7":

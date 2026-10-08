@@ -278,8 +278,11 @@ def features(item) -> list[float]:
     return vec + [shape, row_off, col_off, clip(tent_diff), clip(tree_diff), float(t_ok), float(c_ok), n / 6.0, m / 6.0]
 
 
-def train_decision_trm(train, val, seed: int = 0, hidden: int = 64, steps: int = 4):
+def train_decision_trm(train, val, seed: int = 0, hidden: int = 64, steps: int = 4, label=None):
+    """`label(item)` gives the training action; default: the menu-ceiling order with live projections."""
     import torch
+
+    label = label or best_action
     from torch import nn
 
     class DecisionTRM(nn.Module):
@@ -300,7 +303,7 @@ def train_decision_trm(train, val, seed: int = 0, hidden: int = 64, steps: int =
 
     def tensors(items):
         return (torch.tensor([features(i) for i in items], dtype=torch.float32),
-                torch.tensor([ACTIONS.index(best_action(i)) for i in items]))
+                torch.tensor([ACTIONS.index(label(i)) for i in items]))
 
     xt, yt = tensors(train)
     xv, yv = tensors(val)
