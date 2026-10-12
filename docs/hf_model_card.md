@@ -24,13 +24,14 @@ script/LDT/Control-Harness gates and a 1-bit 8B LLM.
 - Paper draft: `paper.pdf` in this repo (also `paper/` on GitHub)
 - Aggregate run records: `results/xbench/<suite>/<arm>/record.json`. Item-level records are not
   published, because they contain held-out evaluation items of other projects.
+- Follow-up studies U1-U6: pre-registrations in `docs/ubench/SPEC*.md`, reports in `reports/ubench/*.md`.
 
 ## Adapters
 
 All adapters are LoRA r16 / alpha 32 on q/k/v/o, the DeltaNet projections (in_proj_qkv, in_proj_z,
 out_proj) and the FFN (gate/up/down) of all 32 layers: 30.5M trainable parameters, 0.72% of the
-model. Each was trained for 300 steps. `_s0`, `_s1`, `_s2` are training seeds; seed 0 is the
-pre-registered arm.
+model. The SPEC v1 adapters were trained for 300 steps; the follow-up adapters' step counts are
+in the table. `_s0`, `_s1`, `_s2` are training seeds; seed 0 is the pre-registered arm.
 
 | Folder | Arm | Training |
 |---|---|---|
@@ -42,6 +43,8 @@ pre-registered arm.
 | `adapters/v2b_rmp_s{0,1,2}` | J-V2b-rmp | V2b recipe on the same RMP rows |
 | `adapters/multi_lora_s{0,1,2}` | J-multi (SPEC-U1) | V1's recipe on the training splits of the utility suites in their own label spaces: V1's 2,400 decision questions, J-V1-rmp's 2,400 RMP rows, the S2 commit/veto train split (x3), hermes-lite's registered S7 train rows (x4, shuffled shortlists); 714 steps |
 | `adapters/multi_loop_s{0,1,2}` | J-multi-loop (SPEC-U1) | J-multi with layers 12-15 run twice in training (use the loop at inference) |
+| `adapters/u4_lora_s{0,1,2}` | J-u4 (SPEC-U5) | each seed's J-multi adapter trained further on 3,009 synthetic Campsite repair items: choose commit / c_repair / dual_repair / reject, and write the repaired grid; 752 steps |
+| `adapters/real_lora_s{0,1,2}` | J-real (SPEC-U6) | each seed's J-u4 adapter trained further on 1,196 real J-V0 / Bonsai-8B Campsite proposals for training puzzles (decide + repair); 299 steps |
 
 The V2b adapters expect the loop at inference: layers 12-15 run twice. The repo's external
 layer-schedule driver does this (`src/jevq/looped.py`, `LoopSpec(12, 16, 2)`). With the stock
@@ -94,6 +97,40 @@ no emitted tokens. See `src/jevq/xbench/jrunner.py`.
 - **Specialist:** it stays about 2 points below the single-task J-V1-rmp on S1.
 - **Loop:** adds S1 accuracy within trained depths (p = 2e-8), unevenly across seeds.
 - **Reliability:** no Jev-style adapter meets the pre-registered rule on any utility suite. See `reports/ubench/` on GitHub.
+
+## Follow-ups U2-U6: skill pipelines and repair (pre-registered, three seeds where trained)
+
+- **U2, skill pipelines** (600 synthetic requests for the TRM-infused Campsite logic skill and its
+  neighbours).
+  - The Jev routing in front of the TRM commit gate is the best pipeline: 0.787 end-to-end, 1.3%
+    unsafe.
+  - The Jev doing both steps (0.762) does not beat the base model routing in front of the TRM gate
+    (0.773).
+  - The TRM router has no abstain path and scores 0.517.
+- **U3, the TRM skills' repair-rudder benchmark.** Its published retrieval matches on the evaluated
+  row's own labels (98.6% of retrieved examples share the answer).
+  - With that retrieval, the 4B base model scores the same 0.795 as 9B and 27B.
+  - Without the leak, the base model, a trained repair TRM and a lookup table tie.
+- **U4-U6, Campsite repair scored by the official verifier:**
+
+| Arm (mean over seeds) | Synthetic defects: decide / unsafe / repair | Real model proposals: decide / unsafe / repair |
+|---|---|---|
+| skill's dual_repair projection | - / - / 0.731 | - / - / 0.257 |
+| skill's flow policy (no reject path) | 0.731 / 0.269 / - | 0.257 / 0.743 / - |
+| Decision-TRM, 9.7k params (synthetic) | 0.727 / 0.019 / - | 0.191 / 0.526 / - |
+| J-multi, few-shot | 0.569 / 0.187 / 0.184 | - |
+| J-u4 | 0.731 / 0.019 / 0.872 | 0.240 / 0.738 / 0.084 |
+| J-real | 0.610 / 0.005 / 0.685 | 0.207 / 0.112 / 0.363 |
+| CSP re-solve | - / - / 1.000 | - / - / 1.000 |
+
+- **What the table shows:**
+  - Trained on the target failures, the Jev matches a tiny TRM as decider and beats the skill's
+    hand-written projections as repairer.
+  - Training on synthetic defects does not transfer to real model proposals; training on those does.
+  - An exact solver repairs everything in milliseconds.
+- **Reject path.** Adding one to the skill's flow policy removes most broken commits at no cost.
+- **Forgetting.** The Campsite training cost J-multi 2.4 points on S4 (a real loss). S2 and U2 are
+  unharmed, and S1 and S7p are inconclusive.
 
 ## Limitations
 

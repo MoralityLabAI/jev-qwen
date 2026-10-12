@@ -9,6 +9,7 @@ Uploaded:
 - results/xbench/**/record.json (aggregate records only; items.jsonl holds held-out eval items of
   other projects and is never uploaded);
 - results/latency/*h1*.json;
+- docs/ubench/SPEC*.md and reports/ubench/*.md (follow-up pre-registrations and aggregate reports);
 - paper.pdf;
 - README.md (docs/hf_model_card.md).
 """
@@ -37,6 +38,9 @@ def planned_files() -> list[tuple[Path, str]]:
         files.append((record, record.relative_to(ROOT).as_posix()))
     for latency in sorted((ROOT / "results" / "latency").glob("*h1*.json")):
         files.append((latency, latency.relative_to(ROOT).as_posix()))
+    # Follow-up studies: pre-registrations and aggregate reports only (no per-item rows).
+    for doc in sorted((ROOT / "docs" / "ubench").glob("SPEC*.md")) + sorted((ROOT / "reports" / "ubench").glob("*.md")):
+        files.append((doc, doc.relative_to(ROOT).as_posix()))
     files.append((ROOT / "paper" / "main.pdf", "paper.pdf"))
     files.append((ROOT / "docs" / "hf_model_card.md", "README.md"))
     assert not any(p.name == "items.jsonl" for p, _ in files)

@@ -25,7 +25,8 @@ SEEDS = (0, 1, 2)
 BANDS = ("std", "8x8", "10x10")
 MARGIN = -0.02
 F_LEVEL = 1 - 0.05 / 5  # Bonferroni over the five forgetting suites: two-sided 99% intervals
-SEEDED = {"J-real": "J-real{s}", "J-u4": "J-u4{s}", "Decision-TRM-real": "Decision-TRM-real{s}", "Decision-TRM": "Decision-TRM{s}"}
+SEEDED = {"J-real": "J-real{s}", "J-u4": "J-u4{s}", "Decision-TRM-real": "Decision-TRM-real{s}", "Decision-TRM": "Decision-TRM{s}",
+          "J-multi": "J-multi{s}"}
 T_TESTS = {
     "T1": (("repair", "J-real"), ("repair", "c_repair"), "two", "J-real written repair vs c_repair (U5 proposals)"),
     "T2": (("repair", "J-real"), ("repair", "J-u4"), "one", "training on real proposals improves the Jev's written repair (U5 proposals)"),

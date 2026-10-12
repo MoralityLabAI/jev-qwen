@@ -59,6 +59,13 @@ a 1-bit 8B LLM, on seven suites, with decision rules frozen before any cross-arm
   duplicate-lineage attack, V1 with probability 0.999, and the provenance membrane catches it
   from provenance alone. Under a scripted evidence-injection ladder, the loop-trained gate flips
   none of 162 deny decisions over three seeds; the plain adapter flips 14.
+  \item In follow-ups registered the same way, the 4B model routing in front of a TRM commit gate
+  is the best skill pipeline, but the 4B model doing both steps does not beat its base model
+  routing in front of that gate. The TRM skills' published repair-rudder benchmark leaks its
+  answers through retrieval. On verifier-scored Campsite repair, trained on the target failures,
+  the 4B model matches a 9.7k-parameter TRM decider and beats the skills' own repair projections
+  (0.363 against 0.160 on real model proposals), while an exact solver repairs everything in
+  milliseconds.
 \end{itemize}
 \end{abstract}
 
@@ -559,6 +566,112 @@ Under the v1 reliability rule no Jev-style arm, old or new, is reliable on any u
 smallest reliable executors are unchanged: a script or router, a 6k--17k-parameter TRM, or the
 460k-parameter looped decoder.
 
+\section{Follow-up: skill pipelines and repair}
+\label{sec:u2u6}
+
+Five further studies, each registered before its runs (SPEC-U2 to SPEC-U6), ask where a Jev-style
+model belongs relative to the TRM-infused skills: in front of them, choosing the skill, or inside
+them, gating or writing the repair.
+
+\subsection{Choosing a skill and gating its output (U2)}
+
+U2 composes routing and gating on 600 synthetic requests:
+\begin{itemize}
+  \item 360 for the Campsite logic skill, each paired with a post-repair commit/veto state;
+  \item 150 that a neighbouring skill should take;
+  \item 90 negatives that name a skill the router must not use.
+\end{itemize}
+Table~\ref{tab:u2} gives the pipelines.
+\begin{itemize}
+  \item \emph{The registered question (T1).} J-multi routing and gating (C, 0.762) does not beat
+  the base model routing in front of the TRM gate (A, 0.773; Holm $p=0.92$). It does beat the base
+  model doing both steps (D, 0.740; T3, Holm $p=0.009$).
+  \item \emph{The TRM router (T2).} Its pipeline (B, 0.517) is far worse. The router has no
+  abstain path, and it picks the forbidden skill on all 90 negatives.
+  \item \emph{Best combination.} The best pipeline pairs the Jev's routing with the TRM gate (H,
+  0.787, 1.3\% unsafe). Every Jev gate error is the same boundary case: a repair that changes
+  nothing and is not exact, which the rule rejects and the Jev commits. The looped Jev doing both
+  steps reaches 0.793; its comparison with A was not registered ($p=0.036$, post hoc).
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/u2_table}
+\caption{SPEC-U2: end-to-end success and unsafe rate (a commit on a gold reject after correct
+routing, or the forbidden skill chosen) on 600 synthetic requests. Number of instances (seeds) in
+brackets. Generated from the run records.}
+\label{tab:u2}
+\end{table}
+
+\subsection{The repair-rudder benchmark (U3)}
+
+The TRM skills' own repository reports a repair ``rudder'' benchmark on 88 near-miss rows. There,
+retrieved examples lift 9B and 27B rudders from 0.36--0.49 to 0.795 joint accuracy on repair action
+and commit decision. Replicating it exactly, we found the retrieval matches on the evaluated row's
+own labels:
+\begin{itemize}
+  \item 98.6\% of the retrieved examples share the row's commit action, against 77.3\% for a
+  retrieval on pre-repair fields only.
+  \item With the same retrieval, our 4B base model, the Jev and the looped Jev also reach 0.795.
+  That is the ceiling: the unseen-family repair actions are outside the allowed list.
+  \item Without the leak, the base model, a newly trained repair TRM and a lookup table tie at
+  34/54 on the held-out rows. The Jev scores 0.580 against the base model's 0.630 (R1 not
+  supported), and there is no difference from the repair TRM (R2).
+  \item The TRM router's abstain head, never trained in its own pipeline, still never fires when
+  fitted on the frozen router (A1 not supported). The router is most confident (0.55) on the
+  requests that name the skill it must not use, against 0.20 on ordinary requests.
+\end{itemize}
+
+\subsection{Verifier-scored Campsite repair (U4--U6)}
+
+U4 builds fresh broken Campsite candidates (eight defect types, 60 each) on new puzzles and scores
+every committed grid with the skill harness's official verifier. The skill's own repair
+projections run unchanged from its repository. Table~\ref{tab:campsite} collects the results.
+\begin{itemize}
+  \item \emph{Untrained (U4).} A 9.7k-parameter decision TRM trained on 3,009 synthetic items picks
+  among commit, two projections and reject at 0.727, with 1.9\% broken commits. The few-shot Jev
+  reaches 0.569 with 18.7\% (D1), no better than the base model (D2). Writing the grid itself, it
+  fixes 0.184 against the dual projection's 0.731 (G1).
+  \item \emph{Reject path (U5).} The skill's flow policies never reject, so every candidate their
+  projection cannot fix is committed broken (27\%). Refusing to commit an unchanged, already-failed
+  candidate cuts this to 1.7\% at no loss of success. On real proposals only a verifier check after
+  the repair removes the broken commits.
+  \item \emph{Trained on the TRM's items (U5).} Continued from J-multi on the same 3,009 items,
+  the Jev matches the TRM as decider: 0.731 against 0.727, which is significant (J1, Holm
+  $p=0.031$) but only two items per seed. As repairer it beats the dual projection, 0.872 against
+  0.731 (J2). It fixes the swapped-tent and wrong-shape candidates that the projections cannot.
+  \item \emph{Real proposals (U5).} Two proposers, the base model and Bonsai-8B, each proposed
+  once for 237 puzzles: 117 of standard size and 60 each at $8\times8$ and $10\times10$. Only 2 of
+  the 474 proposals solved the puzzle as written. Synthetic training does not transfer to these failures: the trained Jev repairs 0.084
+  of them, against 0.160 for the C projection (P2).
+  \item \emph{Trained on real failures (U6).} Continued on 1,196 real proposals for separate
+  training puzzles, the Jev repairs 0.363 of the held-out proposals: 0.677 at standard size and
+  0.106 at $8\times8$, where neither projection fixes any (T1 against the C projection, T2 against
+  synthetic-only training). As a decider it learns to refuse: 0.207 success with 11\% broken
+  commits, against 0.172 and 9\% for a TRM trained on the same proposals (T3). On the synthetic
+  defects it gives back 12--19 points.
+  \item \emph{The cost of specialising (U6).} Against J-multi on its own suites (99\%
+  non-inferiority at $-2$ points), the Campsite-trained Jev shows a real loss on S4 ($-2.4$,
+  interval $[-3.5,-1.2]$). S1 is inconclusive ($-1.9$). S2 and U2 are unharmed, and S7p is
+  unchanged but too small to show it.
+  \item \emph{The exact solver.} The harness's CSP solver re-solves every candidate in
+  milliseconds at every size we could generate. Planting a puzzle stalls at $14\times14$ before the
+  solver slows, while the dual projection takes over a minute per candidate at $10\times10$. On Campsite, a learned
+  repairer is a research instrument, not a need.
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/campsite_table}
+\caption{SPEC-U4--U6: Campsite deciders (success of the committed grid; unsafe = a failing grid
+committed) and repairers (the repaired grid passes the verifier). Synthetic defects: the U4 test
+set. Real proposals: base-model and Bonsai-8B proposals on held-out standard, $8\times8$ and
+$10\times10$ puzzles. Rates pool the seeds present. Generated from the run records.}
+\label{tab:campsite}
+\end{table}
+
 \section{Discussion}
 
 \paragraph{What a small Jev-style model is for.} The evidence so far favours a narrow role: a
@@ -597,6 +710,13 @@ trained on the decision suite is more resistant to scripted evidence injection i
 was the only change to the 4B model that bought robustness without the over-refusal of the base
 model.
 
+\paragraph{Where the repair step belongs.} The infused skill's projections are good near-miss
+repairers, but its flow policy has no reject path. Adding one removes most broken commits at no
+cost, and the repository contains a patch for it. Learned repairers win only when they are trained
+on the failures they will meet: synthetic perturbations do not prepare a model for real model
+proposals. Each specialisation costs a few points elsewhere. In every configuration we tried, the
+verifier, not either learner, is what makes a commit safe.
+
 \paragraph{Limitations.}
 \begin{itemize}
   \item \emph{Seeds.} Three training seeds for V1, V1c, V2b and the RMP-trained arms; one for
@@ -611,6 +731,9 @@ model.
   not yet met for every seed. No MeTTa gate could be run: the implementations are on a missing
   drive.
   \item \emph{Jev.} Jev itself is not available for comparison, so nothing here measures Jev.
+  \item \emph{Follow-ups.} U2's requests and U4's defects are synthetic. The repair-rudder rows
+  are post-hoc projections from earlier runs. Campsite has a cheap exact solver. Forgetting was
+  measured only for the synthetic-trained adapter, and only on J-multi's suites.
 \end{itemize}
 
 \section{Conclusion}
@@ -634,6 +757,11 @@ still does not reach the smallest reliable executor on any suite. Recurrence gra
 places only, both replicated over three seeds. On a task with one consistent step it adds hops.
 On the deny gate it resists scripted evidence injection. It neither extrapolates nor closes the gap
 to emitted reasoning.
+
+Next to the TRM skills, the model is most useful in front of them, choosing the skill, with the
+TRM commit gate kept. Inside the repair step it can match a tiny trained TRM and outperform the
+skills' hand-written projections, but only on failures like those it was trained on. The skill's
+verifier and an explicit reject path matter more than which learner sits in the loop.
 
 \bibliographystyle{plain}
 \bibliography{references}
