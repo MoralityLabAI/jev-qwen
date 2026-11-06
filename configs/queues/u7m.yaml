@@ -1,0 +1,103 @@
+# SPEC-U7 part M (docs/ubench/SPEC-U7.md): J-mix seeds 0-2, train then evaluate on every suite.
+# Runs inside one vramorama lease after part L's lease ends.
+name: u7m
+min_free_mib: 0
+min_free_commit_gb: 4
+stable_seconds: 0
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+- name: train_mix_s0
+  args:
+  - scripts/train_adapter.py
+  - --config
+  - configs/train/mix_lora.yaml
+- name: suites_mix_s0
+  args:
+  - scripts/xbench.py
+  - j
+  - --arm
+  - J-mix
+  - --suites
+  - s1,s2,s4,s7,s7p
+- name: u2_mix_s0
+  args:
+  - scripts/xbench.py
+  - u2
+  - j
+  - --arm
+  - J-mix
+- name: campsite_mix_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - mixeval
+  - --seed
+  - '0'
+- name: train_mix_s1
+  args:
+  - scripts/train_adapter.py
+  - --config
+  - configs/train/mix_lora.yaml
+  - --set
+  - seed=1
+- name: suites_mix_s1
+  args:
+  - scripts/xbench.py
+  - j
+  - --arm
+  - J-mix
+  - --suites
+  - s1,s2,s4,s7,s7p
+  - --seed
+  - '1'
+- name: u2_mix_s1
+  args:
+  - scripts/xbench.py
+  - u2
+  - j
+  - --arm
+  - J-mix
+  - --seed
+  - '1'
+- name: campsite_mix_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - mixeval
+  - --seed
+  - '1'
+- name: train_mix_s2
+  args:
+  - scripts/train_adapter.py
+  - --config
+  - configs/train/mix_lora.yaml
+  - --set
+  - seed=2
+- name: suites_mix_s2
+  args:
+  - scripts/xbench.py
+  - j
+  - --arm
+  - J-mix
+  - --suites
+  - s1,s2,s4,s7,s7p
+  - --seed
+  - '2'
+- name: u2_mix_s2
+  args:
+  - scripts/xbench.py
+  - u2
+  - j
+  - --arm
+  - J-mix
+  - --seed
+  - '2'
+- name: campsite_mix_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - mixeval
+  - --seed
+  - '2'

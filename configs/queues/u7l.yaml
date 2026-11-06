@@ -1,0 +1,172 @@
+# SPEC-U7 part L (docs/ubench/SPEC-U7.md): LOOP / DEEP / FLAT x seeds 0-2, train then evaluate.
+# Runs inside one vramorama lease (vramorama admits it), so the runner's own VRAM wait is off.
+name: u7l
+min_free_mib: 0
+min_free_commit_gb: 4
+stable_seconds: 0
+timeout_minutes: 900
+retries: 2
+keep_awake: true
+steps:
+- name: train_loop_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - LOOP
+  - --seed
+  - '0'
+- name: train_deep_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - DEEP
+  - --seed
+  - '0'
+- name: train_flat_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - FLAT
+  - --seed
+  - '0'
+- name: train_loop_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - LOOP
+  - --seed
+  - '1'
+- name: train_deep_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - DEEP
+  - --seed
+  - '1'
+- name: train_flat_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - FLAT
+  - --seed
+  - '1'
+- name: train_loop_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - LOOP
+  - --seed
+  - '2'
+- name: train_deep_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - DEEP
+  - --seed
+  - '2'
+- name: train_flat_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - train
+  - --arm
+  - FLAT
+  - --seed
+  - '2'
+- name: eval_loop_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - LOOP
+  - --seed
+  - '0'
+- name: eval_deep_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - DEEP
+  - --seed
+  - '0'
+- name: eval_flat_s0
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - FLAT
+  - --seed
+  - '0'
+- name: eval_loop_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - LOOP
+  - --seed
+  - '1'
+- name: eval_deep_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - DEEP
+  - --seed
+  - '1'
+- name: eval_flat_s1
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - FLAT
+  - --seed
+  - '1'
+- name: eval_loop_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - LOOP
+  - --seed
+  - '2'
+- name: eval_deep_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - DEEP
+  - --seed
+  - '2'
+- name: eval_flat_s2
+  args:
+  - scripts/xbench.py
+  - u7
+  - eval
+  - --arm
+  - FLAT
+  - --seed
+  - '2'

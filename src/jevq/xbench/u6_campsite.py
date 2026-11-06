@@ -76,8 +76,8 @@ def training_rows(split: str, limit: int | None = None):
     return decide, repair
 
 
-def _write(part: str, set_name: str, record: str, rows: list[dict], info: dict) -> None:
-    out = OUT / part / set_name
+def _write(part: str, set_name: str, record: str, rows: list[dict], info: dict, root=None) -> None:
+    out = (root or OUT) / part / set_name
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{record}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     (out / f"{record}.json").write_text(json.dumps({"record": record, "set": set_name, **info}, indent=2), encoding="utf-8")
@@ -110,8 +110,9 @@ def run_cpu() -> None:
     print(json.dumps(summary, indent=2))
 
 
-def run_j(arm_id: str = "J-real", seed: int = 0) -> None:
-    """J-real on the held-out U5 proposals (decide + write) and the U4 test set (decide + write)."""
+def run_j(arm_id: str = "J-real", seed: int = 0, root=None) -> None:
+    """J-real (or J-mix, SPEC-U7, with root=results/u7) on the held-out U5 proposals and the U4 test
+    set: decide + write."""
     from .arms import seeded
     from .jrunner import load_j_bundle, run_choice, run_cot
 
@@ -126,10 +127,10 @@ def run_j(arm_id: str = "J-real", seed: int = 0) -> None:
             item = by_id[r["item_id"]]
             extra = {"probs": r["probs"], "options": r["options"], "label_mass": r["label_mass"]}
             rows.append(u4.outcome(item, r["pred"], **extra) if set_name == "u4test" else u5.outcome(set_name, item, r["pred"], **extra))
-        _write("decide", set_name, arm.arm_id, rows, info)
+        _write("decide", set_name, arm.arm_id, rows, info, root)
         budget = max(2 * len(i["task"]["grid"]) * len(i["task"]["grid"][0]) + 16 for i in test)
         rows = []
         for r in run_cot(bundle, u5.repair_items_zero(test), max_new_tokens=budget):
             rows.append(u5.repair_row(by_id[r["item_id"]], json.loads(r["pred"]), raw_text=r["raw_text"], emitted_tokens=r["emitted_tokens"],
                                       latency_s=r["latency_s"]))
-        _write("repair", set_name, arm.arm_id, rows, info)
+        _write("repair", set_name, arm.arm_id, rows, info, root)

@@ -23,6 +23,7 @@ LARGE_SEED = 20261013
 LARGE = ((8, 60), (10, 60))  # size, puzzles
 PROJECTION_CAP_S = 60
 DUAL_SKIP_ABOVE = 64  # cells: dual_repair is not run on 10x10 (> 60 s per call in the design probe)
+C_CAP_ABOVE = 100     # cells: c_repair is time-capped too from 12x12 (SPEC-U7; 15-78 s per call in the probe)
 PROPOSERS = ("J-V0", "Bonsai-8B")
 SETS = ("u4test", "u5test", "proposals")
 POLICIES = ("c_repair_if_c_fail", "dual_repair_if_any_sig_fail")
@@ -232,7 +233,7 @@ def compute_projections(set_name: str) -> dict:
                 row[module] = {"status": "none", "grid": None, "seconds": 0.0}
             elif module == "dual_repair" and _cells(item) > DUAL_SKIP_ABOVE:
                 row[module] = {"status": "skipped", "grid": None, "seconds": None}
-            elif module == "dual_repair" and _cells(item) > 36:
+            elif (module == "dual_repair" and _cells(item) > 36) or _cells(item) > C_CAP_ABOVE:
                 capped.append(((item["item_id"], module), item, function))
             else:
                 t0 = time.perf_counter()

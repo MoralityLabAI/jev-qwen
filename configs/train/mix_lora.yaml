@@ -1,0 +1,31 @@
+# J-mix (docs/ubench/SPEC-U7.md part M): J-multi's recipe from the base model on the union of every
+# training source in the thread: V1's decision questions, the RMP rows, S2 (x3), S7 (x4), the SPEC-U4
+# train items (decide + repair, SPEC-U5) and the SPEC-U6 realtrain proposals (decide + repair).
+# 2,400 + 2,400 + 702 + 216 + 2 x 3,009 + 2 x 1,196 = 14,128 rows / 8 = 1,766 optimizer steps.
+inherit: configs/train/multi_lora.yaml
+name: mix_lora
+data:
+  source: multi
+  sources:
+    - kind: dev
+      prompt_suite: evals/suites/dev.yaml
+      exclude_suites: [evals/suites/smoke.yaml, evals/suites/dev.yaml]
+      tasks: null
+      difficulties: [1, 2, 3]
+      n_per_difficulty: 100
+      n_val_per_difficulty: 4
+      formats: [choice, generate, generate_cot]
+    - kind: rmp
+      families: [pointer_chase, gated_pointer_chase, masked_pointer_chase, reachability, sudoku4]
+      n_per_family: 480
+      n_val_per_family: 20
+      index_offset: 1000
+    - kind: s2
+      upsample: 3
+    - kind: s7
+      upsample: 4
+    - kind: u4_decide
+    - kind: u4_repair
+    - kind: real_decide
+    - kind: real_repair
+eval_every: 200

@@ -59,6 +59,10 @@ def main() -> None:
     u6.add_argument("--proposer", choices=["J-V0", "Bonsai-8B"])
     u6.add_argument("--arm", default="J-real")
     u6.add_argument("--seed", type=int, default=0)
+    u7 = sub.add_parser("u7", help="SPEC-U7: cpu (data, L7 set, comparators), train/eval (part L arm), mixeval (J-mix campsite eval)")
+    u7.add_argument("what", choices=["cpu", "train", "eval", "mixeval"])
+    u7.add_argument("--arm", default="LOOP", help="LOOP, DEEP or FLAT (train/eval); J-mix (mixeval)")
+    u7.add_argument("--seed", type=int, default=0)
     cov = sub.add_parser("coverage")
     cov.add_argument("--fill-na", action="store_true", help="write not-applicable records for cells the SPEC defines no adapter for")
     args = parser.parse_args()
@@ -144,6 +148,19 @@ def main() -> None:
             u6_campsite.run_cpu()
         else:
             u6_campsite.run_j(args.arm, args.seed)
+    elif args.command == "u7":
+        from jevq.xbench import u7_loop
+
+        if args.what == "cpu":
+            u7_loop.run_cpu()
+        elif args.what == "train":
+            print(u7_loop.train(args.arm, args.seed), flush=True)
+        elif args.what == "eval":
+            u7_loop.evaluate(args.arm, args.seed)
+        else:
+            from jevq.xbench import u6_campsite
+
+            u6_campsite.run_j("J-mix", args.seed, root=u7_loop.OUT)
     elif args.command == "coverage":
         from jevq.xbench import coverage
 
