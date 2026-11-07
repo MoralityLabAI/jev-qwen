@@ -67,10 +67,23 @@ def load_j_bundle(adapter: str | None = None, model_cfg: dict | None = None) -> 
         if not (path / "adapter_config.json").exists():
             raise FileNotFoundError(f"adapter not found: {path}")
     model_cfg = model_cfg or load_yaml(resolve_path("configs/base.yaml"))["model"]
+    if adapter:
+        import json
+
+        trained = json.loads((path / "adapter_config.json").read_text(encoding="utf-8")).get("base_model_name_or_path")
+        if trained and trained != model_cfg["id"]:
+            raise RuntimeError(f"adapter {adapter} was trained on {trained}, not {model_cfg['id']}")
     bundle = load_bundle(model_cfg)
     if adapter:
         bundle = attach_adapter(bundle, path)
     return bundle
+
+
+def load_arm_bundle(arm) -> ModelBundle:
+    """The arm's base (SPEC-U8 arms name a smaller one) with its adapter attached."""
+    from .arms import model_cfg_for
+
+    return load_j_bundle(arm.adapter, model_cfg_for(arm))
 
 
 def _sync(device) -> None:

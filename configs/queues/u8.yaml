@@ -1,0 +1,74 @@
+# SPEC-U8 (docs/ubench/SPEC-U8.md): small Jevs. Untrained bases first, then seed by seed: train, then suites.
+# Runs inside one vramorama lease (vramorama admits it), so the runner's own VRAM wait is off.
+name: u8
+min_free_mib: 0
+min_free_commit_gb: 4
+stable_seconds: 0
+timeout_minutes: 600
+retries: 2
+keep_awake: true
+steps:
+  - name: j_v0_08
+    args: [scripts/xbench.py, j, --arm, J-V0-0.8B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: j_v0_2b
+    args: [scripts/xbench.py, j, --arm, J-V0-2B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi08_s0
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi08.yaml]
+  - name: j_multi08_s0
+    args: [scripts/xbench.py, j, --arm, J-multi-0.8B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_brier08_s0
+    args: [scripts/train_adapter.py, --config, configs/train/u8_brier08.yaml]
+  - name: j_brier08_s0
+    args: [scripts/xbench.py, j, --arm, J-brier-0.8B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlcd08_s0
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlcd08.yaml]
+  - name: j_rlcd08_s0
+    args: [scripts/xbench.py, j, --arm, J-rlcd-0.8B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlvr08_s0
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlvr08.yaml]
+  - name: j_rlvr08_s0
+    args: [scripts/xbench.py, j, --arm, J-rlvr-0.8B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi2b_s0
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi2b.yaml]
+  - name: j_multi2b_s0
+    args: [scripts/xbench.py, j, --arm, J-multi-2B, --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi08_s1
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi08.yaml, --set, seed=1]
+  - name: j_multi08_s1
+    args: [scripts/xbench.py, j, --arm, J-multi-0.8B, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_brier08_s1
+    args: [scripts/train_adapter.py, --config, configs/train/u8_brier08.yaml, --set, seed=1]
+  - name: j_brier08_s1
+    args: [scripts/xbench.py, j, --arm, J-brier-0.8B, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlcd08_s1
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlcd08.yaml, --set, seed=1]
+  - name: j_rlcd08_s1
+    args: [scripts/xbench.py, j, --arm, J-rlcd-0.8B, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlvr08_s1
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlvr08.yaml, --set, seed=1]
+  - name: j_rlvr08_s1
+    args: [scripts/xbench.py, j, --arm, J-rlvr-0.8B, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi2b_s1
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi2b.yaml, --set, seed=1]
+  - name: j_multi2b_s1
+    args: [scripts/xbench.py, j, --arm, J-multi-2B, --seed, "1", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi08_s2
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi08.yaml, --set, seed=2]
+  - name: j_multi08_s2
+    args: [scripts/xbench.py, j, --arm, J-multi-0.8B, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_brier08_s2
+    args: [scripts/train_adapter.py, --config, configs/train/u8_brier08.yaml, --set, seed=2]
+  - name: j_brier08_s2
+    args: [scripts/xbench.py, j, --arm, J-brier-0.8B, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlcd08_s2
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlcd08.yaml, --set, seed=2]
+  - name: j_rlcd08_s2
+    args: [scripts/xbench.py, j, --arm, J-rlcd-0.8B, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_rlvr08_s2
+    args: [scripts/train_adapter.py, --config, configs/train/u8_rlvr08.yaml, --set, seed=2]
+  - name: j_rlvr08_s2
+    args: [scripts/xbench.py, j, --arm, J-rlvr-0.8B, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]
+  - name: train_multi2b_s2
+    args: [scripts/train_adapter.py, --config, configs/train/u8_multi2b.yaml, --set, seed=2]
+  - name: j_multi2b_s2
+    args: [scripts/xbench.py, j, --arm, J-multi-2B, --seed, "2", --suites, "s1,s2,s4,s7,s7p"]

@@ -86,12 +86,12 @@ def run_cpu() -> None:
 def run_j(arm_id: str, seed: int = 0, iterations: int | None = None) -> None:
     from ..looped import LoopSpec
     from .arms import LOOP_SPAN, seeded
-    from .jrunner import load_j_bundle, run_choice
+    from .jrunner import load_arm_bundle, run_choice
 
     arm = seeded(arm_id, seed)
     record_id = arm.arm_id + (f"-r{iterations}" if iterations else "")
     loop = LoopSpec(*LOOP_SPAN, iterations) if iterations else None
-    bundle = load_j_bundle(arm.adapter)
+    bundle = load_arm_bundle(arm)
     items = u.build_items()
     route = [_slim(r) for r in run_choice(bundle, route_items(items), loop=loop)]
     gate = [_slim(r) for r in run_choice(bundle, gate_items(items), loop=loop)]

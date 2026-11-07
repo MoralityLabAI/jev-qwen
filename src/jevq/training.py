@@ -21,6 +21,8 @@ Losses, averaged per sequence so every example weighs the same whatever its leng
     ce     token cross-entropy over the full vocabulary (standard SFT; V1)
     brier  on choice items only, the Brier score of the distribution over the valid option
            labels (V1c); other formats keep cross-entropy, so V1 and V1c differ in one factor
+    rlcd   bandit feedback on choice items (SPEC-U8, `bandit_loss`): only whether sampled
+    rlvr   options were right is revealed; choice-only data
 """
 
 from __future__ import annotations
@@ -179,6 +181,33 @@ def brier(option_logits: torch.Tensor, answer_index: int) -> torch.Tensor:
     return ((probs - target) ** 2).sum()
 
 
+BANDIT_SAMPLES = 4  # SPEC-U8: options sampled per item for the bandit losses (eve-rlcd uses 4)
+
+
+def bandit_loss(option_logits: torch.Tensor, answer_index: int, reward: str, k: int = BANDIT_SAMPLES) -> torch.Tensor:
+    """SPEC-U8 bandit feedback: sample k options a ~ p, reveal only c = [a is right] for each.
+
+    rlcd  r = c - p_a (eve-rlcd's open reading of TypeSafe's RLCD; TypeSafe's method is unpublished)
+    rlvr  r = c       (the accuracy reward, as a control)
+
+    REINFORCE with a leave-one-out baseline over the k samples, times 2. For rlcd the expected
+    gradient then equals the Brier score's gradient exactly (tests/test_u8.py checks it): the arms
+    differ from V1c's Brier only in what is revealed, not in what is optimised.
+    """
+    logp = torch.log_softmax(option_logits.float(), dim=-1)
+    probs = logp.exp().detach()
+    actions = torch.multinomial(probs, k, replacement=True)
+    c = (actions == answer_index).float()
+    if reward == "rlcd":
+        r = c - probs[actions]
+    elif reward == "rlvr":
+        r = c
+    else:
+        raise ValueError(f"unknown bandit reward {reward!r}")
+    baseline = (r.sum() - r) / (k - 1)
+    return -2.0 * ((r - baseline) * logp[actions]).mean()
+
+
 def sequence_loss(bundle: ModelBundle, loop, enc: Encoded, choice_loss: str, label_ids: list[int]) -> tuple:
     """(loss, choice_correct or None) for one encoded sequence."""
     ids = torch.tensor([enc.input_ids], device=bundle.device)
@@ -194,8 +223,12 @@ def sequence_loss(bundle: ModelBundle, loop, enc: Encoded, choice_loss: str, lab
         correct = bool(option_logits.argmax() == enc.answer_index)
         if choice_loss == "brier":
             return brier(option_logits, enc.answer_index), correct
+        if choice_loss in ("rlcd", "rlvr"):
+            return bandit_loss(option_logits, enc.answer_index, choice_loss), correct
         if choice_loss != "ce":
             raise ValueError(f"unknown choice loss {choice_loss!r}")
+    elif choice_loss in ("rlcd", "rlvr"):
+        raise ValueError(f"bandit loss {choice_loss!r} takes choice items only, got {enc.fmt!r}")
     return F.cross_entropy(logits, targets), correct
 
 

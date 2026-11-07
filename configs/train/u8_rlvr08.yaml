@@ -1,0 +1,5 @@
+# SPEC-U8: u8_brier08 with bandit feedback, r = c (the accuracy reward; control for u8_rlcd08).
+inherit: configs/train/u8_brier08.yaml
+name: u8_rlvr08
+loss:
+  choice: rlvr

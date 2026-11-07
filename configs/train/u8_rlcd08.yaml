@@ -1,0 +1,5 @@
+# SPEC-U8: u8_brier08 with bandit feedback, r = c - p_a (training.bandit_loss).
+inherit: configs/train/u8_brier08.yaml
+name: u8_rlcd08
+loss:
+  choice: rlcd

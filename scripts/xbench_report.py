@@ -27,6 +27,8 @@ FIXED_ITEM_SUITES = {"s1", "s2", "s4", "s7"}  # same items for every arm: paired
 # Arms outside the SPEC v1 registration (notes/xbench-log.md, addendum A1): reported beside the
 # registered arms, never entered into the R1/R2 pools or their Holm families.
 ADDENDUM_ARMS = {"J-V1c-lr3": "J-V1c"}  # addendum arm -> the registered arm it controls for
+# U-series arms (SPEC-U1 to U8): kept out of the v1 reliability pools; record ids start with one of these.
+U_SERIES_PREFIXES = ("J-multi", "J-u4", "J-real", "J-mix", "J-V0-0.8B", "J-V0-2B", "J-brier-", "J-rlcd-", "J-rlvr-")
 ADDENDUM_SUITES = {"s7p": "s7"}  # A2 (post hoc): S7 with the shortlist order shuffled per item
 REPLICATE = re.compile(r"^(?P<base>J-.+?)-s(?P<seed>\d+)(?P<iteration>-r\d+)?$")
 
@@ -52,7 +54,7 @@ def split_addenda(all_records: dict[str, dict[str, dict]]) -> tuple[dict, dict]:
     for suite, records in all_records.items():
         for arm, record in records.items():
             # Utility-follow-up arms (J-multi*, J-u4*, J-real*, J-mix*) are separate registrations, never in the v1 pools.
-            extra = REPLICATE.match(arm) or arm in ADDENDUM_ARMS or suite in ADDENDUM_SUITES or arm.startswith(("J-multi", "J-u4", "J-real", "J-mix"))
+            extra = REPLICATE.match(arm) or arm in ADDENDUM_ARMS or suite in ADDENDUM_SUITES or arm.startswith(U_SERIES_PREFIXES)
             (addenda if extra else registered)[suite][arm] = record
     return registered, addenda
 

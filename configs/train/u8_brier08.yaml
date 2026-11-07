@@ -1,0 +1,30 @@
+# SPEC-U8 R arms on Qwen3.5-0.8B-Base: J-multi's rows with every S4 row in choice format, so every
+# row is a choice item (5,718 rows, 714 optimizer steps). This arm sees the gold label (Brier, as
+# V1c); u8_rlcd08 and u8_rlvr08 differ from it only in `loss.choice` (bandit feedback).
+inherit: configs/train/multi_lora.yaml
+name: u8_brier08
+run_overrides:
+  - model.id=Qwen/Qwen3.5-0.8B-Base
+  - model.revision=dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+data:
+  source: multi
+  sources:
+    - kind: dev
+      prompt_suite: evals/suites/dev.yaml
+      exclude_suites: [evals/suites/smoke.yaml, evals/suites/dev.yaml]
+      tasks: null
+      difficulties: [1, 2, 3]
+      n_per_difficulty: 100
+      n_val_per_difficulty: 4
+      formats: [choice]
+    - kind: rmp
+      families: [pointer_chase, gated_pointer_chase, masked_pointer_chase, reachability, sudoku4]
+      n_per_family: 480
+      n_val_per_family: 20
+      index_offset: 1000
+    - kind: s2
+      upsample: 3
+    - kind: s7
+      upsample: 4
+loss:
+  choice: brier

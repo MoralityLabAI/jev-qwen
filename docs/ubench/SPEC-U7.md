@@ -152,4 +152,5 @@ chained only after the previous one ends.
 
 ## Addenda
 
-(none)
+**U7-A1 (2026-11-07, order only; no U7 arm had run).** SPEC-U8 (small Jevs) was registered the same
+day and runs between part L and part M. Part M's design is unchanged.

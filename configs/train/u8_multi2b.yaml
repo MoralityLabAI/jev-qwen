@@ -1,0 +1,6 @@
+# SPEC-U8 scale arm: J-multi's recipe (configs/train/multi_lora.yaml) unchanged on Qwen3.5-2B-Base.
+inherit: configs/train/multi_lora.yaml
+name: u8_multi2b
+run_overrides:
+  - model.id=Qwen/Qwen3.5-2B-Base
+  - model.revision=b1485b2fa6dfa1287294f269f5fb618e03d52d7c

@@ -493,12 +493,12 @@ def run_cpu() -> None:
 def run_j(arm_id: str, seed: int = 0, iterations: int | None = None) -> None:
     from ..looped import LoopSpec
     from .arms import LOOP_SPAN, seeded
-    from .jrunner import load_j_bundle, run_choice, run_cot
+    from .jrunner import load_arm_bundle, run_choice, run_cot
 
     arm = seeded(arm_id, seed)
     record = arm.arm_id + (f"-r{iterations}" if iterations else "")
     loop = LoopSpec(*LOOP_SPAN, iterations) if iterations else None
-    bundle = load_j_bundle(arm.adapter)
+    bundle = load_arm_bundle(arm)
     test = list(build_items("test"))
     by_id = {i["item_id"]: i for i in test}
     info = {"neural": True, "adapter": arm.adapter, "loop_iterations": iterations, "base_arm": arm_id, "seed": seed, "items_hash": items_hash()}

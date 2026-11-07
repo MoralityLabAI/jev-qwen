@@ -16,7 +16,7 @@ from pathlib import Path
 import _bootstrap  # noqa: F401
 from jevq.config import ROOT
 from jevq.xbench.stats import holm
-from xbench_report import REPLICATE, ADDENDUM_ARMS, ci, cost, fmt, load_records, readiness, reliability
+from xbench_report import REPLICATE, ADDENDUM_ARMS, U_SERIES_PREFIXES, ci, cost, fmt, load_records, readiness, reliability
 
 OUT = ROOT / "reports" / "ubench"
 SEEDS = (0, 1, 2)
@@ -124,7 +124,7 @@ def reliability_pools(records) -> dict[str, dict]:
     pools = {}
     for suite in ("s1", "s2", "s3", "s4"):
         pools[suite] = {a: r for a, r in records.get(suite, {}).items()
-                        if (a in u1) or not (REPLICATE.match(a) or a in ADDENDUM_ARMS or a.startswith(("J-multi", "J-u4", "J-real", "J-mix")))}
+                        if (a in u1) or not (REPLICATE.match(a) or a in ADDENDUM_ARMS or a.startswith(U_SERIES_PREFIXES))}
     pools["s7"] = {a: r for a, r in s7_pool(records).items()}
     return pools
 

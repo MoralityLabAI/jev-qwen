@@ -8,6 +8,14 @@ from ..looped import LoopSpec
 
 LOOP_SPAN = (12, 16)
 
+# SPEC-U8 smaller bases of the same family (Qwen3_5, hybrid DeltaNet, full attention every 4th
+# layer), pinned at the Hub commits read 2026-11-07. None = configs/base.yaml (Qwen3.5-4B-Base).
+BASES = {
+    "0.8B": {"id": "Qwen/Qwen3.5-0.8B-Base", "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68"},
+    "2B": {"id": "Qwen/Qwen3.5-2B-Base", "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c"},
+}
+U8_SUITES = ("s1", "s2", "s4", "s7")  # s7p runs with s7
+
 
 @dataclass(frozen=True)
 class JArm:
@@ -17,10 +25,22 @@ class JArm:
     readout: str = "choice"  # choice | cot
     trained_on: str | None = None
     suites: tuple[str, ...] = ("s1", "s2", "s3", "s4", "s5", "s6", "s7")
+    base: str | None = None  # key of BASES; None = the 4B base
 
     @property
     def loop(self) -> LoopSpec | None:
         return LoopSpec(*LOOP_SPAN, self.loop_iters) if self.loop_iters else None
+
+
+def model_cfg_for(arm: JArm) -> dict | None:
+    """configs/base.yaml's model block with the arm's base swapped in; None keeps the 4B base."""
+    if arm.base is None:
+        return None
+    from ..config import load_yaml, resolve_path
+
+    model = dict(load_yaml(resolve_path("configs/base.yaml"))["model"])
+    model.update(BASES[arm.base])
+    return model
 
 
 J_ARMS = {
@@ -53,9 +73,24 @@ J_ARMS = {
         # SPEC-U7 part M: one adapter from the base model on every training source of the thread.
         JArm("J-mix", "mix_lora_s0/adapter", trained_on="J-multi sources + U4 items + U6 realtrain proposals (SPEC-U7)",
              suites=("s1", "s2", "s4", "s7")),
+        # SPEC-U8: small Jevs. Scale arms use J-multi's recipe unchanged; the R arms use its rows in
+        # choice format only, with full-information Brier or bandit feedback (RLCD, RLVR).
+        JArm("J-V0-0.8B", None, base="0.8B", suites=U8_SUITES),
+        JArm("J-V0-2B", None, base="2B", suites=U8_SUITES),
+        JArm("J-multi-0.8B", "u8_multi08_s0/adapter", base="0.8B", trained_on="J-multi's recipe on Qwen3.5-0.8B-Base (SPEC-U8)",
+             suites=U8_SUITES),
+        JArm("J-multi-2B", "u8_multi2b_s0/adapter", base="2B", trained_on="J-multi's recipe on Qwen3.5-2B-Base (SPEC-U8)",
+             suites=U8_SUITES),
+        JArm("J-brier-0.8B", "u8_brier08_s0/adapter", base="0.8B", trained_on="J-multi's rows, choice only, Brier (SPEC-U8)",
+             suites=U8_SUITES),
+        JArm("J-rlcd-0.8B", "u8_rlcd08_s0/adapter", base="0.8B", trained_on="J-multi's rows, choice only, bandit r = c - p_a (SPEC-U8)",
+             suites=U8_SUITES),
+        JArm("J-rlvr-0.8B", "u8_rlvr08_s0/adapter", base="0.8B", trained_on="J-multi's rows, choice only, bandit r = c (SPEC-U8)",
+             suites=U8_SUITES),
     )
 }
-U1_ARMS = ("J-multi", "J-multi-loop", "J-u4", "J-real", "J-mix")  # outside the v1 pools and coverage matrix
+U8_ARMS = ("J-V0-0.8B", "J-V0-2B", "J-multi-0.8B", "J-multi-2B", "J-brier-0.8B", "J-rlcd-0.8B", "J-rlvr-0.8B")
+U1_ARMS = ("J-multi", "J-multi-loop", "J-u4", "J-real", "J-mix") + U8_ARMS  # outside the v1 pools and coverage matrix
 
 
 def derived_arm_ids(arm: JArm) -> list[str]:
